@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studieplanner & Progressietracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        h1 {
+            color: #1e8449; /* Donkergroen */
+            border-bottom: 3px solid #1e8449;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .studie-tabel {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .studie-tabel th, .studie-tabel td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .studie-tabel th {
+            background-color: #27ae60; /* Medium Groen */
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .studie-tabel tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Styling voor de RUST/VAKANTIE rij */
+        .vakantie-row {
+            background-color: #ffeeaa !important; /* Geelachtig */
+            font-weight: bold;
+            text-align: center !important;
+        }
+        .vakantie-row td {
+            color: #8b4513; /* Bruinige tekst */
+        }
+
+        /* Afvink Functionaliteit */
+        .taak-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .taak-item input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: #27ae60;
+            cursor: pointer;
+        }
+
+        .taak-item.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* Status & Toetsen kolom opmaak */
+        .status-cell {
+            font-size: 0.9em;
+            color: #444;
+            border-left: 3px solid #27ae60;
+            padding-left: 10px;
+        }
+
+        /* Media Query voor kleinere schermen */
+        @media (max-width: 768px) {
+            .studie-tabel, .studie-tabel tbody, .studie-tabel tr, .studie-tabel td {
+                display: block;
+                width: 100%;
+            }
+            .studie-tabel thead {
+                display: none;
+            }
+            .studie-tabel tr {
+                margin-bottom: 15px;
+                border: 2px solid #27ae60;
+                border-radius: 5px;
+            }
+            .studie-tabel td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            .studie-tabel td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #1e8449;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Studieplanner & Progressietracker</h1>
+    <p>Vink taken af om je progressie bij te houden. De status wordt lokaal opgeslagen in je browser.</p>
+
+    <table class="studie-tabel">
+        <thead>
+            <tr>
+                <th style="width: 15%;">WEEK (Deadline)</th>
+                <th style="width: 10%;">Vak</th>
+                <th style="width: 30%;">THUIS DOEN (Voorbereiden)</th>
+                <th style="width: 25%;">IN DE BIJLES (Samen doen)</th>
+                <th style="width: 20%;">STATUS & TOETSEN</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="week-48">
+                <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
+                <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="48" data-taak="nask1">
+                        <input type="checkbox" id="nask1"><label for="nask1">• NaSk H5: §1 en §2</label>
+                    </div>
+                    <div class="taak-item" data-week="48" data-taak="wis1">
+                        <input type="checkbox" id="wis1"><label for="wis1">• Wis H3: §1</label>
+                    </div>
+                    <div class="taak-item" data-week="48" data-taak="bio1">
+                        <input type="checkbox" id="bio1"><label for="bio1">• Bio H8: §8.1</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">N.v.t.</td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    Start gemaakt. Focus op NL toets (27/11).
+                </td>
+            </tr>
+            <tr id="week-49">
+                <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
+                <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="49" data-taak="nask2">
+                        <input type="checkbox" id="nask2"><label for="nask2">• NaSk H5: §4 (Afronden voor toets)</label>
+                    </div>
+                    <div class="taak-item" data-week="49" data-taak="wis2">
+                        <input type="checkbox" id="wis2"><label for="wis2">• Wis H3: §2</label>
+                    </div>
+                    <div class="taak-item" data-week="49" data-taak="bio2">
+                        <input type="checkbox" id="bio2"><label for="bio2">• Bio H8: §8.2</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">
+                    <div class="taak-item" data-week="49" data-taak="bijles_nask1">
+                        <input type="checkbox" id="bijles_nask1"><label for="bijles_nask1">Bijles 04/12 (NaSk): Samen §3 maken & uitleg.</label>
+                    </div>
+                    <div class="taak-item" data-week="49" data-taak="bijles_nask2">
+                        <input type="checkbox" id="bijles_nask2"><label for="bijles_nask2">Bijles 09/12 (NaSk): Proeftoets maken / Herhalen.</label>
+                    </div>
+                </td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
+                </td>
+            </tr>
+            <tr id="week-50">
+                <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
+                <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="50" data-taak="wis3">
+                        <input type="checkbox" id="wis3"><label for="wis3">• Wis H3: §3</label>
+                    </div>
+                    <div class="taak-item" data-week="50" data-taak="bio3">
+                        <input type="checkbox" id="bio3"><label for="bio3">• Bio H8: §8.3</label>
+                    </div>
+                    <div class="taak-item" data-week="50" data-taak="wis_resit1">
+                        <input type="checkbox" id="wis_resit1"><label for="wis_resit1">• Wis H1 (Resit): §1 en §2</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">
+                    <span style="font-weight: bold; color: red;">NaSk Toets (10/12)</span><br>
+                    <div class="taak-item" data-week="50" data-taak="bijles_wis1">
+                        <input type="checkbox" id="bijles_wis1"><label for="bijles_wis1">Bijles 16/12 (Wis): Samen §4 maken (lastige stof).</label>
+                    </div>
+                </td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
+                </td>
+            </tr>
+            <tr id="week-51">
+                <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
+                <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="51" data-taak="wis4">
+                        <input type="checkbox" id="wis4"><label for="wis4">• Wis H3: Afronden</label>
+                    </div>
+                    <div class="taak-item" data-week="51" data-taak="bio4">
+                        <input type="checkbox" id="bio4"><label for="bio4">• Bio H8: §8.4 (Klaar!)</label>
+                    </div>
+                    <div class="taak-item" data-week="51" data-taak="wis_resit2">
+                        <input type="checkbox" id="wis_resit2"><label for="wis_resit2">• Wis H1 (Resit): §3</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">
+                    <div class="taak-item" data-week="51" data-taak="bijles_wis2">
+                        <input type="checkbox" id="bijles_wis2"><label for="bijles_wis2">Bijles 18/12 (Wis): Samen §5 maken & H3 afsluiten.</label>
+                    </div>
+                </td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
+                </td>
+            </tr>
+            <tr class="vakantie-row" id="week-vakantie">
+                <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
+                <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
+                <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
+            </tr>
+            <tr id="week-2">
+                <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
+                <td data-label="Vak">Wis H1<br>Wis H2</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="2" data-taak="wis_resit3">
+                        <input type="checkbox" id="wis_resit3"><label for="wis_resit3">• Wis H1: §4 en §5 (Afronden)</label>
+                    </div>
+                    <div class="taak-item" data-week="2" data-taak="wis_h2_1">
+                        <input type="checkbox" id="wis_h2_1"><label for="wis_h2_1">• Wis H2: §1 en §2</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">
+                    <div class="taak-item" data-week="2" data-taak="bijles_bio_herhaal">
+                        <input type="checkbox" id="bijles_bio_herhaal"><label for="bijles_bio_herhaal">Bijles 05/01 (Bio): Herhalen voor toets.</label>
+                    </div>
+                    <div class="taak-item" data-week="2" data-taak="bijles_wis_herhaal">
+                        <input type="checkbox" id="bijles_wis_herhaal"><label for="bijles_wis_herhaal">Bijles 06/01 (Wis): Herhalen voor toets.</label>
+                    </div>
+                    <span style="font-weight: bold; color: red;">Toetsen: 08/1 (Wis) & 09/1 (Bio).</span>
+                </td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    Toetsweek!<br>In het weekend focus op Herkansing.
+                </td>
+            </tr>
+            <tr id="week-3">
+                <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
+                <td data-label="Vak">Wis H1/2</td>
+                <td data-label="THUIS DOEN">
+                    <div class="taak-item" data-week="3" data-taak="wis_h2_2">
+                        <input type="checkbox" id="wis_h2_2"><label for="wis_h2_2">• Wis H2: §3</label>
+                    </div>
+                </td>
+                <td data-label="IN DE BIJLES">
+                    <div class="taak-item" data-week="3" data-taak="bijles_wis_h2">
+                        <input type="checkbox" id="bijles_wis_h2"><label for="bijles_wis_h2">Bijles 13/01 (Wis): Samen §4 (H2) maken + Vragen H1.</label>
+                    </div>
+                    <div class="taak-item" data-week="3" data-taak="bijles_wis_rep">
+                        <input type="checkbox" id="bijles_wis_rep"><label for="bijles_wis_rep">Bijles 15/01 (Wis): Generale repetitie (Oefentoets).</label>
+                    </div>
+                    <span style="font-weight: bold; color: red;">Herkansing 16/01</span>
+                </td>
+                <td data-label="STATUS & TOETSEN" class="status-cell">
+                    Je hebt alles behandeld.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('.taak-item input[type="checkbox"]');
+
+            // 1. Taken laden uit de lokale opslag
+            const loadTasks = () => {
+                checkboxes.forEach(checkbox => {
+                    const taakKey = checkbox.id;
+                    const isChecked = localStorage.getItem(taakKey) === 'true';
+                    checkbox.checked = isChecked;
+                    // De bijbehorende div stylen
+                    const taakItemDiv = checkbox.closest('.taak-item');
+                    if (isChecked) {
+                        taakItemDiv.classList.add('completed');
+                    } else {
+                        taakItemDiv.classList.remove('completed');
+                    }
+                });
+            };
+
+            // 2. Event Listeners instellen voor opslag
+            const setupListeners = () => {
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (event) => {
+                        const taakKey = event.target.id;
+                        const isChecked = event.target.checked;
+                        
+                        // Opslaan in de lokale opslag
+                        localStorage.setItem(taakKey, isChecked);
+                        
+                        // Visuele feedback geven (doorstrepen)
+                        const taakItemDiv = event.target.closest('.taak-item');
+                        if (isChecked) {
+                            taakItemDiv.classList.add('completed');
+                        } else {
+                            taakItemDiv.classList.remove('completed');
+                        }
+                    });
+                });
+            };
+
+            loadTasks();
+            setupListeners();
+        });
+    </script>
+
+</body>
+</html>
