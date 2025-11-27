@@ -513,7 +513,16 @@
                 const urlSharedId = urlParams.get('share');
                 const storedSharedId = localStorage.getItem('sharedOwnerId');
                 
+                // FIX: Activeer UID in deze volgorde: URL > Storage > Eigen UID
                 activeUserId = urlSharedId || storedSharedId || currentUserId;
+                
+                // Als de UID uit de URL komt, sla deze op in Storage voor persistentie
+                if (urlSharedId) {
+                    localStorage.setItem('sharedOwnerId', urlSharedId);
+                } else if (!storedSharedId) {
+                    // Zorg ervoor dat de opslag schoon is als we naar de eigen UID gaan
+                    localStorage.removeItem('sharedOwnerId');
+                }
                 
                 const userName = user.displayName ? user.displayName.split(' ')[0] : (user.email || 'Gebruiker');
                 document.getElementById('welkom-boodschap').innerText = `Welkom terug, ${userName}! Dit is de studieomgeving.`;
@@ -524,7 +533,7 @@
                 
                 showPage('planner-page');
                 
-                // Initialiseer of ververs de planner op basis van de actieve ID
+                // FIX: Laad de planner op basis van de actieve ID
                 setupFirestoreListeners(activeUserId); 
                 updateViewingStatus();
             } else {
@@ -636,6 +645,7 @@
             // Listener 1: Wekelijkse Status (Vakantie)
             const weekStatusRef = db.collection('users').doc(userId).collection('weken').doc('status');
             
+            // FIX: Zorg ervoor dat de fetchAndRenderData wordt getriggerd bij elke wijziging in de status
             window.weekStatusUnsubscribe = weekStatusRef.onSnapshot(doc => {
                 weeklyHolidayStatuses = doc.exists ? doc.data() : {};
                 
@@ -654,6 +664,7 @@
              const plannerRef = db.collection('users').doc(userId).collection('planning');
              const algemeenRef = db.collection('users').doc(userId).collection('algemeen');
                 
+             // Promise.all zorgt ervoor dat beide databronnen zijn opgehaald voordat we renderen
              Promise.all([
                  plannerRef.orderBy('toetsdatum', 'asc').get(),
                  algemeenRef.orderBy('datum_aangemaakt', 'asc').get() 
