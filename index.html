@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Flexibele Wekelijkse Planner</title>
+    <title>Study-Start - Compleet Systeem</title>
     
     <!-- FAVICON: Oranje Bolletje -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FF8C00'/></svg>" type="image/svg+xml">
@@ -13,15 +13,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK's laden (Alleen App, Auth, Firestore) -->
+    <!-- Firebase SDK's laden -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* Algemene styling */
+        /* [ALGEMEEN] */
         body {
-            font-family: 'Roboto', sans-serif; /* Lettertype aangepast */
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             background-color: #f4f7f6;
             color: #333;
@@ -30,37 +30,72 @@
             min-height: 100vh;
         }
 
-        #login-page, #planner-page {
-            flex-grow: 1;
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #login-page {
+        /* [LAYOUT] - Tweekoloms indeling voor de plannerpagina */
+        #planner-content-wrapper {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        #main-planner-area {
+            flex: 3; /* De planner neemt 3/4 van de breedte in */
+            min-width: 60%;
+        }
+
+        #sidebar-area {
+            flex: 1; /* De sidebar neemt 1/4 van de breedte in */
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        /* [COMPONENT STYLING] */
+        .card {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            text-align: center;
-            /* PAS DIT AAN MET JOUW PNG! OF VERWIJDER DE REGEL */
-            background-image: url('JOUW_AFBEELDING_NAAM.png'); 
-            background-size: cover;
-            background-position: center;
-            background-color: #ffffff; 
-            padding-top: 100px;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-weight: 500;
         }
 
-        .login-card {
-            max-width: 380px; 
-            padding: 35px; 
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            background-color: rgba(255, 255, 255, 0.95); 
+        .stat-item-completed {
+            background-color: #e6ffe6; /* Lichtgroen */
+            border-left: 5px solid #27ae60;
         }
 
+        .stat-item-pending {
+            background-color: #fff4e6; /* Lichtoranje */
+            border-left: 5px solid #ff8c00;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        /* [OVERIGE STYLING] - Behoud van oranje/groen thema */
+        header {
+            width: 100%;
+            background-color: #ff8c00; /* Oranje header */
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        /* ... [REST VAN DE BASIS STYLING (login, knoppen, tabel) zoals in V17] ... */
         .login-card h1 {
-            color: #ff8c00; /* Oranje (voor de branding) */
+            color: #ff8c00; 
             margin-bottom: 25px;
             font-size: 2em; 
             font-weight: 500;
@@ -98,258 +133,22 @@
             background-repeat: no-repeat;
         }
 
-        header {
-            width: 100%;
-            background-color: #ff8c00; /* Oranje header */
-            color: white;
-            padding: 12px 25px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            margin: 0;
-            color: white;
-            font-size: 1.6em; 
-            font-weight: 500;
-        }
-
-        #logout-button {
-            background-color: #e74c3c; /* Rood */
-            color: white;
-            padding: 9px 16px; 
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        #logout-button:hover {
-            background-color: #c0392b;
-        }
-
-        /* Styling voor het invoerformulier */
-        .planning-form-container {
-            background-color: #fff;
-            padding: 25px; 
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            display: grid;
-            gap: 15px; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            align-items: center;
-        }
-
-        .planning-form-container input, 
-        .planning-form-container select, 
-        .planning-form-container button,
-        .planning-form-container datalist { /* datalist styling fix */
-            padding: 12px; 
-            border: 1px solid #ddd;
-            border-radius: 5px; 
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            margin-right: 0 !important;
-        }
-        
-        .planning-form-container button {
-            background-color: #ff8c00; /* Oranje knop */
-            color: white;
-            border: none;
-            cursor: pointer;
-            grid-column: 1 / -1; 
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        .planning-form-container button:hover {
-            background-color: #e67e22;
-        }
-        
-        /* Overzicht Toetsen Styling */
-        #toetsen-overzicht {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .toets-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.05em; 
-        }
-
-        .toets-item:last-child {
-            border-bottom: none;
-        }
-        
-        .toets-item button {
-            background-color: #e74c3c; /* Rood */
-            color: white;
-            border: none;
-            padding: 7px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .toets-item button:hover {
-            background-color: #c0392b;
-        }
-        
-        /* Loading indicator */
-        #loading-indicator {
-            padding: 15px;
-            text-align: center;
-            font-style: italic;
-            color: #888;
-        }
-        
-        /* Styling voor de dynamische planner tabel */
-        .studie-tabel {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 25px;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .studie-tabel th, .studie-tabel td {
-            padding: 15px; 
-            text-align: left;
-            border-bottom: 1px solid #eee; 
-            vertical-align: top; 
-        }
-
         .studie-tabel th {
-            background-color: #ff8c00; /* Oranje header */
+            background-color: #ff8c00; 
             color: white;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.95em;
             border-bottom: none;
         }
-        
-        .studie-tabel tbody tr:hover {
-            background-color: #fcfcfc; 
-        }
 
-        /* Specifieke styling voor de rijen op basis van status (GROEN/ORANJE) */
-        .studie-tabel tr.week-completed {
-            background-color: #e6ffe6; /* Lichtgroen voor afgerond */
-            border-left: 5px solid #27ae60;
-        }
-
-        .studie-tabel tr.week-pending {
-            background-color: #fff4e6; /* Lichtoranje voor openstaand */
-            border-left: 5px solid #ff8c00;
-        }
-        
-        .studie-tabel tr.week-holiday {
-            background-color: #fffae0; /* Licht geel voor vakantie */
-            border-left: 5px solid #ffd700;
-            font-style: italic;
-        }
-        .studie-tabel tr.week-holiday td {
-             text-align: center;
-             color: #a0522d;
-        }
-        .studie-tabel tr.week-holiday td[data-label="VAKANTIE"] {
-             text-align: left; /* Zorgt dat de vakantie tekst links blijft */
-        }
-        
-        /* Bewerkbare tekstvelden in de tabel */
-        .studie-tabel textarea {
-            width: 100%;
-            min-height: 80px;
-            border: 1px solid #ddd;
-            padding: 8px;
-            resize: vertical;
-            font-size: 0.95em;
-            border-radius: 4px;
-            box-sizing: border-box; 
-        }
-        
-        .taak-item input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.3); 
-            accent-color: #27ae60; /* Groene kleur checkbox */
-            cursor: pointer;
-        }
-        
-        .taak-item label {
-            font-weight: 500;
-            color: #444;
-        }
-
-        .taak-item.completed label {
-            text-decoration: line-through;
-            color: #888;
-        }
-        
-        /* Nieuwe Vakantie Checkbox in de tabel */
-        .vakantie-check {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-        }
-        .vakantie-check label {
-            font-weight: 400;
-            font-size: 0.9em;
-            color: #ff8c00;
-            margin-left: 5px;
-        }
-
-        /* Responsive Aanpassingen */
-        @media (max-width: 768px) {
-            .planning-form-container {
-                grid-template-columns: 1fr;
+        /* [RESPONSIVE ANPASSINGEN] */
+        @media (max-width: 1024px) {
+            #planner-content-wrapper {
+                flex-direction: column; /* Stacks columns vertically on small screens */
             }
-            .studie-tabel, .studie-tabel tbody, .studie-tabel tr, .studie-tabel td {
-                display: block;
-                width: 100%;
-            }
-            .studie-tabel thead {
-                display: none;
-            }
-            .studie-tabel tr {
-                margin-bottom: 15px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                overflow: hidden;
-            }
-            .studie-tabel td {
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-            }
-            .studie-tabel td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 15px;
-                width:  calc(50% - 30px);
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: 600;
-                color: #555;
-            }
-            .studie-tabel textarea {
-                width: calc(100% - 10px); 
-            }
-            .vakantie-check {
-                justify-content: flex-end;
+            #sidebar-area {
+                max-width: 100%;
             }
         }
     </style>
@@ -358,12 +157,12 @@
 
     <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) -->
     <div id="login-page" style="display: none;">
-        <div class="login-card">
+        <div class="card login-card">
             <h1>Welkom bij Study-Start</h1>
             <p>Jouw persoonlijke studieplanner. Log in om je studie-overzicht te laden.</p>
             
             <button id="google-login-button" onclick="signInWithGoogle()">
-                <div class="google-icon"></div> <!-- Hier wordt het Google-icoon via CSS getoond -->
+                <div class="google-icon"></div>
                 Inloggen met Google
             </button>
 
@@ -381,89 +180,111 @@
             </div>
         </header>
 
-        <div style="padding: 20px;">
-            <p id="welkom-boodschap" style="font-size: 1.1em; color: #ff8c00; font-weight: 500;">Welkom!</p>
-            <div id="loading-indicator">Laden van persoonlijke planning...</div>
+        <div id="planner-content-wrapper">
+            
+            <!-- LINKER KOLOM: PLANNER & TOETSEN OVERZICHT -->
+            <div id="main-planner-area">
+                <p id="welkom-boodschap" style="font-size: 1.1em; color: #ff8c00; font-weight: 500;">Welkom!</p>
+                <div id="loading-indicator">Laden van persoonlijke planning...</div>
+                
+                <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) -->
+                <h2 style="color: #333;">📅 Wekelijks Leerschema (Zelf Invullen & Afvinken)</h2>
+                <table class="studie-tabel">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">WEEK</th>
+                            <th style="width: 15%;">VAK</th>
+                            <th style="width: 45%;">THUIS DOEN (Zelf Invullen)</th>
+                            <th style="width: 15%;">CONTROLE</th>
+                            <th style="width: 10%;">STATUS</th>
+                            <th style="width: 5%;">VAKANTIE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planner-table-body">
+                        <!-- Dynamische taken komen hier -->
+                    </tbody>
+                </table>
+                <!-- EINDE PLANNER TABEL -->
 
-            <!-- NIEUWE TOETS INVOER SECTIE (Vereenvoudigd) -->
-            <div style="margin-bottom: 30px;">
-                <h3>+ Nieuwe Toets Inplannen</h3>
-                <div class="planning-form-container">
-                    <!-- VAKKEUZE MET DATALIST -->
-                    <input type="text" list="vakken-list" id="vakInput" placeholder="Vak (typ of kies)" required>
-                    <datalist id="vakken-list">
-                        <option value="Wiskunde">
-                        <option value="Nederlands">
-                        <option value="Engels">
-                        <option value="Duits">
-                        <option value="Frans">
-                        <option value="Geschiedenis">
-                        <option value="Aardrijkskunde">
-                        <option value="Natuurkunde">
-                        <option value="Scheikunde">
-                        <option value="Biologie">
-                        <option value="Economie">
-                        <option value="Bedrijfseconomie">
-                        <option value="Latijn">
-                        <option value="Grieks">
-                        <option value="Muziek">
-                    </datalist>
-
-                    <!-- HOOFDSTUKKEUZE -->
-                    <select id="hoofdstukInput">
-                        <option value="">Hoofdstuk</option>
-                        <option value="H1">H1</option>
-                        <option value="H2">H2</option>
-                        <option value="H3">H3</option>
-                        <option value="H4">H4</option>
-                        <option value="H5">H5</option>
-                        <option value="H6">H6</option>
-                        <option value="H7">H7</option>
-                        <option value="H8">H8</option>
-                        <option value="H9">H9</option>
-                        <option value="H10">H10</option>
-                        <option value="H11">H11</option>
-                        <option value="H12">H12</option>
-                    </select>
-
-                    <input type="date" id="datumInput" required>
-                    <select id="controleMomentInput">
-                        <option value="Geen">Controle/Bijles: Geen</option>
-                        <option value="Bijles">Controle/Bijles: Bijles</option>
-                        <option value="Controle">Controle/Bijles: Controle</option>
-                    </select>
-                    <button onclick="saveNewPlanning()">Plan Toets In</button>
+                <!-- TOETSEN OVERZICHT SECTIE -->
+                <div id="toetsen-overzicht" class="card" style="margin-top: 20px;">
+                    <h2>📚 Alle Ingeplande Toetsen</h2>
+                    <div id="toetsen-lijst">
+                        <!-- Dynamische lijst met toetsen komt hier -->
+                    </div>
                 </div>
-                <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
+                <!-- EINDE TOETSEN OVERZICHT SECTIE -->
+                
             </div>
             
-            <!-- TOETSEN OVERZICHT SECTIE -->
-            <div id="toetsen-overzicht">
-                <h2>📚 Alle Ingeplande Toetsen</h2>
-                <div id="toetsen-lijst">
-                    <!-- Dynamische lijst met toetsen komt hier -->
+            <!-- RECHTER KOLOM: INVOER & STATISTIEKEN -->
+            <div id="sidebar-area">
+
+                <!-- NIEUWE TOETS INVOER SECTIE -->
+                <div class="card">
+                    <h3>+ Nieuwe Toets Inplannen</h3>
+                    <div class="planning-form-container">
+                        <!-- VAKKEUZE MET DATALIST -->
+                        <input type="text" list="vakken-list" id="vakInput" placeholder="Vak (typ of kies)" required>
+                        <datalist id="vakken-list">
+                            <option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Duits">
+                            <option value="Frans"><option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Natuurkunde">
+                            <option value="Scheikunde"><option value="Biologie"><option value="Economie"><option value="Bedrijfseconomie">
+                            <option value="Latijn"><option value="Grieks"><option value="Muziek">
+                        </datalist>
+
+                        <!-- HOOFDSTUKKEUZE -->
+                        <select id="hoofdstukInput">
+                            <option value="">Hoofdstuk</option>
+                            <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option><option value="H4">H4</option>
+                            <option value="H5">H5</option><option value="H6">H6</option><option value="H7">H7</option><option value="H8">H8</option>
+                            <option value="H9">H9</option><option value="H10">H10</option><option value="H11">H11</option><option value="H12">H12</option>
+                        </select>
+
+                        <input type="date" id="datumInput" required>
+                        <select id="controleMomentInput">
+                            <option value="Geen">Controle/Bijles: Geen</option>
+                            <option value="Bijles">Controle/Bijles: Bijles</option>
+                            <option value="Controle">Controle/Bijles: Controle</option>
+                        </select>
+                        <button onclick="saveNewPlanning()">Plan Toets In</button>
+                    </div>
+                    <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
+                </div>
+                <!-- EINDE TOETS INVOER SECTIE -->
+
+                <!-- NIEUWE ALGEMENE TAAK INVOER SECTIE -->
+                <div class="card">
+                    <h3>+ Algemene Taak Inplannen</h3>
+                    <div class="planning-form-container">
+                        <input type="text" id="algemeenVakInput" placeholder="Vak (bv. Herhaling)" required>
+                        <input type="date" id="algemeenDatumInput" required>
+                        <textarea id="algemeenTaakInput" placeholder="Taakomschrijving (bv. Oude oefentoets maken)"></textarea>
+                        <button onclick="saveAlgemeneTaak()">Plan Algemene Taak In</button>
+                    </div>
+                    <p id="algemeen-feedback-message" style="color: red; margin-top: 10px;"></p>
+                </div>
+                <!-- EINDE ALGEMENE TAAK INVOER SECTIE -->
+                
+                <!-- STATISTIEKEN PANEEL -->
+                <div class="card">
+                    <h3>📊 Studie Statistieken</h3>
+                    <div id="statistieken-container">
+                        <!-- Resultaten van de berekening komen hier -->
+                        <p style="font-style: italic; color: #777;">Laad eerst de planning om statistieken te zien.</p>
+                    </div>
+                </div>
+                <!-- EINDE STATISTIEKEN PANEEL -->
+
+                <!-- BESTAND UPLOAD VOORBEELD (UI Mockup) -->
+                <div class="card">
+                    <h3>🔗 Upload Leermateriaal (WIP)</h3>
+                    <p style="font-size: 0.9em; color: #777;">Je kunt hier straks documenten of afbeeldingen koppelen aan een toets.</p>
+                    <input type="file" id="documentUploadInput" disabled>
+                    <button style="margin-top: 10px; background-color: #ccc;" disabled>Uploaden (Vereist Firebase Storage)</button>
                 </div>
             </div>
-            <!-- EINDE TOETSEN OVERZICHT SECTIE -->
-            
-            <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) -->
-            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen & Afvinken)</h2>
-            <table class="studie-tabel">
-                <thead>
-                    <tr>
-                        <th style="width: 15%;">WEEK (Deadline)</th>
-                        <th style="width: 15%;">VAK</th>
-                        <th style="width: 40%;">THUIS DOEN (Zelf Invullen)</th>
-                        <th style="width: 15%;">CONTROLE MOMENT</th>
-                        <th style="width: 10%;">STATUS</th>
-                        <th style="width: 5%;">VAKANTIE</th>
-                    </tr>
-                </thead>
-                <tbody id="planner-table-body">
-                    <!-- Dynamische taken komen hier -->
-                </tbody>
-            </table>
-            <!-- EINDE PLANNER TABEL -->
+            <!-- EINDE RECHTER KOLOM -->
 
         </div>
     </div>
@@ -472,7 +293,7 @@
 
     <script>
         // =================================================================
-        // 1. FIREBASE INITIALISATIE EN CONFIGURATIE (met jouw gegevens)
+        // 1. FIREBASE INITIALISATIE EN CONFIGURATIE (jouw gegevens)
         // =================================================================
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
@@ -488,12 +309,8 @@
         const auth = firebase.auth();
         const db = firebase.firestore(); 
         let currentUserId = null; 
-        
-        // Globale opslag voor vakantiestatus van de weken (opgehaald uit Firestore)
         let weeklyHolidayStatuses = {}; 
-        // =================================================================
-
-
+        
         // =================================================================
         // 2. AUTHENTICATIE FUNCTIES & PAGINASCHAKELING
         // =================================================================
@@ -535,7 +352,7 @@
           const provider = new firebase.auth.GoogleAuthProvider();
           auth.signInWithPopup(provider).catch((error) => {
             console.error("Login Error:", error.message);
-            document.getElementById('login-status-splash').innerText = `Error: Login failed. Check console for details. (${error.code})`;
+            alert(`Fout bij inloggen: ${error.code}. Controleer of Google-inloggen en geautoriseerde domeinen in Firebase zijn ingesteld.`);
           });
         }
 
@@ -548,12 +365,9 @@
 
 
         // =================================================================
-        // 3. FIRESTORE LOGICA & CRUD
+        // 3. FIRESTORE LISTENERS & DATA OPHALEN
         // =================================================================
 
-        /**
-         * Stelt alle real-time listeners in voor planning en de weekstatus (vakantie).
-         */
         function setupFirestoreListeners(userId) {
             const loadingIndicator = document.getElementById('loading-indicator');
             loadingIndicator.innerText = "Laden van persoonlijke planning...";
@@ -563,34 +377,24 @@
             weekStatusRef.onSnapshot(doc => {
                 weeklyHolidayStatuses = doc.exists ? doc.data() : {};
                 
-                // Trigger herlading van de planner na ophalen vakantiestatus
+                // Na ophalen vakantiestatus, trigger herlading van de planner data
                 const plannerRef = db.collection('users').doc(userId).collection('planning');
-                plannerRef.orderBy('toetsdatum', 'asc').get().then(snap => {
-                    const latestPlanningItems = [];
-                    snap.forEach(d => {
-                        latestPlanningItems.push({ id: d.id, ...d.data() });
-                    });
-                    updatePlannerUI(latestPlanningItems);
-                });
+                const algemeenRef = db.collection('users').doc(userId).collection('algemeen');
+                
+                Promise.all([
+                    plannerRef.orderBy('toetsdatum', 'asc').get(),
+                    algemeenRef.orderBy('weekKey', 'asc').get()
+                ]).then(([planningSnap, algemeenSnap]) => {
+                    const planningItems = planningSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    const algemeneTaken = algemeenSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    
+                    updatePlannerUI(planningItems, algemeneTaken);
+                    updateOverzichtUI(planningItems); 
+
+                }).catch(error => console.error("Error loading combined data: ", error));
 
             }, error => {
                 console.error("Error loading Weekly Status data: ", error);
-            });
-            
-            // Listener 2: Toets Planning (hoofdlistener)
-            const plannerRef = db.collection('users').doc(userId).collection('planning');
-            plannerRef.orderBy('toetsdatum', 'asc').onSnapshot(snapshot => {
-                loadingIndicator.style.display = 'none'; 
-                const planningItems = [];
-                snapshot.forEach(doc => {
-                    planningItems.push({ id: doc.id, ...doc.data() });
-                });
-                
-                updateOverzichtUI(planningItems); 
-                updatePlannerUI(planningItems); 
-
-            }, error => {
-                console.error("Error loading Planning data: ", error);
             });
             loadingIndicator.style.display = 'none';
         }
@@ -612,7 +416,6 @@
             }
             
             feedbackEl.innerText = "";
-
             const toetsDatum = new Date(datumStr);
             if (toetsDatum <= new Date()) {
                 feedbackEl.style.color = '#c0392b';
@@ -633,7 +436,7 @@
             db.collection('users').doc(currentUserId).collection('planning').add(planningData)
                 .then(() => {
                     feedbackEl.style.color = '#27ae60';
-                    feedbackEl.innerText = "Nieuwe planning aangemaakt!";
+                    feedbackEl.innerText = "Nieuwe toets succesvol ingepland!";
                     document.getElementById('vakInput').value = '';
                     document.getElementById('hoofdstukInput').value = '';
                     document.getElementById('datumInput').value = '';
@@ -641,7 +444,7 @@
                 .catch(error => {
                     feedbackEl.style.color = '#c0392b';
                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
-                    console.error("Error saving data: ", error);
+                    console.error("Error saving planning: ", error);
                 });
         }
         
@@ -651,37 +454,93 @@
                 .catch(error => console.error("Error deleting document: ", error));
         }
 
+        /* --- ALGEMENE TAKEN CRUD --- */
+        function saveAlgemeneTaak() {
+             const vak = document.getElementById('algemeenVakInput').value.trim();
+             const datumStr = document.getElementById('algemeenDatumInput').value;
+             const taak = document.getElementById('algemeenTaakInput').value.trim();
+             const feedbackEl = document.getElementById('algemeen-feedback-message');
+             
+             if (!vak || !datumStr || !taak) {
+                 feedbackEl.style.color = '#c0392b';
+                 feedbackEl.innerText = "Vul alle velden in.";
+                 return;
+             }
+             
+             const datum = new Date(datumStr);
+             datum.setDate(datum.getDate() + 6 - (datum.getDay() || 7)); // Zet datum op zondag van de week
+             const weekKey = getYearWeekKey(datum);
+
+             const taakData = {
+                 vak: vak,
+                 taak: taak,
+                 weekKey: weekKey,
+                 afgerond: false,
+                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp()
+             };
+
+             db.collection('users').doc(currentUserId).collection('algemeen').add(taakData)
+                 .then(() => {
+                     feedbackEl.style.color = '#27ae60';
+                     feedbackEl.innerText = `Taak succesvol gepland voor week ${getWeekNumber(datum)}!`;
+                     document.getElementById('algemeenVakInput').value = '';
+                     document.getElementById('algemeenDatumInput').value = '';
+                     document.getElementById('algemeenTaakInput').value = '';
+                 })
+                 .catch(error => {
+                     feedbackEl.style.color = '#c0392b';
+                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
+                     console.error("Error saving algemene taak: ", error);
+                 });
+        }
+        
+        window.deleteAlgemeneTaak = function(docId) {
+             if (!currentUserId || !confirm(`Weet je zeker dat je deze algemene taak wilt verwijderen?`)) return;
+             db.collection('users').doc(currentUserId).collection('algemeen').doc(docId).delete()
+                 .catch(error => console.error("Error deleting algemene taak: ", error));
+        }
+        
+        window.toggleAlgemeneTaakCompletion = function(docId, isChecked) {
+             if (!currentUserId) return;
+             db.collection('users').doc(currentUserId).collection('algemeen').doc(docId).update({
+                 afgerond: isChecked
+             }).catch(error => {
+                 console.error("Error toggling algemene taak: ", error);
+                 alert("Opslagfout voor algemene taak. Controleer de console.");
+             });
+        }
+
         /**
-         * Update de wekelijkse taaktekst (textarea) in Firestore (ROBUUSTE FIX).
+         * Update de wekelijkse taaktekst (textarea) in Firestore.
          */
         window.updateWeeklyTaak = function(docId, weekKey, value) {
             if (!currentUserId) return;
             
-            // Gebruik de update-methode om geneste velden direct en betrouwbaar te wijzigen
             db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.taak`]: value
             }).then(() => {
-                // Kleine visuele feedback
                 const textarea = document.querySelector(`textarea[onblur*='${docId}'][onblur*='${weekKey}']`);
                 if (textarea) {
                     textarea.style.backgroundColor = '#e6ffe6';
                     setTimeout(() => textarea.style.backgroundColor = 'white', 500);
                 }
-            }).catch(error => console.error(`Error saving task text:`, error));
+            }).catch(error => {
+                 console.error(`Error saving task text for ${weekKey}:`, error);
+                 alert(`Opslagfout voor week ${weekKey}. Controleer de console!`);
+            });
         }
 
         /**
-         * Toggles the weekly completion status (checkbox) in Firestore (ROBUUSTE FIX).
+         * Toggles the weekly completion status (checkbox) in Firestore.
          */
         window.toggleWeeklyCompletion = function(docId, weekKey, isChecked) {
             if (!currentUserId) return;
             
-            // Gebruik de update-methode om geneste velden direct en betrouwbaar te wijzigen
             db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.afgerond`]: isChecked
             }).catch((error) => {
-                 console.error(`Error saving completion status:`, error);
-                 // Fallback: Als er een fout is, behoud dan de oude status op de UI
+                 console.error(`Error saving completion status for ${weekKey}:`, error);
+                 alert(`Opslagfout voor week ${weekKey}. Controleer de console!`);
                  const checkbox = document.querySelector(`input[onchange*='${docId}'][onchange*='${weekKey}']`);
                  if (checkbox) checkbox.checked = !isChecked;
              });
@@ -691,15 +550,16 @@
 
         window.toggleVakantieWeek = function(weekKey, isChecked) {
             if (!currentUserId) return;
-
             const weekStatusRef = db.collection('users').doc(currentUserId).collection('weken').doc('status');
             
-            // Gebruik set met merge:true om de specifieke week in de 'status' document te updaten
             weekStatusRef.set({
                 [weekKey]: {
                     isVakantie: isChecked
                 }
-            }, { merge: true }).catch(error => console.error("Error saving holiday status: ", error));
+            }, { merge: true }).catch(error => {
+                 console.error("Error saving holiday status: ", error);
+                 alert("Opslagfout voor vakantiestatus. Controleer de console.");
+            });
         }
         // =================================================================
 
@@ -719,8 +579,9 @@
 
             planningItems.forEach(item => {
                 const toetsDatumStr = item.toetsdatum.toDate().toLocaleDateString('nl-NL');
-                const statusKleur = item.is_afgerond ? '#27ae60' : '#e67e22';
-                const statusText = item.is_afgerond ? `(TOETS AFGEROND)` : `(Toets op ${toetsDatumStr})`;
+                const isAfgerond = item.is_afgerond;
+                const statusKleur = isAfgerond ? '#27ae60' : '#e67e22';
+                const statusText = isAfgerond ? `(TOETS AFGEROND)` : `(Toets op ${toetsDatumStr})`;
                 const vakHoofdstuk = `${item.vak}${item.hoofdstuk ? ' ' + item.hoofdstuk : ''}`;
 
                 const itemDiv = document.createElement('div');
@@ -737,108 +598,97 @@
         }
         
         /**
-         * Hoofdfunctie om de wekelijkse planner-tabel te renderen.
+         * Hoofdfunctie om de wekelijkse planner-tabel en statistieken te renderen.
          */
-        function updatePlannerUI(planningItems) {
+        function updatePlannerUI(planningItems, algemeneTaken) {
             const plannerTableBody = document.getElementById('planner-table-body');
             plannerTableBody.innerHTML = '';
             
-            if (planningItems.length === 0) {
-                plannerTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
-                return;
-            }
-
             const vandaag = new Date();
             vandaag.setHours(0, 0, 0, 0); 
-
-            // Map om alle taken per week te verzamelen (van alle toetsen)
-            const weekTaken = {}; 
             
-            // --- Genereer de wekelijkse rijen voor elke toets ---
+            const weekTaken = {}; // Map om alle taken per week te verzamelen
+
+            // 1. Taken toevoegen van Toetsen (Planning collectie)
             planningItems.forEach(item => {
                 const docId = item.id;
                 const toetsDatum = item.toetsdatum.toDate();
-
                 let huidigeWeekStart = new Date(vandaag);
-                // Start op zondag van de huidige week
                 huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); 
 
                 while (huidigeWeekStart <= toetsDatum) {
-                    const weekNummer = getWeekNumber(huidigeWeekStart);
-                    const year = huidigeWeekStart.getFullYear();
-                    const weekKey = `${year}-${weekNummer}`; 
+                    const weekKey = getYearWeekKey(huidigeWeekStart);
                     
-                    const weekEndDeadline = new Date(huidigeWeekStart);
-                    weekEndDeadline.setDate(huidigeWeekStart.getDate() + 6); // Zondag
-
-                    if (weekEndDeadline < vandaag) {
-                        huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
-                        continue;
-                    }
-
-                    const isVakantie = weeklyHolidayStatuses[weekKey]?.isVakantie || false;
+                    if (!weekTaken[weekKey]) weekTaken[weekKey] = { taken: [] };
                     
-                    if (!weekTaken[weekKey]) {
-                        weekTaken[weekKey] = {
-                            weekNummer: weekNummer,
-                            deadline: weekEndDeadline.toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' }),
-                            taken: [],
-                            isVakantie: isVakantie
-                        };
-                    } else if (isVakantie) {
-                        weekTaken[weekKey].isVakantie = true;
+                    const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : { taak: "", afgerond: false };
+                    
+                    let controleMomentText = item.controle_moment !== 'Geen' ? item.controle_moment : 'N.v.t.';
+                    let isToetsWeek = weekEndDeadline(huidigeWeekStart) >= toetsDatum && huidigeWeekStart <= toetsDatum;
+
+                    if (isToetsWeek) {
+                        controleMomentText = `TOETS: ${item.vak} ${item.hoofdstuk} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
                     }
                     
-                    
-                    if (!isVakantie) {
-                        const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : {
-                            taak: "",
-                            afgerond: false
-                        };
-                        
-                        let controleMomentText = item.controle_moment !== 'Geen' ? item.controle_moment : 'N.v.t.';
-                        let isToetsWeek = weekEndDeadline >= toetsDatum && huidigeWeekStart <= toetsDatum;
+                    const vakHoofdstuk = `${item.vak}${item.hoofdstuk ? ' ' + item.hoofdstuk : ''}`;
 
-                        if (isToetsWeek) {
-                            controleMomentText = `TOETS: ${item.vak} ${item.hoofdstuk} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
-                        }
-                        
-                        const vakHoofdstuk = `${item.vak}${item.hoofdstuk ? ' ' + item.hoofdstuk : ''}`;
-
-                        // Voeg de taak toe aan de weekTaken map
-                        weekTaken[weekKey].taken.push({
-                            docId: docId,
-                            vak: vakHoofdstuk,
-                            controle: controleMomentText,
-                            taakTekst: weekData.taak,
-                            afgerond: weekData.afgerond,
-                            weekKey: weekKey,
-                            isToetsWeek: isToetsWeek
-                        });
-                    }
+                    weekTaken[weekKey].taken.push({
+                        type: 'planning',
+                        id: docId,
+                        vak: vakHoofdstuk,
+                        controle: controleMomentText,
+                        taakTekst: weekData.taak,
+                        afgerond: weekData.afgerond,
+                        weekKey: weekKey,
+                        isToetsWeek: isToetsWeek
+                    });
                     
-                    // Ga naar de volgende week
                     huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
                 }
             });
+            
+            // 2. Taken toevoegen van Algemene Taken (Algemeen collectie)
+            algemeneTaken.forEach(item => {
+                 const weekKey = item.weekKey;
+                 if (!weekTaken[weekKey]) weekTaken[weekKey] = { taken: [] };
+                 
+                 weekTaken[weekKey].taken.push({
+                    type: 'algemeen',
+                    id: item.id,
+                    vak: item.vak,
+                    controle: 'N.v.t.',
+                    taakTekst: item.taak,
+                    afgerond: item.afgerond,
+                    weekKey: weekKey,
+                    isToetsWeek: false
+                 });
+            });
 
-            // --- Render de verzamelde taken naar de tabel ---
+
+            // --- RENDEREN EN STATISTIEKEN BEREKENEN ---
+            let totalWeeks = 0;
+            let completedWeeks = 0;
+            
             for (const weekKey in weekTaken) {
                 const week = weekTaken[weekKey];
+                const weekStartDate = parseYearWeekKey(weekKey);
+                const deadline = weekEndDeadline(weekStartDate).toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' });
+                const weekNummer = getWeekNumber(weekStartDate);
+                const vakantieCheckId = `vakantie-check-${weekKey}`;
+                const isVakantie = weeklyHolidayStatuses[weekKey]?.isVakantie || false;
                 
                 const row = plannerTableBody.insertRow();
-                const vakantieCheckId = `vakantie-check-${weekKey}`;
-                const isVakantie = week.isVakantie;
                 
-                // Vakantie rijen
+                // VAKANTIE RIJ
                 if (isVakantie) {
                     row.className = 'week-holiday';
                     row.innerHTML = `
-                        <td data-label="WEEK">WEEK ${week.weekNummer}<br>(t/m zo ${week.deadline})</td>
+                        <td data-label="WEEK">WEEK ${weekNummer}<br>(t/m zo ${deadline})</td>
                         <td colspan="4" data-label="VAKANTIE">🎉 VAKANTIE - RUST UIT! 🎉</td>
                         <td data-label="VAKANTIE">
                             <div class="vakantie-check">
                                 <input type="checkbox" id="${vakantieCheckId}" checked onchange="toggleVakantieWeek('${weekKey}', this.checked)">
+                                <label for="${vakantieCheckId}">Vakantie</label>
                             </div>
                         </td>
                     `;
@@ -846,52 +696,71 @@
                     continue;
                 }
                 
-                // Bepaal status voor styling
+                // NORMALE WEEK RIJ
+                totalWeeks++;
+                
                 const isWeekCompleted = week.taken.length > 0 && week.taken.every(t => t.afgerond);
+                if (isWeekCompleted) completedWeeks++;
+
                 row.className = isWeekCompleted ? 'week-completed' : 'week-pending';
 
                 // WEEK AND DEADLINE
-                row.innerHTML += `<td data-label="WEEK">WEEK ${week.weekNummer}<br>(t/m zo ${week.deadline})</td>`;
+                row.innerHTML += `<td data-label="WEEK">WEEK ${weekNummer}<br>(t/m zo ${deadline})</td>`;
                 
                 // SUBJECTS
                 const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
                 row.innerHTML += `<td data-label="VAK">${alleVakkenInWeek}</td>`;
                 
-                // HOMEWORK (Editable text area)
+                // HOMEWORK (Editable text area + Algemene taken)
                 let thuisTaakHTML = week.taken.map(taak => {
-                    const taakContent = taak.taakTekst;
+                    if (taak.type === 'algemeen') {
+                        return `
+                            <div style="margin-bottom: 10px; border-left: 2px solid ${taak.afgerond ? '#27ae60' : '#ff8c00'}; padding-left: 5px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <strong>${taak.vak}:</strong>
+                                    <button onclick="deleteAlgemeneTaak('${taak.id}')" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 0.8em; padding: 0;">&times; Verwijder</button>
+                                </div>
+                                <span>${taak.taakTekst}</span>
+                            </div>
+                        `;
+                    }
                     
                     if (taak.isToetsWeek) {
                          return `<div style="margin-bottom: 10px; border-left: 2px solid #c0392b; padding-left: 5px;">
-                                <span style="font-weight: bold; color: #c0392b;">Laatste herhaling voor ${taak.vak}!</span>
+                                <span style="font-weight: bold; color: #c0392b;">Laatste herhaling/Toetsweek voor ${taak.vak}!</span>
                             </div>`;
                     }
                     
+                    // Planning taak (bewerkbaar)
                     return `
                         <div style="margin-bottom: 10px; border-left: 2px solid ${taak.afgerond ? '#27ae60' : '#ff8c00'}; padding-left: 5px;">
                             <strong>${taak.vak}:</strong>
                             <textarea 
-                                onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
+                                onblur="updateWeeklyTaak('${taak.id}', '${taak.weekKey}', this.value)"
                                 placeholder="Welke paragrafen/oefeningen deze week?"
-                            >${taakContent || ''}</textarea>
+                            >${taak.taakTekst || ''}</textarea>
                         </div>
                     `;
                 }).join('');
                 row.innerHTML += `<td data-label="THUIS DOEN">${thuisTaakHTML}</td>`;
                 
                 // CONTROL MOMENT
-                const controleMomenten = week.taken.map(t => t.controle).filter(t => t !== 'N.v.t.').join('<br>');
+                const controleMomenten = [...new Set(week.taken.map(t => t.controle).filter(t => t !== 'N.v.t.'))].join('<br>');
                 row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleMomenten || 'N.v.t.'}</td>`;
                 
-                // STATUS (Checkable per week)
-                const taak = week.taken[0]; 
-                const taakId = `check-${weekKey}-${taak.docId}`;
+                // STATUS (Checkable per week - Gebruikt de status van de EERSTE taak om de week af te vinken)
+                const taak = week.taken.find(t => t.type === 'planning') || week.taken[0]; 
+                const taakId = `check-${weekKey}-${taak.id}`;
                 
+                const completionHandler = taak.type === 'planning' ? 
+                    `toggleWeeklyCompletion('${taak.id}', '${taak.weekKey}', this.checked)` : 
+                    `toggleAlgemeneTaakCompletion('${taak.id}', this.checked)`;
+
                 row.innerHTML += `
                     <td data-label="STATUS">
                         <div class="taak-item ${isWeekCompleted ? 'completed' : ''}">
                             <input type="checkbox" id="${taakId}" 
-                                   onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked)"
+                                   onchange="${completionHandler}"
                                    ${isWeekCompleted ? 'checked' : ''}>
                             <label for="${taakId}">${isWeekCompleted ? 'Afgerond' : 'Open'}</label>
                         </div>
@@ -903,11 +772,39 @@
                     <td data-label="VAKANTIE">
                         <div class="vakantie-check">
                             <input type="checkbox" id="${vakantieCheckId}" onchange="toggleVakantieWeek('${weekKey}', this.checked)" ${isVakantie ? 'checked' : ''}>
+                            <label for="${vakantieCheckId}">Vakantie</label>
                         </div>
                     </td>
                 `;
                  plannerTableBody.appendChild(row);
             }
+            
+            // STATISTIEKEN UPDATEN
+            const statsContainer = document.getElementById('statistieken-container');
+            if (totalWeeks === 0) {
+                 statsContainer.innerHTML = '<p style="font-style: italic; color: #777;">Geen geplande studieweken gevonden.</p>';
+                 return;
+            }
+            
+            const progress = totalWeeks > 0 ? Math.round((completedWeeks / totalWeeks) * 100) : 0;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card stat-item-completed">
+                    <span>Afgeronde Weken</span>
+                    <span class="stat-number">${completedWeeks}</span>
+                </div>
+                <div class="stat-card stat-item-pending">
+                    <span>Openstaande Weken</span>
+                    <span class="stat-number">${totalWeeks - completedWeeks}</span>
+                </div>
+                <div class="card" style="margin-top: 15px;">
+                    <h3>Huidige Progressie</h3>
+                    <div style="text-align: center; font-size: 2em; font-weight: 700; color: ${progress >= 75 ? '#27ae60' : '#ff8c00'};">
+                        ${progress}%
+                    </div>
+                    <progress value="${progress}" max="100" style="width: 100%; height: 10px; accent-color: #ff8c00;"></progress>
+                </div>
+            `;
         }
         
         /**
@@ -919,6 +816,26 @@
             var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
             var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
             return weekNo;
+        }
+
+        function getYearWeekKey(d) {
+             const weekNummer = getWeekNumber(d);
+             const year = d.getFullYear();
+             return `${year}-${weekNummer}`;
+        }
+        
+        function weekEndDeadline(d) {
+            const date = new Date(d.getTime());
+            date.setDate(date.getDate() + 6);
+            return date;
+        }
+        
+        function parseYearWeekKey(weekKey) {
+            const [year, weekNum] = weekKey.split('-').map(Number);
+            const date = new Date(year, 0, 1);
+            date.setDate(date.getDate() + (weekNum - 1) * 7);
+            date.setDate(date.getDate() - (date.getDay() || 7) + 1); // Ga naar maandag van de week
+            return date;
         }
         // =================================================================
     </script>
