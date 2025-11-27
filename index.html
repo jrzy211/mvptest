@@ -42,51 +42,55 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            background-color: #ffffff; /* Wit als basis voor jouw ontwerp */
+            /* HIER KUN JE JOUW AFBEELDING PLAATSEN */
+            background-image: url('jouw_afbeelding.png'); /* Vervang dit door je eigen URL/bestandsnaam */
+            background-size: cover;
+            background-position: center;
+            background-color: #ffffff; 
             padding-top: 100px;
         }
 
         .login-card {
-            max-width: 400px;
-            padding: 40px;
+            max-width: 350px; /* Iets kleiner gemaakt */
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            background-color: white;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.95); /* Semi-transparante achtergrond */
         }
 
         .login-card h1 {
             color: #1e8449;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
             border-bottom: none;
         }
         
-        /* Google Login Knop */
+        /* Google Login Knop Styling (Aangepast) */
         #google-login-button {
-            background-color: #4285F4; /* Google Blue */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
+            background-color: white; 
+            color: #444; 
+            padding: 8px 20px; /* Knop kleiner gemaakt */
+            border: 1px solid #ccc;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
+            font-size: 1em;
+            font-weight: 500;
             transition: background-color 0.3s;
             display: flex;
             align-items: center;
-            margin: 0 auto;
+            margin: 20px auto 0 auto;
+            box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
         }
 
         #google-login-button:hover {
-            background-color: #357ae8;
+            background-color: #f7f7f7;
         }
 
+        /* G-logo aanpassing */
         .google-icon {
-            width: 20px;
+            width: 20px; 
             height: 20px;
             margin-right: 10px;
-            background-color: white;
-            padding: 5px;
-            border-radius: 2px;
         }
 
         /* Planner Pagina Styling */
@@ -120,7 +124,8 @@
             transition: background-color 0.3s;
         }
 
-        /* Overige Planner Elementen */
+        /* ... [REST VAN DE PLANNER CSS IS HETZELFDE] ... */
+
         .studie-tabel {
             width: 100%;
             border-collapse: collapse;
@@ -129,7 +134,6 @@
             margin-bottom: 30px;
         }
         
-        /* De rest van de tabel CSS... */
         .studie-tabel th, .studie-tabel td {
             border: 1px solid #ddd;
             padding: 12px;
@@ -183,7 +187,6 @@
             padding-left: 10px;
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             .studie-tabel, .studie-tabel tbody, .studie-tabel tr, .studie-tabel td {
                 display: block;
@@ -217,14 +220,15 @@
 
     <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) -->
     <div id="login-page" style="display: none;">
-        <!-- Dit is de plek voor JOUW afbeelding en ontwerp -->
+        <!-- Plaats hier de afbeelding jouw_afbeelding.png in je GitHub repository op de root niveau -->
         <div class="login-card">
             <h1>Welkom bij Study-Start</h1>
             <p>Jouw persoonlijke studieplanner, agenda en progressietracker in één. Log in om je studie-overzicht te laden.</p>
             
             <!-- De Google Login Knop -->
             <button id="google-login-button" onclick="signInWithGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" alt="Google logo" class="google-icon">
+                <!-- G-logo van Google -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google G logo" class="google-icon">
                 Inloggen met Google
             </button>
 
@@ -267,7 +271,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- WEEK 48 -->
+                    <!-- WEEK 48 t/m WEEK 3 (volledige tabel) -->
                     <tr id="week-48">
                         <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
                         <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
@@ -287,7 +291,6 @@
                             Start gemaakt. Focus op NL toets (27/11).
                         </td>
                     </tr>
-                    <!-- WEEK 49 -->
                     <tr id="week-49">
                         <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
                         <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
@@ -314,7 +317,6 @@
                             NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
                         </td>
                     </tr>
-                    <!-- WEEK 50 -->
                     <tr id="week-50">
                         <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
                         <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
@@ -339,7 +341,6 @@
                             NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
                         </td>
                     </tr>
-                    <!-- WEEK 51 -->
                     <tr id="week-51">
                         <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
                         <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
@@ -363,13 +364,11 @@
                             Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
                         </td>
                     </tr>
-                    <!-- VAKANTIE -->
                     <tr class="vakantie-row" id="week-vakantie">
                         <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
                         <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
                         <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
                     </tr>
-                    <!-- WEEK 2 -->
                     <tr id="week-2">
                         <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
                         <td data-label="Vak">Wis H1<br>Wis H2</td>
@@ -394,7 +393,6 @@
                             Toetsweek!<br>In het weekend focus op Herkansing.
                         </td>
                     </tr>
-                    <!-- WEEK 3 -->
                     <tr id="week-3">
                         <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
                         <td data-label="Vak">Wis H1/2</td>
@@ -490,7 +488,8 @@
           const provider = new firebase.auth.GoogleAuthProvider();
           auth.signInWithPopup(provider).catch((error) => {
             console.error("Login Fout:", error.message);
-            // Je kunt hier eventueel een foutmelding op de pagina tonen in plaats van de console.
+            // Gebruik een zichtbare melding in de login-kaart als feedback
+            document.getElementById('login-status-splash').innerText = `Fout: Login mislukt. Is Google-inloggen geactiveerd in Firebase? (${error.code})`;
           });
         }
 
