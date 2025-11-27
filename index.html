@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studieplanner & Progressietracker (MVP)</title>
+    <title>Studieplanner & Progressietracker (study-start MVP)</title>
 
+    <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+    <!-- FullCalendar CSS & JS via CDN voor de kalender -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
@@ -28,7 +30,30 @@
             margin-bottom: 20px;
         }
 
-        /* ... [REST VAN DE CSS, zoals in de originele code] ... */
+        /* Styling voor de Login/Logout knoppen */
+        #login-button, #logout-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        #login-button {
+            background-color: #3498db; /* Blauw */
+            color: white;
+        }
+        #login-button:hover {
+            background-color: #2980b9;
+        }
+        #logout-button {
+            background-color: #e74c3c; /* Rood */
+            color: white;
+        }
+        #logout-button:hover {
+            background-color: #c0392b;
+        }
+
 
         .studie-tabel {
             width: 100%;
@@ -52,28 +77,94 @@
             text-transform: uppercase;
         }
 
-        /* ... [REST VAN DE CSS, zoals in de originele code] ... */
+        .studie-tabel tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .vakantie-row {
+            background-color: #ffeeaa !important;
+            font-weight: bold;
+            text-align: center !important;
+        }
+        .vakantie-row td {
+            color: #8b4513;
+        }
+
+        .taak-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .taak-item input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: #27ae60;
+            cursor: pointer;
+        }
 
         .taak-item.completed {
             text-decoration: line-through;
             color: #888;
         }
+
+        .status-cell {
+            font-size: 0.9em;
+            color: #444;
+            border-left: 3px solid #27ae60;
+            padding-left: 10px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .studie-tabel, .studie-tabel tbody, .studie-tabel tr, .studie-tabel td {
+                display: block;
+                width: 100%;
+            }
+            .studie-tabel thead {
+                display: none;
+            }
+            .studie-tabel td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            .studie-tabel td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #1e8449;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- LOGIN SECTIE -->
     <div style="text-align: right; margin-bottom: 20px;">
         <span id="login-status">Niet ingelogd.</span>
         <button id="login-button" onclick="signInWithGoogle()">Login met Google</button>
         <button id="logout-button" onclick="signOutUser()" style="display: none;">Uitloggen</button>
     </div>
-    <h1>Studieplanner & Progressietracker</h1>
+    <!-- EINDE LOGIN SECTIE -->
 
+    <h1>Studieplanner & Progressietracker</h1>
+    <p>Vink taken af om je progressie bij te houden. Zodra je inlogt, kunnen we deze data in de toekomst opslaan in de database.</p>
+
+    <!-- KALENDER SECTIE -->
     <div id="kalender-container" style="margin-bottom: 50px;">
         <h2>🗓️ Mijn Persoonlijke Studieplanning</h2>
         <div id='kalender'></div>
     </div>
-    <p>Vink taken af om je progressie bij te houden. De status wordt lokaal opgeslagen in je browser.</p>
+    <!-- EINDE KALENDER SECTIE -->
 
     <table class="studie-tabel">
         <thead>
@@ -86,6 +177,7 @@
             </tr>
         </thead>
         <tbody>
+            <!-- WEEK 48 -->
             <tr id="week-48">
                 <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
                 <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
@@ -105,6 +197,7 @@
                     Start gemaakt. Focus op NL toets (27/11).
                 </td>
             </tr>
+            <!-- WEEK 49 -->
             <tr id="week-49">
                 <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
                 <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
@@ -131,6 +224,7 @@
                     NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
                 </td>
             </tr>
+            <!-- WEEK 50 -->
             <tr id="week-50">
                 <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
                 <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
@@ -155,6 +249,7 @@
                     NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
                 </td>
             </tr>
+            <!-- WEEK 51 -->
             <tr id="week-51">
                 <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
                 <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
@@ -178,11 +273,13 @@
                     Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
                 </td>
             </tr>
+            <!-- VAKANTIE -->
             <tr class="vakantie-row" id="week-vakantie">
                 <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
                 <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
                 <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
             </tr>
+            <!-- WEEK 2 -->
             <tr id="week-2">
                 <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
                 <td data-label="Vak">Wis H1<br>Wis H2</td>
@@ -207,6 +304,7 @@
                     Toetsweek!<br>In het weekend focus op Herkansing.
                 </td>
             </tr>
+            <!-- WEEK 3 -->
             <tr id="week-3">
                 <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
                 <td data-label="Vak">Wis H1/2</td>
@@ -231,18 +329,21 @@
         </tbody>
     </table>
 
+    <!-- EINDE TABEL -->
+
+
     <script>
         // =================================================================
-        // 1. FIREBASE INITIALISATIE EN CONFIGURATIE
+        // 1. FIREBASE INITIALISATIE EN CONFIGURATIE (met jouw gegevens)
         // =================================================================
         const firebaseConfig = {
-          // VERVANG DIT DOOR JOUW GOUDEN CONFIGURATIE UIT FIREBASE CONSOLE!
-          apiKey: "AIzaSy...", 
-          authDomain: "jouw-project.firebaseapp.com",
-          projectId: "jouw-project-id",
-          storageBucket: "...",
-          messagingSenderId: "...",
-          appId: "...",
+          apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
+          authDomain: "study-start-c510c.firebaseapp.com",
+          projectId: "study-start-c510c",
+          storageBucket: "study-start-c510c.firebasestorage.app",
+          messagingSenderId: "960911379164",
+          appId: "1:960911379164:web:ad8648cfa2fe65f8620219",
+          measurementId: "G-Z4YN3HVQTR"
         };
 
         // Initialiseer Firebase
@@ -280,7 +381,9 @@
 
         function signInWithGoogle() {
           const provider = new firebase.auth.GoogleAuthProvider();
+          // We gebruiken signInWithPopup, wat nodig is in de meeste webbrowsers
           auth.signInWithPopup(provider).catch((error) => {
+            // Gebruikersvriendelijke foutmelding in de console, geen alert()
             console.error("Login Fout:", error.message);
           });
         }
@@ -299,36 +402,73 @@
         document.addEventListener('DOMContentLoaded', () => {
             // A. CHECKBOX LOGICA (Bestaande lokale opslag)
             const checkboxes = document.querySelectorAll('.taak-item input[type="checkbox"]');
-            
-            // Functies voor laden en opslaan van lokale taken... (code van vorige keer)
-            const loadTasks = () => { /* ... */ };
-            const setupListeners = () => { /* ... */ };
+
+            const loadTasks = () => {
+                checkboxes.forEach(checkbox => {
+                    const taakKey = checkbox.id;
+                    const isChecked = localStorage.getItem(taakKey) === 'true';
+                    checkbox.checked = isChecked;
+                    const taakItemDiv = checkbox.closest('.taak-item');
+                    if (isChecked) {
+                        taakItemDiv.classList.add('completed');
+                    } else {
+                        taakItemDiv.classList.remove('completed');
+                    }
+                });
+            };
+
+            const setupListeners = () => {
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (event) => {
+                        const taakKey = event.target.id;
+                        const isChecked = event.target.checked;
+                        localStorage.setItem(taakKey, isChecked);
+                        
+                        const taakItemDiv = event.target.closest('.taak-item');
+                        if (isChecked) {
+                            taakItemDiv.classList.add('completed');
+                        } else {
+                            taakItemDiv.classList.remove('completed');
+                        }
+                    });
+                });
+            };
 
             loadTasks();
             setupListeners();
             // EINDE CHECKBOX LOGICA
 
             
-            // B. FULLCALENDAR LOGICA
+            // B. FULLCALENDAR LOGICA (Evenementen uit de tabel)
             var kalenderEl = document.getElementById('kalender');
     
-            // Voorbeeld evenementen: Dit moeten we later dynamisch maken met Firestore!
+            // Voorbeeld evenementen direct uit de tabel
             var events = [
-                {
-                    title: 'NaSk H5: §1 en §2', start: '2025-11-27', color: '#1e8449'
-                },
-                {
-                    title: 'NaSk Toets (H5)', start: '2025-12-10', color: '#c0392b' 
-                },
-                {
-                    title: 'Herkansing Wis H1', start: '2026-01-16', color: '#c0392b' 
-                }
+                // WEEK 49
+                { title: 'Bijles NaSk: uitleg §3', start: '2025-12-04', color: '#f39c12', allDay: false },
+                { title: 'Bijles NaSk: Proeftoets', start: '2025-12-09', color: '#f39c12', allDay: false },
+                // WEEK 50
+                { title: 'NaSk Toets (H5)', start: '2025-12-10', color: '#c0392b' },
+                { title: 'Bijles Wis: §4 maken', start: '2025-12-16', color: '#f39c12', allDay: false },
+                // WEEK 51
+                { title: 'Bijles Wis: §5 maken', start: '2025-12-18', color: '#f39c12', allDay: false },
+                // VAKANTIE
+                { title: '🎄 VAKANTIE (RUST) 🎄', start: '2025-12-19', end: '2026-01-05', display: 'background', color: '#ffeeaa' },
+                // WEEK 2
+                { title: 'Bijles Bio: Herhaling', start: '2026-01-05', color: '#f39c12', allDay: false },
+                { title: 'Bijles Wis: Herhaling', start: '2026-01-06', color: '#f39c12', allDay: false },
+                { title: 'Toets Wiskunde', start: '2026-01-08', color: '#c0392b' },
+                { title: 'Toets Biologie', start: '2026-01-09', color: '#c0392b' },
+                // WEEK 3
+                { title: 'Bijles Wis: §4 H2 + Vragen H1', start: '2026-01-13', color: '#f39c12', allDay: false },
+                { title: 'Bijles Wis: Generale Repetitie', start: '2026-01-15', color: '#f39c12', allDay: false },
+                { title: 'Herkansing (H1/H2)', start: '2026-01-16', color: '#c0392b' }
             ];
 
             var kalender = new FullCalendar.Calendar(kalenderEl, {
                 initialView: 'dayGridMonth',
                 locale: 'nl',
-                initialDate: '2025-11-27', // Begin bij de huidige week
+                initialDate: '2025-12-01', // Begin bij de week van de eerste taak
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
