@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
-        /* Algemene styling */
+        /* [De algemene CSS styling blijft hetzelfde] */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -277,12 +277,17 @@
                 <div class="planning-form-container">
                     <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
                     <input type="date" id="datumInput" required>
-                    <select id="moeilijkheidInput">
-                        <option value="5">Totale Studie-uren: 5 (Licht)</option>
-                        <option value="10" selected>Totale Studie-uren: 10 (Normaal)</option>
-                        <option value="15">Totale Studie-uren: 15 (Zwaar)</option>
+                    
+                    <input type="number" id="hoofdstukkenInput" placeholder="Aantal hoofdstukken (bv. 2)" value="1" min="1" required>
+                    <input type="number" id="paragrafenInput" placeholder="Paragrafen totaal (bv. 8)" value="8" min="1" required>
+
+                    <select id="controleMomentInput">
+                        <option value="Geen">Controle/Bijles: Geen</option>
+                        <option value="Bijles">Controle/Bijles: Bijles</option>
+                        <option value="Controle">Controle/Bijles: Controle</option>
                     </select>
-                    <input type="number" id="urenPerDagInput" placeholder="Uren/dag (max)" value="2" min="1" required>
+
+                    <input type="number" id="urenPerDagInput" placeholder="Uren/dag studeren (max)" value="2" min="1" required>
                     <button onclick="saveNewPlanning()">Plan Toets In</button>
                 </div>
                 <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
@@ -297,15 +302,16 @@
             </div>
             <!-- EINDE TOETSEN OVERZICHT SECTIE -->
             
-            <!-- PLANNER TABEL -->
-            <h2 style="color: #333; margin-top: 30px;">📅 Leerschema (Dynamisch & Afvinkbaar)</h2>
+            <!-- PLANNER TABEL (Wekelijks Schema) -->
+            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema</h2>
             <table class="studie-tabel">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">DATUM</th>
-                        <th style="width: 25%;">VAK & ONDERWERP</th>
-                        <th style="width: 40%;">TAAK (Uren)</th>
-                        <th style="width: 20%;">STATUS</th>
+                        <th style="width: 15%;">WEEK (Deadline)</th>
+                        <th style="width: 15%;">VAK</th>
+                        <th style="width: 40%;">THUIS DOEN (Paragrafen)</th>
+                        <th style="width: 15%;">CONTROLE MOMENT</th>
+                        <th style="width: 15%;">STATUS</th>
                     </tr>
                 </thead>
                 <tbody id="planner-table-body">
@@ -373,7 +379,6 @@
                 document.getElementById('login-status-header').innerText = `Ingelogd als: ${userName}`;
                 
                 showPage('planner-page');
-                // Start luisteren naar de database van DÉZE gebruiker
                 setupFirestoreListener(currentUserId); 
             } else {
                 currentUserId = null;
@@ -404,12 +409,9 @@
 
 
         // =================================================================
-        // 3. FIREBASE FIRESTORE LOGICA & CRUD (Create, Read, Update, Delete)
+        // 3. FIREBASE FIRESTORE LOGICA & CRUD
         // =================================================================
 
-        /**
-         * Luistert naar de database voor de planning van de huidige gebruiker (READ).
-         */
         function setupFirestoreListener(userId) {
             const plannerRef = db.collection('users').doc(userId).collection('planning');
             const loadingIndicator = document.getElementById('loading-indicator');
@@ -430,19 +432,18 @@
             });
         }
 
-        /**
-         * Slaat een nieuwe planningstaak op in Firestore (CREATE).
-         */
         function saveNewPlanning() {
             const vak = document.getElementById('vakInput').value.trim();
             const datumStr = document.getElementById('datumInput').value;
-            const moeilijkheid = parseInt(document.getElementById('moeilijkheidInput').value);
+            const hoofdstukken = parseInt(document.getElementById('hoofdstukkenInput').value);
+            const totaalParagrafen = parseInt(document.getElementById('paragrafenInput').value);
+            const controleMoment = document.getElementById('controleMomentInput').value;
             const urenPerDagMax = parseInt(document.getElementById('urenPerDagInput').value);
             const feedbackEl = document.getElementById('feedback-message');
 
-            if (!vak || !datumStr || !currentUserId || urenPerDagMax <= 0 || moeilijkheid <= 0) {
+            if (!vak || !datumStr || !currentUserId || hoofdstukken <= 0 || totaalParagrafen <= 0 || urenPerDagMax <= 0) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden correct in (Uren moeten positief zijn).";
+                feedbackEl.innerText = "Vul alle velden correct in (minimaal 1 voor hoofdstukken, paragrafen, en uren/dag).";
                 return;
             }
             
@@ -458,10 +459,12 @@
             const planningData = {
                 vak: vak,
                 toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
-                totaal_stof_uren: moeilijkheid, 
+                hoofdstukken: hoofdstukken,
+                totaal_paragrafen: totaalParagrafen, // Nieuwe basis voor planning
+                controle_moment: controleMoment,
                 max_uren_per_dag: urenPerDagMax, 
                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
-                afgeronde_uren: 0
+                afgeronde_paragrafen: 0 // Nieuwe teller
             };
 
             db.collection('users').doc(currentUserId).collection('planning').add(planningData)
@@ -470,7 +473,7 @@
                     feedbackEl.innerText = "Planning succesvol opgeslagen! Schema wordt berekend...";
                     document.getElementById('vakInput').value = '';
                     document.getElementById('datumInput').value = '';
-                    document.getElementById('urenPerDagInput').value = '2'; // Reset naar default
+                    document.getElementById('urenPerDagInput').value = '2';
                 })
                 .catch(error => {
                     feedbackEl.style.color = '#c0392b';
@@ -479,59 +482,42 @@
                 });
         }
         
-        /**
-         * Verwijdert een planningstaak uit Firestore (DELETE).
-         */
         window.deletePlanning = function(docId) {
-            if (!currentUserId || !confirm(`Weet je zeker dat je deze toets (${docId}) wilt verwijderen?`)) {
-                return;
-            }
-
+            if (!currentUserId || !confirm(`Weet je zeker dat je deze toets wilt verwijderen?`)) return;
             db.collection('users').doc(currentUserId).collection('planning').doc(docId).delete()
-                .then(() => {
-                    console.log("Document succesvol verwijderd!");
-                })
-                .catch(error => {
-                    console.error("Fout bij verwijderen document: ", error);
-                });
+                .catch(error => console.error("Fout bij verwijderen document: ", error));
         }
 
         /**
-         * Verhoogt/verlaagt de afgeronde uren in Firestore (UPDATE).
+         * Verhoogt/verlaagt de afgeronde paragrafen in Firestore (UPDATE).
          */
-        window.toggleTaakCompletion = function(docId, hours, isChecked) {
+        window.toggleTaakCompletion = function(docId, paragrafen, isChecked) {
             if (!currentUserId) return;
 
             const planningRef = db.collection('users').doc(currentUserId).collection('planning').doc(docId);
             
-            // Gebruik runTransaction om te zorgen dat de update altijd gebaseerd is op de laatste waarde
             db.runTransaction(transaction => {
                 return transaction.get(planningRef).then(docSnapshot => {
-                    if (!docSnapshot.exists) {
-                        throw "Document bestaat niet!";
-                    }
+                    if (!docSnapshot.exists) throw "Document bestaat niet!";
                     
                     const data = docSnapshot.data();
-                    let newCompletedHours = data.afgeronde_uren;
+                    let newCompletedParagrafen = data.afgeronde_paragrafen;
 
                     if (isChecked) {
-                        // Afvinken: uren toevoegen
-                        newCompletedHours += hours;
+                        newCompletedParagrafen += paragrafen;
                     } else {
-                        // Terugvinken: uren aftrekken
-                        newCompletedHours -= hours;
+                        newCompletedParagrafen -= paragrafen;
                     }
                     
-                    // Zorg ervoor dat afgeronde_uren niet onder 0 of boven totaal komt
-                    newCompletedHours = Math.max(0, newCompletedHours);
-                    newCompletedHours = Math.min(newCompletedHours, data.totaal_stof_uren); 
+                    newCompletedParagrafen = Math.max(0, newCompletedParagrafen);
+                    newCompletedParagrafen = Math.min(newCompletedParagrafen, data.totaal_paragrafen); 
 
                     transaction.update(planningRef, { 
-                        afgeronde_uren: newCompletedHours
+                        afgeronde_paragrafen: newCompletedParagrafen
                     });
                 });
             }).then(() => {
-                console.log(`Afgeronde uren succesvol bijgewerkt. Nieuwe status: ${isChecked}`);
+                console.log(`Afgeronde paragrafen succesvol bijgewerkt. Nieuwe status: ${isChecked}`);
             }).catch(error => {
                 console.error("Fout bij updaten taak status (Transaction): ", error);
             });
@@ -542,9 +528,6 @@
         // 4. UI UPDATES (Overzicht & Dynamische Planning)
         // =================================================================
 
-        /**
-         * Toont een overzicht van alle ingeplande toetsen (met verwijderknop).
-         */
         function updateOverzichtUI(planningItems) {
             const toetsenLijst = document.getElementById('toetsen-lijst');
             toetsenLijst.innerHTML = '';
@@ -556,9 +539,9 @@
 
             planningItems.forEach(item => {
                 const toetsDatumStr = item.toetsdatum.toDate().toLocaleDateString('nl-NL');
-                const urenOver = item.totaal_stof_uren - item.afgeronde_uren;
-                const statusKleur = urenOver > 0 ? '#e67e22' : '#27ae60';
-                const statusText = urenOver > 0 ? `(${urenOver} uur over)` : `(AFGEROND)`;
+                const paragrafenOver = item.totaal_paragrafen - item.afgeronde_paragrafen;
+                const statusKleur = paragrafenOver > 0 ? '#e67e22' : '#27ae60';
+                const statusText = paragrafenOver > 0 ? `(${paragrafenOver} paragrafen over)` : `(AFGEROND)`;
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'toets-item';
@@ -574,7 +557,7 @@
         }
 
         /**
-         * Berekent en toont de dynamische planning (Smart Planning).
+         * Berekent en toont de dynamische wekelijkse planning.
          */
         function updatePlannerUI(planningItems) {
             const plannerTableBody = document.getElementById('planner-table-body');
@@ -582,88 +565,164 @@
             const calendarEvents = [];
             
             if (planningItems.length === 0) {
-                plannerTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
+                plannerTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
             }
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); 
-
+            // Map om de taken per week te verzamelen
+            const weekTaken = {}; 
+            const vandaag = new Date();
+            vandaag.setHours(0, 0, 0, 0); 
+            
+            // Loop door alle ingeplande toetsen
             planningItems.forEach(item => {
+                const docId = item.id;
                 const toetsDatum = item.toetsdatum.toDate();
-                const urenTePlannen = item.totaal_stof_uren - item.afgeronde_uren;
-                const maxUrenPerDag = item.max_uren_per_dag || 2;
-                let urenOver = urenTePlannen;
+                const paragrafenTeDoen = item.totaal_paragrafen - item.afgeronde_paragrafen;
+                const dagenTotToets = Math.ceil((toetsDatum - vandaag) / (1000 * 60 * 60 * 24));
+                const wekenTotToets = Math.ceil(dagenTotToets / 7);
 
-                // 1. KALENDER TOETS EVENT
+                if (paragrafenTeDoen <= 0) {
+                    // Toets is al afgerond, voeg alleen de toets toe aan de kalender
+                    calendarEvents.push({ title: `TOETS: ${item.vak} (AFGEROND)`, start: toetsDatum.toISOString().split('T')[0], color: '#27ae60' });
+                    return;
+                }
+                
+                // Bereken hoeveel paragrafen per week nodig zijn
+                let paragrafenPerWeek = Math.ceil(paragrafenTeDoen / wekenTotToets);
+                let paragrafenOver = paragrafenTeDoen;
+                let huidigeParagraaf = item.afgeronde_paragrafen + 1;
+                
+                let weekStart = new Date(vandaag);
+                
+                // Itereren door de weken tot de toets
+                while (weekStart < toetsDatum && paragrafenOver > 0) {
+                    
+                    // Bepaal het weeknummer voor de tabelgroepering
+                    const weekNummer = getWeekNumber(weekStart);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    
+                    const maxParagrafenDezeWeek = Math.min(paragrafenPerWeek, paragrafenOver);
+                    
+                    // Maak de taakomschrijving
+                    if (maxParagrafenDezeWeek > 0) {
+                        let taakParagrafen = [];
+                        let hoofdstukkenGezien = {};
+                        
+                        // Bepaal de hoofdstukken en paragrafen
+                        const parPerHoofdstuk = item.totaal_paragrafen / item.hoofdstukken; // Gemiddelde par. per hoofdstuk
+                        
+                        for (let i = 0; i < maxParagrafenDezeWeek; i++) {
+                            const hstk = Math.ceil(huidigeParagraaf / parPerHoofdstuk);
+                            const par = huidigeParagraaf - ((hstk - 1) * parPerHoofdstuk);
+                            
+                            taakParagrafen.push(`H${hstk}: §${par.toFixed(1).replace('.0', '')}`); // Bijv. H1: §1.5
+                            huidigeParagraaf++;
+                        }
+                        
+                        // Groepeer de taakomschrijving (bijv. "H1: §1 & §2")
+                        const taakOmschrijving = taakParagrafen.join(', ');
+                        
+                        // Voeg de taak toe aan de weekTaken map
+                        if (!weekTaken[weekNummer]) {
+                            weekTaken[weekNummer] = [];
+                        }
+
+                        // Hoofdtaak
+                        weekTaken[weekNummer].push({
+                            vak: item.vak,
+                            taak: taakOmschrijving,
+                            docId: docId,
+                            paragrafen: maxParagrafenDezeWeek,
+                            type: 'THUIS DOEN'
+                        });
+
+                        // Controle moment toevoegen als het de laatste taak in de week is
+                        if (item.controle_moment !== 'Geen') {
+                            weekTaken[weekNummer].push({
+                                vak: item.vak,
+                                taak: item.controle_moment,
+                                docId: docId,
+                                type: 'CONTROLE'
+                            });
+                        }
+
+                        paragrafenOver -= maxParagrafenDezeWeek;
+                    }
+
+                    // Zet de datum op de start van de volgende week
+                    weekStart.setDate(weekStart.getDate() + 7);
+                }
+
+                // 3. KALENDER TOETS EVENT
                 calendarEvents.push({
                     title: `TOETS: ${item.vak}`,
                     start: toetsDatum.toISOString().split('T')[0],
                     color: '#c0392b' // Rood
                 });
                 
-                // 2. DYNAMISCHE PLANNING CALCULATIE (Vanaf VANDAAG)
-                let huidigeDatum = new Date(today);
-                let taakIndex = item.afgeronde_uren / (maxUrenPerDag || 2); // Bepaal startindex voor taaknaam
-
-                // Stop met plannen als de datum de toetsdatum bereikt of voorbij is
-                while (huidigeDatum < toetsDatum && urenOver > 0) {
-                    // Sla Zaterdag en Zondag over (6 = Zaterdag, 0 = Zondag)
-                    const dagVanDeWeek = huidigeDatum.getDay();
-                    if (dagVanDeWeek !== 0 && dagVanDeWeek !== 6) { 
-                        
-                        // Hoeveel uren vandaag plannen? Max uren per dag of wat er nog over is
-                        const urenVandaag = Math.min(urenOver, maxUrenPerDag);
-
-                        if (urenVandaag > 0) {
-                            const taakId = `${item.id}-${huidigeDatum.getTime()}`;
-                            taakIndex++;
-
-                            // B. TABEL RIJ MAKEN
-                            const row = plannerTableBody.insertRow();
-                            const isCompleted = false; // Afvinken gebeurt dynamisch
-
-                            // Vaste taakomschrijving, gebaseerd op het aantal uren
-                            const taakOmschrijving = `Studieblok ${taakIndex}: ${item.vak} (${urenVandaag} uur)`;
-
-                            row.innerHTML = `
-                                <td data-label="DATUM">${huidigeDatum.toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
-                                <td data-label="VAK & ONDERWERP">${item.vak}</td>
-                                <td data-label="TAAK">${taakOmschrijving}</td>
-                                <td data-label="STATUS">
-                                    <div class="taak-item">
-                                        <input type="checkbox" id="${taakId}" 
-                                               onchange="window.toggleTaakCompletion('${item.id}', ${urenVandaag}, this.checked)">
-                                        <label for="${taakId}">Open</label>
-                                    </div>
-                                </td>
-                            `;
-                            
-                            // C. KALENDER EVENT TOEVOEGEN
-                            calendarEvents.push({
-                                title: `${item.vak}: Studie (${urenVandaag}u)`,
-                                start: huidigeDatum.toISOString().split('T')[0],
-                                color: '#27ae60' // Groen
-                            });
-
-                            urenOver -= urenVandaag;
-                        }
-                    }
-                    
-                    // Ga naar de volgende dag
-                    huidigeDatum.setDate(huidigeDatum.getDate() + 1);
-                }
-                
-                // Als er nog uren over zijn, waarschuw dan
-                if (urenOver > 0) {
-                    const row = plannerTableBody.insertRow();
-                    row.innerHTML = `<td colspan="4" style="text-align: center; background-color: #fce8e6; color: #c0392b; font-weight: bold;">
-                        LET OP: Je hebt nog ${Math.ceil(urenOver)} uur over! Pas je uren/dag aan of verschuif de toets.
-                    </td>`;
-                }
-                
             });
+            
+            // Render de verzamelde taken naar de tabel
+            for (const week in weekTaken) {
+                const takenLijst = weekTaken[week];
+                
+                // Gebruik de eerste taak om de rij te beginnen
+                const eersteTaak = takenLijst[0]; 
+                
+                const row = plannerTableBody.insertRow();
+                
+                // WEEK EN VAK
+                row.innerHTML += `<td data-label="WEEK">WEEK ${week}</td>`;
+                row.innerHTML += `<td data-label="VAK">${eersteTaak.vak}</td>`;
+                
+                // THUIS DOEN (Gegroepeerd)
+                const thuisTaken = takenLijst.filter(t => t.type === 'THUIS DOEN');
+                let thuisTaakHTML = '';
+                thuisTaken.forEach((taak, index) => {
+                    const taakId = `${taak.docId}-${week}-${index}`;
+                    const isCompleted = taak.paragrafen <= 0; // Wordt dynamisch opgelost door herberekening
 
-            // Kalender opnieuw laden met nieuwe events
+                    thuisTaakHTML += `
+                        <div class="taak-item ${isCompleted ? 'completed' : ''}">
+                            <input type="checkbox" id="${taakId}" 
+                                   onchange="window.toggleTaakCompletion('${taak.docId}', ${taak.paragrafen}, this.checked)"
+                                   ${isCompleted ? 'checked' : ''}>
+                            <label for="${taakId}">${taak.taak} (${taak.paragrafen} par.)</label>
+                        </div>
+                    `;
+                    // Voeg de individuele studiedagen toe aan de kalender (vereenvoudigd tot één block per week)
+                    calendarEvents.push({
+                        title: `${taak.vak}: ${taak.taak}`,
+                        start: weekStart.toISOString().split('T')[0], // Gebruik weekStart als placeholder
+                        color: '#27ae60' 
+                    });
+                });
+                row.innerHTML += `<td data-label="THUIS DOEN">${thuisTaakHTML}</td>`;
+                
+                // CONTROLE MOMENT
+                const controleTaak = takenLijst.find(t => t.type === 'CONTROLE');
+                const controleTekst = controleTaak ? `Controle / ${controleTaak.taak}` : 'Geen gepland';
+                row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleTekst}</td>`;
+                
+                // STATUS (vereenvoudigd op basis van voortgang)
+                const totaleParagrafenVanVak = planningItems.find(p => p.vak === eersteTaak.vak).totaal_paragrafen;
+                const afgerondeParagrafenVanVak = planningItems.find(p => p.vak === eersteTaak.vak).afgeronde_paragrafen;
+                const percentage = Math.round((afgerondeParagrafenVanVak / totaleParagrafenVanVak) * 100);
+                let statusBericht = "";
+
+                if (percentage >= 100) {
+                    statusBericht = "Klaar voor de toets!";
+                } else if (paragrafenOver < totaleParagrafenVanVak * 0.5) {
+                    statusBericht = "Goed op schema! Focus op herhaling.";
+                } else {
+                    statusBericht = `Voortgang: ${percentage}% afgerond.`;
+                }
+
+                row.innerHTML += `<td data-label="STATUS">${statusBericht}</td>`;
+            }
+
+            // Kalender opnieuw laden
             if (kalenderInstance) {
                 kalenderInstance.removeAllEvents();
                 kalenderInstance.addEventSource(calendarEvents);
@@ -671,7 +730,17 @@
                 initializeFullCalendar(calendarEvents);
             }
         }
-
+        
+        /**
+         * Hulpfunctie om het ISO weeknummer te krijgen.
+         */
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
 
         // =================================================================
         // 5. KALENDER INITIALISATIE
