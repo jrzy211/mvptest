@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start - Slimme, Gepersonaliseerde Planner</title>
 
-    <!-- Firebase SDK's laden (Compatibele versies) -->
+    <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <!-- FullCalendar CSS & JS via CDN voor de kalender -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css">
-    <script src="https://cdn.jsdelivrc.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
-        /* [De algemene CSS styling blijft hetzelfde] */
+        /* Algemene styling */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -40,6 +40,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            /* PAS DIT AAN MET JOUW PNG! */
             background-image: url('JOUW_AFBEELDING_NAAM.png'); 
             background-size: cover;
             background-position: center;
@@ -140,7 +141,7 @@
             font-size: 1em;
             width: 100%;
             box-sizing: border-box;
-            margin-right: 0 !important; /* Overrule default margin */
+            margin-right: 0 !important;
         }
         
         .planning-form-container button {
@@ -148,7 +149,7 @@
             color: white;
             border: none;
             cursor: pointer;
-            grid-column: 1 / -1; /* Knop over de volle breedte */
+            grid-column: 1 / -1; 
         }
 
         /* Overzicht Toetsen Styling */
@@ -222,6 +223,13 @@
         .taak-item input[type="checkbox"] {
             margin-right: 8px;
             transform: scale(1.2);
+            accent-color: #27ae60;
+            cursor: pointer;
+        }
+        
+        .taak-item.completed label {
+            text-decoration: line-through;
+            color: #888;
         }
 
         /* Responsive Aanpassingen */
@@ -270,9 +278,9 @@
                     <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
                     <input type="date" id="datumInput" required>
                     <select id="moeilijkheidInput">
-                        <option value="5">Leerstof: Licht (5 uur)</option>
-                        <option value="10" selected>Leerstof: Normaal (10 uur)</option>
-                        <option value="15">Leerstof: Zwaar (15 uur)</option>
+                        <option value="5">Totale Studie-uren: 5 (Licht)</option>
+                        <option value="10" selected>Totale Studie-uren: 10 (Normaal)</option>
+                        <option value="15">Totale Studie-uren: 15 (Zwaar)</option>
                     </select>
                     <input type="number" id="urenPerDagInput" placeholder="Uren/dag (max)" value="2" min="1" required>
                     <button onclick="saveNewPlanning()">Plan Toets In</button>
@@ -280,9 +288,9 @@
                 <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
             </div>
             
-            <!-- TOETSEN OVERZICHT SECTIE (Nieuw) -->
+            <!-- TOETSEN OVERZICHT SECTIE -->
             <div id="toetsen-overzicht">
-                <h2>📚 Alle Toetsen</h2>
+                <h2>📚 Alle Inegeplande Toetsen</h2>
                 <div id="toetsen-lijst">
                     <!-- Dynamische lijst met toetsen komt hier -->
                 </div>
@@ -371,7 +379,7 @@
                 currentUserId = null;
                 loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
                 showPage('login-page');
-                // Verberg de planner als er niemand is ingelogd
+                
                 if(kalenderInstance) kalenderInstance.destroy();
                 document.getElementById('planner-table-body').innerHTML = '';
             }
@@ -407,14 +415,15 @@
             const loadingIndicator = document.getElementById('loading-indicator');
             
             plannerRef.orderBy('toetsdatum', 'asc').onSnapshot(snapshot => {
-                loadingIndicator.style.display = 'none';
+                loadingIndicator.style.display = 'none'; 
                 const planningItems = [];
                 snapshot.forEach(doc => {
                     planningItems.push({ id: doc.id, ...doc.data() });
                 });
                 
-                updateOverzichtUI(planningItems); // Toon overzicht
-                updatePlannerUI(planningItems); // Genereer het schema
+                updateOverzichtUI(planningItems); 
+                updatePlannerUI(planningItems); 
+
             }, error => {
                 console.error("Fout bij het laden van Firestore data: ", error);
                 loadingIndicator.innerText = "Fout bij laden. Controleer console.";
@@ -431,9 +440,9 @@
             const urenPerDagMax = parseInt(document.getElementById('urenPerDagInput').value);
             const feedbackEl = document.getElementById('feedback-message');
 
-            if (!vak || !datumStr || !currentUserId || urenPerDagMax <= 0) {
+            if (!vak || !datumStr || !currentUserId || urenPerDagMax <= 0 || moeilijkheid <= 0) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden correct in (Max Uren/dag moet minimaal 1 zijn).";
+                feedbackEl.innerText = "Vul alle velden correct in (Uren moeten positief zijn).";
                 return;
             }
             
@@ -450,7 +459,7 @@
                 vak: vak,
                 toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
                 totaal_stof_uren: moeilijkheid, 
-                max_uren_per_dag: urenPerDagMax, // Nieuw veld
+                max_uren_per_dag: urenPerDagMax, 
                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
                 afgeronde_uren: 0
             };
@@ -461,6 +470,7 @@
                     feedbackEl.innerText = "Planning succesvol opgeslagen! Schema wordt berekend...";
                     document.getElementById('vakInput').value = '';
                     document.getElementById('datumInput').value = '';
+                    document.getElementById('urenPerDagInput').value = '2'; // Reset naar default
                 })
                 .catch(error => {
                     feedbackEl.style.color = '#c0392b';
@@ -487,36 +497,43 @@
         }
 
         /**
-         * Verhoogt de afgeronde uren in Firestore (UPDATE).
+         * Verhoogt/verlaagt de afgeronde uren in Firestore (UPDATE).
          */
-        window.toggleTaakCompletion = function(docId, hours) {
+        window.toggleTaakCompletion = function(docId, hours, isChecked) {
             if (!currentUserId) return;
 
             const planningRef = db.collection('users').doc(currentUserId).collection('planning').doc(docId);
             
-            // Haal de huidige data op om te controleren of we mogen updaten
-            planningRef.get().then(docSnapshot => {
-                if (docSnapshot.exists) {
+            // Gebruik runTransaction om te zorgen dat de update altijd gebaseerd is op de laatste waarde
+            db.runTransaction(transaction => {
+                return transaction.get(planningRef).then(docSnapshot => {
+                    if (!docSnapshot.exists) {
+                        throw "Document bestaat niet!";
+                    }
+                    
                     const data = docSnapshot.data();
                     let newCompletedHours = data.afgeronde_uren;
 
-                    // Omdat we een taak afvinken, voegen we de uren toe
-                    // Dit is een simpele toggle, in een echte app moet je kijken of de taak al is afgevinkt.
-                    // Voor nu gaan we ervan uit dat de vink-actie betekent: uren toevoegen.
+                    if (isChecked) {
+                        // Afvinken: uren toevoegen
+                        newCompletedHours += hours;
+                    } else {
+                        // Terugvinken: uren aftrekken
+                        newCompletedHours -= hours;
+                    }
                     
-                    // We checken de vink-status door de uren in de DB te controleren (vereenvoudigd)
-                    // Nu doen we een simpele add: de planner wordt opnieuw berekend.
-                    
-                    // Om het simpeler te houden voor de MVP: we verhogen de afgeronde uren in de DB
-                    // De planner zal de overgebleven uren dan automatisch opnieuw plannen.
-                    newCompletedHours += hours; 
+                    // Zorg ervoor dat afgeronde_uren niet onder 0 of boven totaal komt
+                    newCompletedHours = Math.max(0, newCompletedHours);
+                    newCompletedHours = Math.min(newCompletedHours, data.totaal_stof_uren); 
 
-                    return planningRef.update({ 
-                        afgeronde_uren: Math.min(newCompletedHours, data.totaal_stof_uren) // Maximeren op totaal uren
+                    transaction.update(planningRef, { 
+                        afgeronde_uren: newCompletedHours
                     });
-                }
+                });
+            }).then(() => {
+                console.log(`Afgeronde uren succesvol bijgewerkt. Nieuwe status: ${isChecked}`);
             }).catch(error => {
-                console.error("Fout bij updaten taak status: ", error);
+                console.error("Fout bij updaten taak status (Transaction): ", error);
             });
         }
         // =================================================================
@@ -569,12 +586,12 @@
             }
 
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Reset tijd naar middernacht
+            today.setHours(0, 0, 0, 0); 
 
             planningItems.forEach(item => {
                 const toetsDatum = item.toetsdatum.toDate();
                 const urenTePlannen = item.totaal_stof_uren - item.afgeronde_uren;
-                const maxUrenPerDag = item.max_uren_per_dag || 2; // Val op 2 als niet geset
+                const maxUrenPerDag = item.max_uren_per_dag || 2;
                 let urenOver = urenTePlannen;
 
                 // 1. KALENDER TOETS EVENT
@@ -586,37 +603,42 @@
                 
                 // 2. DYNAMISCHE PLANNING CALCULATIE (Vanaf VANDAAG)
                 let huidigeDatum = new Date(today);
-                let isPlanned = false;
-                
+                let taakIndex = item.afgeronde_uren / (maxUrenPerDag || 2); // Bepaal startindex voor taaknaam
+
                 // Stop met plannen als de datum de toetsdatum bereikt of voorbij is
                 while (huidigeDatum < toetsDatum && urenOver > 0) {
-                    // Sla Zondag over (0 = Zondag)
-                    if (huidigeDatum.getDay() !== 0) {
-                        // Bepaal de studie-uren voor deze dag (max urenPerDag of wat er nog over is)
+                    // Sla Zaterdag en Zondag over (6 = Zaterdag, 0 = Zondag)
+                    const dagVanDeWeek = huidigeDatum.getDay();
+                    if (dagVanDeWeek !== 0 && dagVanDeWeek !== 6) { 
+                        
+                        // Hoeveel uren vandaag plannen? Max uren per dag of wat er nog over is
                         const urenVandaag = Math.min(urenOver, maxUrenPerDag);
 
                         if (urenVandaag > 0) {
-                            const taakId = `${item.id}-${huidigeDatum.getTime()}`; // Unieke ID voor de taak
-                            
-                            // A. TABEL RIJ MAKEN
+                            const taakId = `${item.id}-${huidigeDatum.getTime()}`;
+                            taakIndex++;
+
+                            // B. TABEL RIJ MAKEN
                             const row = plannerTableBody.insertRow();
-                            const isCompleted = false; // Altijd 'Open' bij planning (afvinken gebeurt later)
+                            const isCompleted = false; // Afvinken gebeurt dynamisch
+
+                            // Vaste taakomschrijving, gebaseerd op het aantal uren
+                            const taakOmschrijving = `Studieblok ${taakIndex}: ${item.vak} (${urenVandaag} uur)`;
 
                             row.innerHTML = `
                                 <td data-label="DATUM">${huidigeDatum.toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
                                 <td data-label="VAK & ONDERWERP">${item.vak}</td>
-                                <td data-label="TAAK">${'Studieblok: ' + urenVandaag + ' uur'}</td>
+                                <td data-label="TAAK">${taakOmschrijving}</td>
                                 <td data-label="STATUS">
                                     <div class="taak-item">
                                         <input type="checkbox" id="${taakId}" 
-                                               onchange="toggleTaakCompletion('${item.id}', ${urenVandaag})" 
-                                               ${isCompleted ? 'checked' : ''}>
-                                        <label for="${taakId}">${isCompleted ? 'Afgerond' : 'Open'}</label>
+                                               onchange="window.toggleTaakCompletion('${item.id}', ${urenVandaag}, this.checked)">
+                                        <label for="${taakId}">Open</label>
                                     </div>
                                 </td>
                             `;
                             
-                            // B. KALENDER EVENT TOEVOEGEN
+                            // C. KALENDER EVENT TOEVOEGEN
                             calendarEvents.push({
                                 title: `${item.vak}: Studie (${urenVandaag}u)`,
                                 start: huidigeDatum.toISOString().split('T')[0],
@@ -624,7 +646,6 @@
                             });
 
                             urenOver -= urenVandaag;
-                            isPlanned = true;
                         }
                     }
                     
@@ -636,7 +657,7 @@
                 if (urenOver > 0) {
                     const row = plannerTableBody.insertRow();
                     row.innerHTML = `<td colspan="4" style="text-align: center; background-color: #fce8e6; color: #c0392b; font-weight: bold;">
-                        LET OP: Je hebt nog ${urenOver} uur over! Verhoog je uren per dag of verschuif de toets.
+                        LET OP: Je hebt nog ${Math.ceil(urenOver)} uur over! Pas je uren/dag aan of verschuif de toets.
                     </td>`;
                 }
                 
@@ -650,6 +671,7 @@
                 initializeFullCalendar(calendarEvents);
             }
         }
+
 
         // =================================================================
         // 5. KALENDER INITIALISATIE
