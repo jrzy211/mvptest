@@ -300,27 +300,13 @@
             word-break: break-all;
             margin-top: 10px;
         }
-        .tutor-view-input {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .tutor-view-input input {
-            flex-grow: 1;
-            margin-bottom: 0;
-        }
-        .tutor-view-input button {
-            width: auto;
-            min-width: 100px;
-            font-size: 1em;
-            padding: 8px 15px;
-        }
+        
         /* FIX: Button styling for sharing view (Knoppen onderaan) */
         .share-button-group {
             display: flex;
             flex-direction: column; /* Knoppen onder elkaar */
             gap: 10px;
-            margin-top: 15px; /* Added margin to put buttons below input/status */
+            margin-top: 15px;
         }
         .share-button-group button {
             width: 100%;
@@ -328,6 +314,15 @@
             font-weight: bold;
             font-size: 1em;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .share-email-input-group {
+             display: flex;
+             gap: 5px;
+             margin-bottom: 10px;
+        }
+        .share-email-input-group input {
+            flex-grow: 1;
         }
 
     </style>
@@ -401,11 +396,19 @@
 
                 <!-- DEEL FUNCTIE VOOR EIGENAAR (STUDENT) -->
                 <div class="card" id="sharing-owner-card">
-                    <h3>🤝 Schema Delen</h3>
-                    <p style="font-size: 0.9em; margin-bottom: 5px;">Kopieer deze link om je schema te delen:</p>
-                    <div class="sharing-code-box" id="my-sharing-code">Laden...</div>
-                    <button onclick="copySharingCode()" style="background-color: #3498db; margin-top: 10px;">Kopieer Deel-link</button>
-                    <p id="copy-feedback" style="font-size: 0.8em; color: #27ae60; margin-top: 5px; display: none;">Gekopieerd!</p>
+                    <h3>🤝 Deel Toegang via E-mail</h3>
+                    <p style="font-size: 0.9em; margin-bottom: 5px;">Voer het e-mailadres van de docent/ouder in:</p>
+                    
+                    <div class="share-email-input-group">
+                        <input type="email" id="docentEmailInput" placeholder="docent@voorbeeld.nl">
+                        <button onclick="addAccessByEmail()" style="background-color: #2ecc71; width: auto; font-size: 0.9em; padding: 5px 10px;">Toevoegen</button>
+                    </div>
+
+                    <p style="font-size: 0.8em; font-weight: bold; margin-bottom: 5px;">Huidige Gedeelde Gebruikers:</p>
+                    <ul id="shared-users-list" style="list-style: disc; margin: 0; padding-left: 20px; font-size: 0.9em;">
+                        <!-- Lijst van gedeelde e-mails komt hier -->
+                    </ul>
+                    <p id="share-feedback" style="font-size: 0.8em; margin-top: 10px;"></p>
                 </div>
                 
                 <!-- NIEUWE TOETS INVOER SECTIE -->
@@ -458,7 +461,7 @@
                 <div class="card">
                     <h3>📊 Studie Statistieken</h3>
                     <div id="statistieken-container">
-                        <p style="font-style: italic; color: #777;">Laad eerst de planning om statistieken te zien.</p>
+                        <p style="font-style: italic; color: #777;">Laden...</p>
                     </div>
                 </div>
                 <!-- EINDE STATISTIEKEN PANEEL -->
@@ -491,7 +494,9 @@
         
         // Globale variabelen voor de staat
         let currentUserId = null; // UID van de ingelogde gebruiker
-        let activeUserId = null;  // UID van de gebruiker wiens data getoond wordt (deze kan verschillen)
+        let currentUserEmail = null; // E-mail van de ingelogde gebruiker
+        let activeUserId = null;  // UID van de gebruiker wiens data getoond wordt (kan gedeeld zijn)
+        let sharedOwnerId = null; // UID van de student wiens schema we bekijken
         let weeklyHolidayStatuses = {}; 
         
         // =================================================================
@@ -513,39 +518,27 @@
 
             if (user) {
                 currentUserId = user.uid; 
+                currentUserEmail = user.email.toLowerCase(); // Altijd lowercase e-mail gebruiken
                 
-                // Controleer of er een gedeelde ID is ingesteld (via URL of localStorage)
-                const urlParams = new URLSearchParams(window.location.search);
-                const urlSharedId = urlParams.get('share');
-                const storedSharedId = localStorage.getItem('sharedOwnerId');
-                
-                // FIX: Activeer UID in deze volgorde: URL > Storage > Eigen UID
-                activeUserId = urlSharedId || storedSharedId || currentUserId;
-                
-                // Als de UID uit de URL komt, sla deze op in Storage voor persistentie
-                if (urlSharedId) {
-                    localStorage.setItem('sharedOwnerId', urlSharedId);
-                } else if (!storedSharedId) {
-                    // Zorg ervoor dat de opslag schoon is als we naar de eigen UID gaan
-                    localStorage.removeItem('sharedOwnerId');
-                }
-                
-                const userName = user.displayName ? user.displayName.split(' ')[0] : (user.email || 'Gebruiker');
-                document.getElementById('welkom-boodschap').innerText = `Welkom terug, ${userName}! Dit is de studieomgeving.`;
-                document.getElementById('login-status-header').innerText = `Ingelogd als: ${userName}`;
-                
-                // Toon de eigen deel-URL
-                document.getElementById('my-sharing-code').innerText = `${window.location.origin}${window.location.pathname}?share=${currentUserId}`;
+                document.getElementById('welkom-boodschap').innerText = `Welkom terug, ${user.displayName.split(' ')[0]}!`;
+                document.getElementById('login-status-header').innerText = `Ingelogd als: ${user.email}`;
                 
                 showPage('planner-page');
                 
-                // FIX: Laad de planner op basis van de actieve ID
-                setupFirestoreListeners(activeUserId); 
-                updateViewingStatus();
+                // 1. Controleer of de ingelogde gebruiker een gedeeld schema kan bekijken
+                checkSharedAccess(currentUserEmail).then(studentId => {
+                    sharedOwnerId = studentId || currentUserId;
+                    activeUserId = sharedOwnerId;
+
+                    // 2. Start de listeners op de juiste (gedeelde of eigen) ID
+                    setupFirestoreListeners(activeUserId); 
+                    updateViewingStatus();
+                });
+
             } else {
                 currentUserId = null;
                 activeUserId = null;
-                localStorage.removeItem('sharedOwnerId');
+                sharedOwnerId = null;
                 loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
                 showPage('login-page');
                 
@@ -553,7 +546,6 @@
             }
         }
         
-        // Roep handleUser direct aan als de pagina laadt
         auth.onAuthStateChanged(handleUser);
 
         function signInWithGoogle() {
@@ -565,71 +557,117 @@
         }
 
         function signOutUser() {
-          localStorage.removeItem('sharedOwnerId'); 
-          // Redirect om de URL parameter te verwijderen en de login state te resetten
-          window.location.href = window.location.origin + window.location.pathname;
-          auth.signOut().catch((error) => {
-             console.error("Logout Error:", error.message);
-          });
+            // Dit is de enige plek om uit te loggen en de staat te resetten
+            auth.signOut().then(() => {
+                window.location.href = window.location.origin + window.location.pathname;
+            }).catch((error) => {
+                 console.error("Logout Error:", error.message);
+            });
         }
         
         // =================================================================
-        // 3. DEEL FUNCTIES (Tutor/Student)
+        // 3. DEEL FUNCTIES (E-MAIL CONTROLE)
         // =================================================================
+        
+        /**
+         * Controleert Firestore om te zien of het e-mailadres van de docent toegang heeft tot een schema.
+         * @returns {Promise<string|null>} De UID van de student of null.
+         */
+        function checkSharedAccess(email) {
+            if (!email) return Promise.resolve(null);
+
+            // Zoekt in alle /users/{userId}/toegang/{email} documenten
+            // De UID van de student is de {userId} in het pad.
+            // Omdat de security rules toestaan dat we deze paden lezen, kunnen we de student-ID direct ophalen.
+            const accessCheckRef = db.collectionGroup('toegang').where(firebase.firestore.FieldPath.documentId(), '==', email);
+
+            return accessCheckRef.get().then(snapshot => {
+                if (!snapshot.empty) {
+                    // Als er een match is, is de docent toegelaten. Haal de UID op uit het pad.
+                    const doc = snapshot.docs[0];
+                    const studentId = doc.ref.parent.parent.id; // Pad: /users/{studentId}/toegang
+                    return studentId;
+                }
+                return null;
+            }).catch(error => {
+                console.error("Fout bij controleren gedeelde toegang:", error);
+                return null; // Bij fout val terug op eigen schema
+            });
+        }
         
         function updateViewingStatus() {
             const statusEl = document.getElementById('viewing-status');
-            const planningCard = document.getElementById('new-planning-card');
-            const algemeneTaakCard = document.getElementById('new-algemene-taak-card');
+            const sharingCard = document.getElementById('sharing-owner-card');
             
             if (!activeUserId) return;
 
             if (activeUserId === currentUserId) {
                 // EIGEN SCHEMA
                 statusEl.innerHTML = `<span style="color: #27ae60;">Je bekijkt je eigen schema.</span>`;
-                planningCard.style.display = 'block';
-                algemeneTaakCard.style.display = 'block';
+                sharingCard.style.display = 'block';
             } else {
-                // FIX: GEDEELD SCHEMA VIA URL
-                statusEl.innerHTML = `<span style="color: #c0392b; font-weight: bold;">Je bekijkt een GEDEELD schema (UID: ${activeUserId.substring(0, 8)}...). Gebruik "Stop met Bekijken" om terug te gaan.</span>`;
-                // Toestaan dat gedeelde gebruikers ook kunnen bewerken
-                planningCard.style.display = 'block'; 
-                algemeneTaakCard.style.display = 'block'; 
+                // GEDEELD SCHEMA
+                statusEl.innerHTML = `<span style="color: #c0392b; font-weight: bold;">Je bekijkt een GEDEELD schema van een leerling.</span>`;
+                sharingCard.style.display = 'none'; // Docent kan niet zijn eigen toegang beheren
             }
         }
         
-        function setSharedOwner() {
-            // Dit is de handmatige invoer, maar we moedigen de link aan.
-            const sharedId = document.getElementById('sharedOwnerIdInput').value.trim();
-            if (sharedId && sharedId !== currentUserId) {
-                localStorage.setItem('sharedOwnerId', sharedId);
-                // Navigeer naar de URL om de staat correct te initialiseren
-                window.location.href = `${window.location.origin}${window.location.pathname}?share=${sharedId}`;
-            } else if (sharedId === currentUserId) {
-                alert("Je kunt je eigen ID niet invoeren.");
-            } else {
-                 alert("Voer een geldige deelcode in.");
-            }
-        }
-        
-        function clearSharedOwner() {
-            localStorage.removeItem('sharedOwnerId');
-            // Navigeer terug naar de basis URL om alle gedeelde statussen te verwijderen
-            window.location.href = window.location.origin + window.location.pathname;
+        /* --- TOEGANG BEHEER FUNCTIES (Alleen voor de eigenaar) --- */
+
+        window.renderSharedUsers = function(sharedEmails) {
+             const listEl = document.getElementById('shared-users-list');
+             listEl.innerHTML = '';
+             if (sharedEmails.length === 0) {
+                 listEl.innerHTML = '<li style="color: #777;">Nog geen e-mails toegevoegd.</li>';
+                 return;
+             }
+             sharedEmails.forEach(email => {
+                 const listItem = document.createElement('li');
+                 listItem.style.display = 'flex';
+                 listItem.style.justifyContent = 'space-between';
+                 listItem.style.alignItems = 'center';
+                 listItem.style.marginBottom = '5px';
+                 listItem.innerHTML = `
+                    <span>${email}</span>
+                    <button onclick="removeAccessByEmail('${email}')" style="background-color: #e74c3c; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em;">Verwijder</button>
+                 `;
+                 listEl.appendChild(listItem);
+             });
         }
 
-        function copySharingCode() {
-            const code = document.getElementById('my-sharing-code').innerText;
-            // Dit werkt voor GitHub Pages
-            document.execCommand('copy'); 
-            navigator.clipboard.writeText(code).then(() => {
-                const feedbackEl = document.getElementById('copy-feedback');
-                feedbackEl.style.display = 'block';
-                setTimeout(() => feedbackEl.style.display = 'none', 2000);
-            }).catch(err => {
-                console.error('Kon code niet kopiëren: ', err);
-                alert('Kon code niet kopiëren. Kopieer handmatig: ' + code);
+        window.addAccessByEmail = function() {
+            if (activeUserId !== currentUserId) { alert("Je kunt alleen e-mails toevoegen aan je eigen schema."); return; }
+            
+            const emailInput = document.getElementById('docentEmailInput');
+            const email = emailInput.value.trim().toLowerCase();
+            const feedbackEl = document.getElementById('share-feedback');
+
+            if (!email || !email.includes('@')) {
+                 feedbackEl.style.color = '#c0392b';
+                 feedbackEl.innerText = "Voer een geldig e-mailadres in.";
+                 return;
+            }
+            
+            // Gebruik het e-mailadres als document ID
+            db.collection('users').doc(currentUserId).collection('toegang').doc(email).set({
+                toegevoegd_op: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                feedbackEl.style.color = '#27ae60';
+                feedbackEl.innerText = `Toegang verleend aan ${email}!`;
+                emailInput.value = '';
+            }).catch(error => {
+                feedbackEl.style.color = '#c0392b';
+                feedbackEl.innerText = "Fout bij toevoegen toegang: " + error.message;
+                console.error("Error adding access: ", error);
             });
+        }
+
+        window.removeAccessByEmail = function(email) {
+             if (activeUserId !== currentUserId) { alert("Je kunt alleen e-mails verwijderen van je eigen schema."); return; }
+             
+             db.collection('users').doc(currentUserId).collection('toegang').doc(email).delete().catch(error => {
+                 console.error("Error removing access: ", error);
+             });
         }
         
         // =================================================================
@@ -638,6 +676,7 @@
         
         // Global storage for the unsubscribe function of the weekStatus listener
         window.weekStatusUnsubscribe = null;
+        window.accessListUnsubscribe = null; // Nieuwe unsubscribe voor toegang
         
         function setupFirestoreListeners(userId) {
             if (!userId) return;
@@ -645,25 +684,32 @@
             const loadingIndicator = document.getElementById('loading-indicator');
             loadingIndicator.innerText = `Laden van planning voor ${userId.substring(0, 8)}...`;
             
-            // Unsubscribe van oude listener als die bestaat (CRUCIAAL voor deelfunctie)
-            if (window.weekStatusUnsubscribe) { 
-                window.weekStatusUnsubscribe(); 
-                window.weekStatusUnsubscribe = null;
-            }
+            // Oude listeners stoppen
+            if (window.weekStatusUnsubscribe) { window.weekStatusUnsubscribe(); window.weekStatusUnsubscribe = null; }
+            if (window.accessListUnsubscribe) { window.accessListUnsubscribe(); window.accessListUnsubscribe = null; }
             
             // Listener 1: Wekelijkse Status (Vakantie)
             const weekStatusRef = db.collection('users').doc(userId).collection('weken').doc('status');
             
-            // FIX: Zorg ervoor dat de fetchAndRenderData wordt getriggerd bij elke wijziging in de status
             window.weekStatusUnsubscribe = weekStatusRef.onSnapshot(doc => {
                 weeklyHolidayStatuses = doc.exists ? doc.data() : {};
-                
-                // Triggers de hoofddata op
                 fetchAndRenderData(userId); 
-
             }, error => {
                 console.error("Error loading Weekly Status data: ", error);
             });
+            
+            // Listener 2: Toegang Lijst (Alleen voor de eigenaar)
+            if (userId === currentUserId) {
+                 const accessRef = db.collection('users').doc(userId).collection('toegang');
+                 window.accessListUnsubscribe = accessRef.onSnapshot(snapshot => {
+                     const sharedEmails = [];
+                     snapshot.forEach(doc => {
+                         sharedEmails.push(doc.id); // ID is het e-mailadres
+                     });
+                     renderSharedUsers(sharedEmails);
+                 });
+            }
+            
             loadingIndicator.style.display = 'none';
         }
 
@@ -687,133 +733,10 @@
              }).catch(error => console.error("Error loading combined data: ", error));
         }
 
-        /* --- TOETSEN CRUD (Uses activeUserId) --- */
-        function saveNewPlanning() {
-            if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
-            
-            const vak = document.getElementById('vakInput').value.trim();
-            const hoofdstuk = document.getElementById('hoofdstukInput').value;
-            const datumStr = document.getElementById('datumInput').value;
-            const controleMoment = document.getElementById('controleMomentInput').value;
-            const feedbackEl = document.getElementById('feedback-message');
-
-            if (!vak || !datumStr || !hoofdstuk) {
-                feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden (Vak, Hoofdstuk, Datum) in en zorg dat je bent ingelogd.";
-                return;
-            }
-            
-            feedbackEl.innerText = "";
-
-            const toetsDatum = new Date(datumStr);
-            if (toetsDatum <= new Date()) {
-                feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "De toetsdatum moet in de toekomst liggen.";
-                return;
-            }
-
-            const planningData = {
-                vak: vak,
-                hoofdstuk: hoofdstuk,
-                toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
-                controle_moment: controleMoment,
-                datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
-                weken: {},
-                is_afgerond: false
-            };
-
-            db.collection('users').doc(activeUserId).collection('planning').add(planningData)
-                .then(() => {
-                    feedbackEl.style.color = '#27ae60';
-                    feedbackEl.innerText = "Nieuwe toets succesvol ingepland!";
-                    document.getElementById('vakInput').value = '';
-                    document.getElementById('hoofdstukInput').value = '';
-                    document.getElementById('datumInput').value = '';
-                    
-                    fetchAndRenderData(activeUserId); // DIRECTE UPDATE
-                })
-                .catch(error => {
-                    feedbackEl.style.color = '#c0392b';
-                    feedbackEl.innerText = "Fout bij opslaan: " + error.message;
-                    console.error("Error saving planning: ", error);
-                });
-        }
-        
-        window.deletePlanning = function(docId) {
-            if (!activeUserId || !confirm(`Weet je zeker dat je deze toets wilt verwijderen?`)) return;
-            db.collection('users').doc(activeUserId).collection('planning').doc(docId).delete()
-                .then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE NA VERWIJDEREN
-                .catch(error => console.error("Error deleting document: ", error));
-        }
-
-        /* --- ALGEMENE TAKEN CRUD (Uses activeUserId) --- */
-        function saveAlgemeneTaak() {
-             if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
-             
-             const vak = document.getElementById('algemeenVakInput').value.trim();
-             const datumStr = document.getElementById('algemeenDatumInput').value;
-             const taak = document.getElementById('algemeenTaakInput').value.trim();
-             const feedbackEl = document.getElementById('algemeen-feedback-message');
-             
-             if (!vak || !datumStr || !taak) {
-                 feedbackEl.style.color = '#c0392b';
-                 feedbackEl.innerText = "Vul alle velden in.";
-                 return;
-             }
-             
-             const datum = new Date(datumStr);
-             const weekKey = getYearWeekKey(datum); // Bepaal weekKey op basis van datum
-
-             const taakData = {
-                 vak: vak,
-                 taak: taak,
-                 weekKey: weekKey,
-                 afgerond: false,
-                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp()
-             };
-
-             db.collection('users').doc(activeUserId).collection('algemeen').add(taakData)
-                 .then(() => {
-                     feedbackEl.style.color = '#27ae60';
-                     feedbackEl.innerText = `Taak succesvol gepland voor week ${getWeekNumber(datum)}!`;
-                     document.getElementById('algemeenVakInput').value = '';
-                     document.getElementById('algemeenDatumInput').value = '';
-                     document.getElementById('algemeenTaakInput').value = '';
-                     
-                     fetchAndRenderData(activeUserId); // DIRECTE UPDATE
-                 })
-                 .catch(error => {
-                     feedbackEl.style.color = '#c0392b';
-                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
-                     console.error("Error saving algemene taak: ", error);
-                 });
-        }
-        
-        window.deleteAlgemeneTaak = function(docId) {
-             if (!activeUserId || !confirm(`Weet je zeker dat je deze algemene taak wilt verwijderen?`)) return;
-             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).delete()
-                 .then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE
-                 .catch(error => console.error("Error deleting algemene taak: ", error));
-        }
-        
-        window.toggleAlgemeneTaakCompletion = function(docId, isChecked) {
-             if (!activeUserId) return;
-             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).update({
-                 afgerond: isChecked
-             }).then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE
-             .catch(error => {
-                 console.error("Error toggling algemene taak: ", error);
-                 alert("Opslagfout voor algemene taak. Controleer de console.");
-             });
-        }
-
-        /**
-         * Update de wekelijkse taaktekst (textarea) in Firestore.
-         */
+        /* --- CRUD FUNCTIES (onpage/window) --- */
         window.updateWeeklyTaak = function(docId, weekKey, value) {
-            if (!activeUserId) return;
-            
-            db.collection('users').doc(activeUserId).collection('planning').doc(docId).update({
+             if (!activeUserId) return;
+             db.collection('users').doc(activeUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.taak`]: value
             }).then(() => {
                 const textarea = document.querySelector(`textarea[onblur*='${docId}'][onblur*='${weekKey}']`);
@@ -827,15 +750,11 @@
             });
         }
 
-        /**
-         * Toggles the weekly completion status (checkbox) in Firestore.
-         */
         window.toggleWeeklyCompletion = function(docId, weekKey, isChecked) {
             if (!activeUserId) return;
-            
             db.collection('users').doc(activeUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.afgerond`]: isChecked
-            }).then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE
+            }).then(() => fetchAndRenderData(activeUserId))
             .catch((error) => {
                  console.error(`Error saving completion status for ${weekKey}:`, error);
                  alert(`Opslagfout voor week ${weekKey}. Controleer de console!`);
@@ -844,26 +763,35 @@
              });
         }
         
-        /* --- VAKANTIE IN TABLE TOGGLE --- */
-
         window.toggleVakantieWeek = function(weekKey, isChecked) {
             if (!activeUserId) return;
-
             const weekStatusRef = db.collection('users').doc(activeUserId).collection('weken').doc('status');
-            
             weekStatusRef.set({
-                [weekKey]: {
-                    isVakantie: isChecked
-                }
-            }, { merge: true }).then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE
+                [weekKey]: { isVakantie: isChecked }
+            }, { merge: true }).then(() => fetchAndRenderData(activeUserId))
             .catch(error => {
                  console.error("Error saving holiday status: ", error);
                  alert("Opslagfout voor vakantiestatus. Controleer de console.");
             });
         }
-        // =================================================================
+        
+        window.toggleAlgemeneTaakCompletion = function(docId, isChecked) {
+             if (!activeUserId) return;
+             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).update({
+                 afgerond: isChecked
+             }).then(() => fetchAndRenderData(activeUserId))
+             .catch(error => {
+                 console.error("Error toggling algemene taak: ", error);
+                 alert("Opslagfout voor algemene taak. Controleer de console.");
+             });
+        }
 
 
+        // [REST VAN DE UI UPDATE FUNCTIES ZIJN VERWIJDERD VOOR KORTERE WEERGAVE HIER]
+        // [Ze zijn wel behouden in de complete code die je plakt]
+        
+        // ... (De rest van de code voor UI en Helpers) ...
+        
         // =================================================================
         // 5. UI UPDATES (Overview & Dynamic Planning)
         // =================================================================
@@ -1169,6 +1097,117 @@
             date.setDate(date.getDate() - (date.getDay() || 7) + 1); 
             return date;
         }
+        
+        /* --- CRUD FUNCTIES (onpage/window) --- */
+
+        window.saveNewPlanning = function() {
+            if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
+            
+            const vak = document.getElementById('vakInput').value.trim();
+            const hoofdstuk = document.getElementById('hoofdstukInput').value;
+            const datumStr = document.getElementById('datumInput').value;
+            const controleMoment = document.getElementById('controleMomentInput').value;
+            const feedbackEl = document.getElementById('feedback-message');
+
+            if (!vak || !datumStr || !hoofdstuk) {
+                feedbackEl.style.color = '#c0392b';
+                feedbackEl.innerText = "Vul alle velden (Vak, Hoofdstuk, Datum) in en zorg dat je bent ingelogd.";
+                return;
+            }
+            
+            feedbackEl.innerText = "";
+
+            const toetsDatum = new Date(datumStr);
+            if (toetsDatum <= new Date()) {
+                feedbackEl.style.color = '#c0392b';
+                feedbackEl.innerText = "De toetsdatum moet in de toekomst liggen.";
+                return;
+            }
+
+            const planningData = {
+                vak: vak,
+                hoofdstuk: hoofdstuk,
+                toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
+                controle_moment: controleMoment,
+                datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
+                weken: {},
+                is_afgerond: false
+            };
+
+            db.collection('users').doc(activeUserId).collection('planning').add(planningData)
+                .then(() => {
+                    feedbackEl.style.color = '#27ae60';
+                    feedbackEl.innerText = "Nieuwe toets succesvol ingepland!";
+                    document.getElementById('vakInput').value = '';
+                    document.getElementById('hoofdstukInput').value = '';
+                    document.getElementById('datumInput').value = '';
+                    
+                    fetchAndRenderData(activeUserId); // DIRECTE UPDATE
+                })
+                .catch(error => {
+                    feedbackEl.style.color = '#c0392b';
+                    feedbackEl.innerText = "Fout bij opslaan: " + error.message;
+                    console.error("Error saving planning: ", error);
+                });
+        }
+        
+        window.deletePlanning = function(docId) {
+            if (!activeUserId || !confirm(`Weet je zeker dat je deze toets wilt verwijderen?`)) return;
+            db.collection('users').doc(activeUserId).collection('planning').doc(docId).delete()
+                .then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE NA VERWIJDEREN
+                .catch(error => console.error("Error deleting document: ", error));
+        }
+
+        window.saveAlgemeneTaak = function() {
+             if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
+             
+             const vak = document.getElementById('algemeenVakInput').value.trim();
+             const datumStr = document.getElementById('algemeenDatumInput').value;
+             const taak = document.getElementById('algemeenTaakInput').value.trim();
+             const feedbackEl = document.getElementById('algemeen-feedback-message');
+             
+             if (!vak || !datumStr || !taak) {
+                 feedbackEl.style.color = '#c0392b';
+                 feedbackEl.innerText = "Vul alle velden in.";
+                 return;
+             }
+             
+             const datum = new Date(datumStr);
+             const weekKey = getYearWeekKey(datum); // Bepaal weekKey op basis van datum
+
+             const taakData = {
+                 vak: vak,
+                 taak: taak,
+                 weekKey: weekKey,
+                 afgerond: false,
+                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp()
+             };
+
+             db.collection('users').doc(activeUserId).collection('algemeen').add(taakData)
+                 .then(() => {
+                     feedbackEl.style.color = '#27ae60';
+                     feedbackEl.innerText = `Taak succesvol gepland voor week ${getWeekNumber(datum)}!`;
+                     document.getElementById('algemeenVakInput').value = '';
+                     document.getElementById('algemeenDatumInput').value = '';
+                     document.getElementById('algemeenTaakInput').value = '';
+                     
+                     fetchAndRenderData(activeUserId); // DIRECTE UPDATE
+                 })
+                 .catch(error => {
+                     feedbackEl.style.color = '#c0392b';
+                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
+                     console.error("Error saving algemene taak: ", error);
+                 });
+        }
+        
+        window.deleteAlgemeneTaak = function(docId) {
+             if (!activeUserId || !confirm(`Weet je zeker dat je deze algemene taak wilt verwijderen?`)) return;
+             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).delete()
+                 .then(() => fetchAndRenderData(activeUserId)) // DIRECTE UPDATE
+                 .catch(error => console.error("Error deleting algemene taak: ", error));
+        }
+
+        /* --- De rest van de functies zijn in de code hierboven opgenomen --- */
         // =================================================================
     </script>
 </body>
