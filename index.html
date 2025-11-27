@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - De Georganiseerde Studieplanner</title>
+    <title>Study-Start - Gepersonaliseerde Planner</title>
 
-    <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
+    <!-- Firebase SDK's laden (Compatibele versies) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
-        /* Algemene styling */
+        /* [De algemene CSS styling blijft hetzelfde, inclusief de achtergrondafbeelding] */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -27,7 +27,6 @@
             min-height: 100vh;
         }
 
-        /* Paginaweergaven */
         #login-page, #planner-page {
             flex-grow: 1;
             padding: 20px;
@@ -35,15 +34,14 @@
             box-sizing: border-box;
         }
 
-        /* Login Pagina Styling (Jouw Landingspagina) */
         #login-page {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            /* HIER KUN JE JOUW AFBEELDING PLAATSEN */
-            background-image: url('jouw_afbeelding.png'); /* Vervang dit door je eigen URL/bestandsnaam */
+            /* Pas dit aan met jouw PNG! */
+            background-image: url('JOUW_AFBEELDING_NAAM.png'); 
             background-size: cover;
             background-position: center;
             background-color: #ffffff; 
@@ -51,11 +49,11 @@
         }
 
         .login-card {
-            max-width: 350px; /* Iets kleiner gemaakt */
+            max-width: 350px; 
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            background-color: rgba(255, 255, 255, 0.95); /* Semi-transparante achtergrond */
+            background-color: rgba(255, 255, 255, 0.95); 
         }
 
         .login-card h1 {
@@ -65,11 +63,10 @@
             border-bottom: none;
         }
         
-        /* Google Login Knop Styling (Aangepast) */
         #google-login-button {
             background-color: white; 
             color: #444; 
-            padding: 8px 20px; /* Knop kleiner gemaakt */
+            padding: 8px 20px; 
             border: 1px solid #ccc;
             border-radius: 4px;
             cursor: pointer;
@@ -86,14 +83,12 @@
             background-color: #f7f7f7;
         }
 
-        /* G-logo aanpassing */
         .google-icon {
             width: 20px; 
             height: 20px;
             margin-right: 10px;
         }
 
-        /* Planner Pagina Styling */
         header {
             width: 100%;
             background-color: #27ae60;
@@ -124,95 +119,42 @@
             transition: background-color 0.3s;
         }
 
-        /* ... [REST VAN DE PLANNER CSS IS HETZELFDE] ... */
-
-        .studie-tabel {
-            width: 100%;
-            border-collapse: collapse;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        /* Styling voor het invoerformulier */
+        .planning-form-container {
             background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        
-        .studie-tabel th, .studie-tabel td {
+
+        .planning-form-container input, .planning-form-container select, .planning-form-container button {
+            padding: 10px;
+            margin-right: 10px;
             border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-            vertical-align: top;
+            border-radius: 4px;
+            font-size: 1em;
         }
 
-        .studie-tabel th {
-            background-color: #27ae60;
+        .planning-form-container button {
+            background-color: #007bff;
             color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .studie-tabel tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .vakantie-row {
-            background-color: #ffeeaa !important;
-            font-weight: bold;
-            text-align: center !important;
-        }
-        .vakantie-row td {
-            color: #8b4513;
-        }
-
-        .taak-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .taak-item input[type="checkbox"] {
-            margin-right: 8px;
-            accent-color: #27ae60;
+            border: none;
             cursor: pointer;
         }
-
-        .taak-item.completed {
-            text-decoration: line-through;
+        
+        /* Loading indicator */
+        #loading-indicator {
+            padding: 15px;
+            text-align: center;
+            font-style: italic;
             color: #888;
         }
-
-        .status-cell {
-            font-size: 0.9em;
-            color: #444;
-            border-left: 3px solid #27ae60;
-            padding-left: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .studie-tabel, .studie-tabel tbody, .studie-tabel tr, .studie-tabel td {
-                display: block;
-                width: 100%;
-            }
-            .studie-tabel thead {
-                display: none;
-            }
-            .studie-tabel td {
-                border: none;
-                border-bottom: 1px solid #eee;
-                position: relative;
-                padding-left: 50%;
-                text-align: right;
-            }
-            .studie-tabel td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 6px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: bold;
-                color: #1e8449;
-            }
+        
+        /* Styling voor de dynamische planner tabel */
+        #planner-table-body {
+            min-height: 200px;
+            display: block;
         }
     </style>
 </head>
@@ -220,19 +162,15 @@
 
     <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) -->
     <div id="login-page" style="display: none;">
-        <!-- Plaats hier de afbeelding jouw_afbeelding.png in je GitHub repository op de root niveau -->
         <div class="login-card">
             <h1>Welkom bij Study-Start</h1>
             <p>Jouw persoonlijke studieplanner, agenda en progressietracker in één. Log in om je studie-overzicht te laden.</p>
             
-            <!-- De Google Login Knop -->
             <button id="google-login-button" onclick="signInWithGoogle()">
-                <!-- G-logo van Google -->
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google G logo" class="google-icon">
                 Inloggen met Google
             </button>
 
-            <!-- Statusmelding -->
             <p id="login-status-splash" style="margin-top: 20px; font-size: 0.9em; color: #888;">Controleert inlogstatus...</p>
         </div>
     </div>
@@ -249,171 +187,43 @@
 
         <div style="padding: 20px;">
             <p id="welkom-boodschap" style="font-size: 1.1em; color: #27ae60; font-weight: 500;">Welkom!</p>
+            <div id="loading-indicator">Laden van persoonlijke planning...</div>
+
+            <!-- NIEUWE TOETS INVOER SECTIE -->
+            <div class="planning-form-container">
+                <h3>+ Nieuwe Toets Inplannen</h3>
+                <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
+                <input type="date" id="datumInput" required>
+                <select id="moeilijkheidInput">
+                    <option value="5">Leerstof: Licht (5 uur)</option>
+                    <option value="10" selected>Leerstof: Normaal (10 uur)</option>
+                    <option value="15">Leerstof: Zwaar (15 uur)</option>
+                </select>
+                <button onclick="saveNewPlanning()">Plan Toets In</button>
+                <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
+            </div>
+            <!-- EINDE TOETS INVOER SECTIE -->
             
             <!-- KALENDER SECTIE -->
             <div id="kalender-container" style="margin-bottom: 50px;">
-                <h2>🗓️ Mijn Persoonlijke Studieplanning</h2>
-                <p>Bekijk en beheer alle deadlines en bijlessen in de kalenderweergave.</p>
+                <h2>🗓️ Kalenderweergave</h2>
                 <div id='kalender'></div>
             </div>
             <!-- EINDE KALENDER SECTIE -->
 
             <!-- PLANNER TABEL -->
-            <h2 style="color: #333;">📅 Overzicht en Progressie</h2>
+            <h2 style="color: #333;">📅 Leerschema (Dynamisch)</h2>
             <table class="studie-tabel">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">WEEK (Deadline)</th>
-                        <th style="width: 10%;">Vak</th>
-                        <th style="width: 30%;">THUIS DOEN (Voorbereiden)</th>
-                        <th style="width: 25%;">IN DE BIJLES (Samen doen)</th>
-                        <th style="width: 20%;">STATUS & TOETSEN</th>
+                        <th style="width: 15%;">DATUM</th>
+                        <th style="width: 25%;">VAK & ONDERWERP</th>
+                        <th style="width: 40%;">TAAK (Uren)</th>
+                        <th style="width: 20%;">STATUS</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- WEEK 48 t/m WEEK 3 (volledige tabel) -->
-                    <tr id="week-48">
-                        <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
-                        <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="48" data-taak="nask1">
-                                <input type="checkbox" id="nask1"><label for="nask1">• NaSk H5: §1 en §2</label>
-                            </div>
-                            <div class="taak-item" data-week="48" data-taak="wis1">
-                                <input type="checkbox" id="wis1"><label for="wis1">• Wis H3: §1</label>
-                            </div>
-                            <div class="taak-item" data-week="48" data-taak="bio1">
-                                <input type="checkbox" id="bio1"><label for="bio1">• Bio H8: §8.1</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">N.v.t.</td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            Start gemaakt. Focus op NL toets (27/11).
-                        </td>
-                    </tr>
-                    <tr id="week-49">
-                        <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
-                        <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="49" data-taak="nask2">
-                                <input type="checkbox" id="nask2"><label for="nask2">• NaSk H5: §4 (Afronden voor toets)</label>
-                            </div>
-                            <div class="taak-item" data-week="49" data-taak="wis2">
-                                <input type="checkbox" id="wis2"><label for="wis2">• Wis H3: §2</label>
-                            </div>
-                            <div class="taak-item" data-week="49" data-taak="bio2">
-                                <input type="checkbox" id="bio2"><label for="bio2">• Bio H8: §8.2</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">
-                            <div class="taak-item" data-week="49" data-taak="bijles_nask1">
-                                <input type="checkbox" id="bijles_nask1"><label for="bijles_nask1">Bijles 04/12 (NaSk): Samen §3 maken & uitleg.</label>
-                            </div>
-                            <div class="taak-item" data-week="49" data-taak="bijles_nask2">
-                                <input type="checkbox" id="bijles_nask2"><label for="bijles_nask2">Bijles 09/12 (NaSk): Proeftoets maken / Herhalen.</label>
-                            </div>
-                        </td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
-                        </td>
-                    </tr>
-                    <tr id="week-50">
-                        <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
-                        <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="50" data-taak="wis3">
-                                <input type="checkbox" id="wis3"><label for="wis3">• Wis H3: §3</label>
-                            </div>
-                            <div class="taak-item" data-week="50" data-taak="bio3">
-                                <input type="checkbox" id="bio3"><label for="bio3">• Bio H8: §8.3</label>
-                            </div>
-                            <div class="taak-item" data-week="50" data-taak="wis_resit1">
-                                <input type="checkbox" id="wis_resit1"><label for="wis_resit1">• Wis H1 (Resit): §1 en §2</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">
-                            <span style="font-weight: bold; color: red;">NaSk Toets (10/12)</span><br>
-                            <div class="taak-item" data-week="50" data-taak="bijles_wis1">
-                                <input type="checkbox" id="bijles_wis1"><label for="bijles_wis1">Bijles 16/12 (Wis): Samen §4 maken (lastige stof).</label>
-                            </div>
-                        </td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
-                        </td>
-                    </tr>
-                    <tr id="week-51">
-                        <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
-                        <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="51" data-taak="wis4">
-                                <input type="checkbox" id="wis4"><label for="wis4">• Wis H3: Afronden</label>
-                            </div>
-                            <div class="taak-item" data-week="51" data-taak="bio4">
-                                <input type="checkbox" id="bio4"><label for="bio4">• Bio H8: §8.4 (Klaar!)</label>
-                            </div>
-                            <div class="taak-item" data-week="51" data-taak="wis_resit2">
-                                <input type="checkbox" id="wis_resit2"><label for="wis_resit2">• Wis H1 (Resit): §3</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">
-                            <div class="taak-item" data-week="51" data-taak="bijles_wis2">
-                                <input type="checkbox" id="bijles_wis2"><label for="bijles_wis2">Bijles 18/12 (Wis): Samen §5 maken & H3 afsluiten.</label>
-                            </div>
-                        </td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
-                        </td>
-                    </tr>
-                    <tr class="vakantie-row" id="week-vakantie">
-                        <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
-                        <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
-                        <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
-                    </tr>
-                    <tr id="week-2">
-                        <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
-                        <td data-label="Vak">Wis H1<br>Wis H2</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="2" data-taak="wis_resit3">
-                                <input type="checkbox" id="wis_resit3"><label for="wis_resit3">• Wis H1: §4 en §5 (Afronden)</label>
-                            </div>
-                            <div class="taak-item" data-week="2" data-taak="wis_h2_1">
-                                <input type="checkbox" id="wis_h2_1"><label for="wis_h2_1">• Wis H2: §1 en §2</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">
-                            <div class="taak-item" data-week="2" data-taak="bijles_bio_herhaal">
-                                <input type="checkbox" id="bijles_bio_herhaal"><label for="bijles_bio_herhaal">Bijles 05/01 (Bio): Herhalen voor toets.</label>
-                            </div>
-                            <div class="taak-item" data-week="2" data-taak="bijles_wis_herhaal">
-                                <input type="checkbox" id="bijles_wis_herhaal"><label for="bijles_wis_herhaal">Bijles 06/01 (Wis): Herhalen voor toets.</label>
-                            </div>
-                            <span style="font-weight: bold; color: red;">Toetsen: 08/1 (Wis) & 09/1 (Bio).</span>
-                        </td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            Toetsweek!<br>In het weekend focus op Herkansing.
-                        </td>
-                    </tr>
-                    <tr id="week-3">
-                        <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
-                        <td data-label="Vak">Wis H1/2</td>
-                        <td data-label="THUIS DOEN">
-                            <div class="taak-item" data-week="3" data-taak="wis_h2_2">
-                                <input type="checkbox" id="wis_h2_2"><label for="wis_h2_2">• Wis H2: §3</label>
-                            </div>
-                        </td>
-                        <td data-label="IN DE BIJLES">
-                            <div class="taak-item" data-week="3" data-taak="bijles_wis_h2">
-                                <input type="checkbox" id="bijles_wis_h2"><label for="bijles_wis_h2">Bijles 13/01 (Wis): Samen §4 (H2) maken + Vragen H1.</label>
-                            </div>
-                            <div class="taak-item" data-week="3" data-taak="bijles_wis_rep">
-                                <input type="checkbox" id="bijles_wis_rep"><label for="bijles_wis_rep">Bijles 15/01 (Wis): Generale repetitie (Oefentoets).</label>
-                            </div>
-                            <span style="font-weight: bold; color: red;">Herkansing 16/01</span>
-                        </td>
-                        <td data-label="STATUS & TOETSEN" class="status-cell">
-                            Je hebt alles behandeld.
-                        </td>
-                    </tr>
+                <tbody id="planner-table-body">
+                    <!-- Dynamische taken komen hier -->
                 </tbody>
             </table>
             <!-- EINDE PLANNER TABEL -->
@@ -439,6 +249,8 @@
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore(); 
+        let currentUserId = null; // ID van de ingelogde gebruiker
+        let kalenderInstance = null; // Opslag voor de kalender instantie
         // =================================================================
 
 
@@ -446,49 +258,45 @@
         // 2. AUTHENTICATIE FUNCTIES & PAGINASCHAKELING
         // =================================================================
         function showPage(pageId) {
-            // Verberg alle hoofdcontainers
             document.getElementById('login-page').style.display = 'none';
             document.getElementById('planner-page').style.display = 'none';
             
-            // Toon de gevraagde container
             if (pageId === 'login-page') {
-                 // Gebruik 'flex' voor login om de card te centreren
                 document.getElementById(pageId).style.display = 'flex'; 
             } else {
-                 // Gebruik 'block' of 'flex' voor de planner, afhankelijk van de header
                 document.getElementById(pageId).style.display = 'block'; 
             }
         }
 
         function handleUser(user) {
-            const welkomBoodschap = document.getElementById('welkom-boodschap');
             const loginStatusSplash = document.getElementById('login-status-splash');
-            const loginStatusHeader = document.getElementById('login-status-header');
 
             if (user) {
-                // GEBRUIKER IS INGELOGD
-                const userName = user.displayName ? user.displayName.split(' ')[0] : (user.email || 'Gebruiker');
+                currentUserId = user.uid; // Zet de gebruikers-ID
                 
-                welkomBoodschap.innerText = `Welkom terug, ${userName}! Dit is je persoonlijke studieomgeving.`;
-                loginStatusHeader.innerText = `Ingelogd als: ${userName}`;
+                const userName = user.displayName ? user.displayName.split(' ')[0] : (user.email || 'Gebruiker');
+                document.getElementById('welkom-boodschap').innerText = `Welkom terug, ${userName}! Dit is je persoonlijke studieomgeving.`;
+                document.getElementById('login-status-header').innerText = `Ingelogd als: ${userName}`;
                 
                 showPage('planner-page');
-                initializePlannerComponents(); // Start de kalender pas na inloggen
+                // Start luisteren naar de database van DÉZE gebruiker
+                setupFirestoreListener(currentUserId); 
             } else {
-                // GEBRUIKER IS UITGELOGD
+                currentUserId = null;
                 loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
                 showPage('login-page');
+                // Verberg de planner als er niemand is ingelogd
+                if(kalenderInstance) kalenderInstance.destroy();
+                document.getElementById('planner-table-body').innerHTML = '';
             }
         }
         
-        // Hoofdluisteraar: Regelt de weergave van de pagina
         auth.onAuthStateChanged(handleUser);
 
         function signInWithGoogle() {
           const provider = new firebase.auth.GoogleAuthProvider();
           auth.signInWithPopup(provider).catch((error) => {
             console.error("Login Fout:", error.message);
-            // Gebruik een zichtbare melding in de login-kaart als feedback
             document.getElementById('login-status-splash').innerText = `Fout: Login mislukt. Is Google-inloggen geactiveerd in Firebase? (${error.code})`;
           });
         }
@@ -502,91 +310,200 @@
 
 
         // =================================================================
-        // 3. PLANNER & KALENDER LOGICA (Start alleen na succesvolle login)
+        // 3. FIREBASE FIRESTORE LOGICA
         // =================================================================
-        function initializePlannerComponents() {
-            // A. CHECKBOX LOGICA (Blijft lokaal tot we Firestore koppelen)
-            const checkboxes = document.querySelectorAll('.taak-item input[type="checkbox"]');
 
-            const loadTasks = () => {
-                checkboxes.forEach(checkbox => {
-                    const taakKey = checkbox.id;
-                    const isChecked = localStorage.getItem(taakKey) === 'true';
-                    checkbox.checked = isChecked;
-                    const taakItemDiv = checkbox.closest('.taak-item');
-                    if (isChecked) {
-                        taakItemDiv.classList.add('completed');
-                    } else {
-                        taakItemDiv.classList.remove('completed');
-                    }
+        /**
+         * Luistert naar de database voor de planning van de huidige gebruiker.
+         * Roept updatePlanner UI aan bij elke wijziging.
+         */
+        function setupFirestoreListener(userId) {
+            const plannerRef = db.collection('users').doc(userId).collection('planning');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            // onSnapshot zorgt voor real-time updates!
+            plannerRef.onSnapshot(snapshot => {
+                loadingIndicator.style.display = 'none'; // Verberg de loading indicator
+                const planningItems = [];
+                snapshot.forEach(doc => {
+                    planningItems.push({ id: doc.id, ...doc.data() });
                 });
+                
+                // Roep de functie aan om de UI (kalender en tabel) te updaten
+                updatePlannerUI(planningItems);
+
+            }, error => {
+                console.error("Fout bij het laden van Firestore data: ", error);
+                loadingIndicator.innerText = "Fout bij laden. Controleer console.";
+            });
+        }
+
+
+        /**
+         * Slaat een nieuwe planningstaak op in Firestore.
+         */
+        function saveNewPlanning() {
+            const vak = document.getElementById('vakInput').value.trim();
+            const datumStr = document.getElementById('datumInput').value;
+            const moeilijkheid = parseInt(document.getElementById('moeilijkheidInput').value);
+            const feedbackEl = document.getElementById('feedback-message');
+
+            if (!vak || !datumStr || !currentUserId) {
+                feedbackEl.innerText = "Vul alle velden in en zorg dat je bent ingelogd.";
+                return;
+            }
+            
+            feedbackEl.innerText = "";
+
+            const toetsDatum = new Date(datumStr);
+            if (toetsDatum <= new Date()) {
+                feedbackEl.innerText = "De toetsdatum moet in de toekomst liggen.";
+                return;
+            }
+
+            const planningData = {
+                vak: vak,
+                toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum), // Datum als Firestore Timestamp
+                totaal_stof_uren: moeilijkheid, // 5, 10, of 15 uur studie
+                datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
+                afgeronde_uren: 0
             };
 
-            const setupListeners = () => {
-                checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', (event) => {
-                        const taakKey = event.target.id;
-                        const isChecked = event.target.checked;
-                        localStorage.setItem(taakKey, isChecked);
-                        
-                        const taakItemDiv = event.target.closest('.taak-item');
-                        if (isChecked) {
-                            taakItemDiv.classList.add('completed');
-                        } else {
-                            taakItemDiv.classList.remove('completed');
-                        }
+            db.collection('users').doc(currentUserId).collection('planning').add(planningData)
+                .then(() => {
+                    feedbackEl.innerText = "Planning succesvol opgeslagen! Schema wordt berekend...";
+                    document.getElementById('vakInput').value = '';
+                    document.getElementById('datumInput').value = '';
+                })
+                .catch(error => {
+                    feedbackEl.innerText = "Fout bij opslaan: " + error.message;
+                    console.error("Fout bij opslaan: ", error);
+                });
+        }
+        
+        /**
+         * Berekent en toont de dynamische planning.
+         * Dit is waar de 'magie' gebeurt (einddoel).
+         */
+        function updatePlannerUI(planningItems) {
+            const plannerTableBody = document.getElementById('planner-table-body');
+            plannerTableBody.innerHTML = ''; // Maak de tabel leeg
+            const calendarEvents = [];
+            
+            if (planningItems.length === 0) {
+                plannerTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nog geen planningen toegevoegd. Gebruik het formulier hierboven!</td></tr>';
+            }
+
+            planningItems.forEach(item => {
+                const toetsDatum = item.toetsdatum.toDate();
+                const urenTePlannen = item.totaal_stof_uren - item.afgeronde_uren;
+
+                // 1. KALENDER TOETS EVENT
+                calendarEvents.push({
+                    title: `TOETS: ${item.vak}`,
+                    start: toetsDatum.toISOString().split('T')[0],
+                    color: '#c0392b' // Rood
+                });
+
+                // 2. DYNAMISCHE PLANNING CALCULATIE (Vereenvoudigd voor deze stap)
+                // Dit is de logica om het leerschema te maken!
+                const studiedagen = [];
+                let huidigeDatum = new Date(toetsDatum);
+                let urenPerDag = 2; // Standaard 2 uur per dag studeren
+                let urenOver = urenTePlannen;
+
+                // Plan achterwaarts vanaf de toetsdatum tot de uren op zijn
+                while (urenOver > 0) {
+                    huidigeDatum.setDate(huidigeDatum.getDate() - 1);
+                    
+                    // Sla het weekend over (vereenvoudigde regel)
+                    const dagVanDeWeek = huidigeDatum.getDay(); // 0 = Zondag, 6 = Zaterdag
+                    if (dagVanDeWeek === 0 || dagVanDeWeek === 6) continue;
+
+                    const urenVandaag = Math.min(urenOver, urenPerDag);
+                    if (urenVandaag > 0) {
+                         studiedagen.push({
+                            date: new Date(huidigeDatum),
+                            uren: urenVandaag,
+                            taak: 'Leerstof doornemen'
+                        });
+                        urenOver -= urenVandaag;
+                    }
+
+                    // Voorkom oneindige loop (moet minimaal 10 dagen terug gaan)
+                    if ((toetsDatum - huidigeDatum) / (1000 * 60 * 60 * 24) > 30) break; 
+                }
+                // --- EINDE PLANNING CALCULATIE ---
+                
+                // 3. TABEL EN KALENDER UPDATEN
+                studiedagen.reverse().forEach((dag, index) => {
+                    const statusId = `${item.id}-${index}`;
+                    const taakOmschrijving = index === studiedagen.length -1 ? `Herhaling/Laatste Check (${dag.uren} uur)` : `${item.vak} - Leerstof P${index + 1} (${dag.uren} uur)`;
+                    const isCompleted = false; // Later uit Firestore laden
+
+                    // Tabel Rij
+                    const row = plannerTableBody.insertRow();
+                    row.innerHTML = `
+                        <td data-label="DATUM">${dag.date.toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
+                        <td data-label="VAK & ONDERWERP">${item.vak}</td>
+                        <td data-label="TAAK">${taakOmschrijving}</td>
+                        <td data-label="STATUS">
+                            <div class="taak-item" data-taak="${statusId}">
+                                <input type="checkbox" id="${statusId}" ${isCompleted ? 'checked' : ''} disabled>
+                                <label for="${statusId}">${isCompleted ? 'Afgerond' : 'Open'}</label>
+                            </div>
+                        </td>
+                    `;
+                    
+                    // Kalender Taak
+                    calendarEvents.push({
+                        title: `${item.vak}: Studie (${dag.uren}u)`,
+                        start: dag.date.toISOString().split('T')[0],
+                        color: '#27ae60' // Groen
                     });
                 });
-            };
 
-            loadTasks();
-            setupListeners();
-            // EINDE CHECKBOX LOGICA
+            });
 
+            // Kalender opnieuw laden met nieuwe events
+            if (kalenderInstance) {
+                kalenderInstance.removeAllEvents();
+                kalenderInstance.addEventSource(calendarEvents);
+            } else {
+                initializeFullCalendar(calendarEvents);
+            }
+        }
+
+
+        // =================================================================
+        // 4. KALENDER INITIALISATIE
+        // =================================================================
+        function initializeFullCalendar(events) {
+            const kalenderEl = document.getElementById('kalender');
             
-            // B. FULLCALENDAR LOGICA (Evenementen uit de tabel)
-            var kalenderEl = document.getElementById('kalender');
-    
-            // Voorbeeld evenementen direct uit de tabel
-            var events = [
-                // WEEK 49
-                { title: 'Bijles NaSk: uitleg §3', start: '2025-12-04', color: '#f39c12', allDay: false },
-                { title: 'Bijles NaSk: Proeftoets', start: '2025-12-09', color: '#f39c12', allDay: false },
-                // WEEK 50
-                { title: 'NaSk Toets (H5)', start: '2025-12-10', color: '#c0392b' },
-                { title: 'Bijles Wis: §4 maken', start: '2025-12-16', color: '#f39c12', allDay: false },
-                // WEEK 51
-                { title: 'Bijles Wis: §5 maken', start: '2025-12-18', color: '#f39c12', allDay: false },
-                // VAKANTIE
-                { title: '🎄 VAKANTIE (RUST) 🎄', start: '2025-12-19', end: '2026-01-05', display: 'background', color: '#ffeeaa' },
-                // WEEK 2
-                { title: 'Bijles Bio: Herhaling', start: '2026-01-05', color: '#f39c12', allDay: false },
-                { title: 'Bijles Wis: Herhaling', start: '2026-01-06', color: '#f39c12', allDay: false },
-                { title: 'Toets Wiskunde', start: '2026-01-08', color: '#c0392b' },
-                { title: 'Toets Biologie', start: '2026-01-09', color: '#c0392b' },
-                // WEEK 3
-                { title: 'Bijles Wis: §4 H2 + Vragen H1', start: '2026-01-13', color: '#f39c12', allDay: false },
-                { title: 'Bijles Wis: Generale Repetitie', start: '2026-01-15', color: '#f39c12', allDay: false },
-                { title: 'Herkansing (H1/H2)', start: '2026-01-16', color: '#c0392b' }
-            ];
+            // Vernietig oude instantie als die er is
+            if(kalenderInstance) {
+                kalenderInstance.destroy();
+            }
 
-            var kalender = new FullCalendar.Calendar(kalenderEl, {
+            kalenderInstance = new FullCalendar.Calendar(kalenderEl, {
                 initialView: 'dayGridMonth',
                 locale: 'nl',
-                initialDate: '2025-12-01',
+                initialDate: new Date().toISOString().split('T')[0], // Begin bij de huidige maand
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek'
                 },
                 events: events,
-                editable: true,
+                editable: false, // Bewerken is uitgeschakeld in deze MVP
             });
 
-            kalender.render();
-            // EINDE KALENDER LOGICA
-
+            kalenderInstance.render();
         }
+
+        // Zorg dat de kalender pas start nadat de gebruiker is ingelogd en de data is opgehaald
+        // (De call gebeurt nu in handleUser -> setupFirestoreListener)
         // =================================================================
     </script>
 </body>
