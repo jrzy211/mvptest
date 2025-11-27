@@ -20,14 +20,35 @@
 
     <style>
         /* [ALGEMEEN] */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Roboto', sans-serif;
-            margin: 0;
             background-color: #f4f7f6;
             color: #333;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+        }
+
+        /* [LAYOUT] - Centraal login scherm */
+        #login-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraal verticaal */
+            align-items: center; /* Centraal horizontaal */
+            flex-grow: 1;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            background-size: cover;
+            background-position: center;
+            background-color: #ffffff; 
+            /* Pas dit aan met jouw PNG! OF VERWIJDER DE REGEL */
+            /* background-image: url('JOUW_AFBEELDING_NAAM.png'); */ 
         }
 
         /* [LAYOUT] - Tweekoloms indeling voor de plannerpagina */
@@ -387,21 +408,6 @@
                     <p id="copy-feedback" style="font-size: 0.8em; color: #27ae60; margin-top: 5px; display: none;">Gekopieerd!</p>
                 </div>
                 
-                <!-- BEKIJK SCHEMA VOOR GEDEELDE GEBRUIKER (TUTOR) -->
-                <div class="card">
-                    <h3>👁️ Schema van Leerling Bekijken</h3>
-                    <p id="viewing-status" style="font-size: 0.9em; color: #e67e22; margin-bottom: 10px;">Je bekijkt je eigen schema.</p>
-                    <div class="tutor-view-input">
-                        <input type="text" id="sharedOwnerIdInput" placeholder="Deelcode (UID)" value="">
-                        <!-- Knop is verplaatst naar share-button-group -->
-                    </div>
-                    <div class="share-button-group">
-                        <button onclick="setSharedOwner()" style="background-color: #2ecc71;">Bekijk Schema</button>
-                        <button onclick="clearSharedOwner()" style="background-color: #f39c12;">Stop met Bekijken</button>
-                    </div>
-                </div>
-
-
                 <!-- NIEUWE TOETS INVOER SECTIE -->
                 <div class="card" id="new-planning-card">
                     <h3>+ Nieuwe Toets Inplannen</h3>
@@ -575,24 +581,25 @@
             const statusEl = document.getElementById('viewing-status');
             const planningCard = document.getElementById('new-planning-card');
             const algemeneTaakCard = document.getElementById('new-algemene-taak-card');
-            const inputField = document.getElementById('sharedOwnerIdInput');
             
             if (!activeUserId) return;
 
             if (activeUserId === currentUserId) {
+                // EIGEN SCHEMA
                 statusEl.innerHTML = `<span style="color: #27ae60;">Je bekijkt je eigen schema.</span>`;
                 planningCard.style.display = 'block';
                 algemeneTaakCard.style.display = 'block';
-                inputField.value = '';
             } else {
-                statusEl.innerHTML = `<span style="color: #c0392b; font-weight: bold;">Je bekijkt een GEDEELD schema (UID: ${activeUserId.substring(0, 8)}...).</span>`;
+                // FIX: GEDEELD SCHEMA VIA URL
+                statusEl.innerHTML = `<span style="color: #c0392b; font-weight: bold;">Je bekijkt een GEDEELD schema (UID: ${activeUserId.substring(0, 8)}...). Gebruik "Stop met Bekijken" om terug te gaan.</span>`;
+                // Toestaan dat gedeelde gebruikers ook kunnen bewerken
                 planningCard.style.display = 'block'; 
                 algemeneTaakCard.style.display = 'block'; 
-                inputField.value = activeUserId;
             }
         }
         
         function setSharedOwner() {
+            // Dit is de handmatige invoer, maar we moedigen de link aan.
             const sharedId = document.getElementById('sharedOwnerIdInput').value.trim();
             if (sharedId && sharedId !== currentUserId) {
                 localStorage.setItem('sharedOwnerId', sharedId);
@@ -613,6 +620,8 @@
 
         function copySharingCode() {
             const code = document.getElementById('my-sharing-code').innerText;
+            // Dit werkt voor GitHub Pages
+            document.execCommand('copy'); 
             navigator.clipboard.writeText(code).then(() => {
                 const feedbackEl = document.getElementById('copy-feedback');
                 feedbackEl.style.display = 'block';
