@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Slimme, Gepersonaliseerde Planner</title>
+    <title>Study-Start - Flexibele, Persoonlijke Planner</title>
 
     <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
-        /* [De algemene CSS styling blijft hetzelfde] */
+        /* Algemene styling */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -220,6 +220,16 @@
             background-color: #f9f9f9;
         }
         
+        /* Bewerkbare tekstvelden in de tabel */
+        .studie-tabel textarea {
+            width: 95%;
+            min-height: 80px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            resize: vertical;
+            font-size: 0.9em;
+        }
+        
         .taak-item input[type="checkbox"] {
             margin-right: 8px;
             transform: scale(1.2);
@@ -271,23 +281,17 @@
             <p id="welkom-boodschap" style="font-size: 1.1em; color: #27ae60; font-weight: 500;">Welkom!</p>
             <div id="loading-indicator">Laden van persoonlijke planning...</div>
 
-            <!-- NIEUWE TOETS INVOER SECTIE -->
+            <!-- NIEUWE TOETS INVOER SECTIE (Vereenvoudigd) -->
             <div style="margin-bottom: 30px;">
                 <h3>+ Nieuwe Toets Inplannen</h3>
                 <div class="planning-form-container">
                     <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
                     <input type="date" id="datumInput" required>
-                    
-                    <input type="number" id="hoofdstukkenInput" placeholder="Aantal hoofdstukken (bv. 2)" value="1" min="1" required>
-                    <input type="number" id="paragrafenInput" placeholder="Paragrafen totaal (bv. 8)" value="8" min="1" required>
-
                     <select id="controleMomentInput">
                         <option value="Geen">Controle/Bijles: Geen</option>
                         <option value="Bijles">Controle/Bijles: Bijles</option>
                         <option value="Controle">Controle/Bijles: Controle</option>
                     </select>
-
-                    <input type="number" id="urenPerDagInput" placeholder="Uren/dag studeren (max)" value="2" min="1" required>
                     <button onclick="saveNewPlanning()">Plan Toets In</button>
                 </div>
                 <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
@@ -302,16 +306,16 @@
             </div>
             <!-- EINDE TOETSEN OVERZICHT SECTIE -->
             
-            <!-- PLANNER TABEL (Wekelijks Schema) -->
-            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema</h2>
+            <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) -->
+            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen)</h2>
             <table class="studie-tabel">
                 <thead>
                     <tr>
                         <th style="width: 15%;">WEEK (Deadline)</th>
                         <th style="width: 15%;">VAK</th>
-                        <th style="width: 40%;">THUIS DOEN (Paragrafen)</th>
+                        <th style="width: 45%;">THUIS DOEN (Paragrafen)</th>
                         <th style="width: 15%;">CONTROLE MOMENT</th>
-                        <th style="width: 15%;">STATUS</th>
+                        <th style="width: 10%;">STATUS</th>
                     </tr>
                 </thead>
                 <tbody id="planner-table-body">
@@ -409,7 +413,7 @@
 
 
         // =================================================================
-        // 3. FIREBASE FIRESTORE LOGICA & CRUD
+        // 3. FIRESTORE LOGICA & CRUD
         // =================================================================
 
         function setupFirestoreListener(userId) {
@@ -435,15 +439,12 @@
         function saveNewPlanning() {
             const vak = document.getElementById('vakInput').value.trim();
             const datumStr = document.getElementById('datumInput').value;
-            const hoofdstukken = parseInt(document.getElementById('hoofdstukkenInput').value);
-            const totaalParagrafen = parseInt(document.getElementById('paragrafenInput').value);
             const controleMoment = document.getElementById('controleMomentInput').value;
-            const urenPerDagMax = parseInt(document.getElementById('urenPerDagInput').value);
             const feedbackEl = document.getElementById('feedback-message');
 
-            if (!vak || !datumStr || !currentUserId || hoofdstukken <= 0 || totaalParagrafen <= 0 || urenPerDagMax <= 0) {
+            if (!vak || !datumStr || !currentUserId) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden correct in (minimaal 1 voor hoofdstukken, paragrafen, en uren/dag).";
+                feedbackEl.innerText = "Vul alle vakken en de toetsdatum in.";
                 return;
             }
             
@@ -459,21 +460,18 @@
             const planningData = {
                 vak: vak,
                 toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
-                hoofdstukken: hoofdstukken,
-                totaal_paragrafen: totaalParagrafen, // Nieuwe basis voor planning
                 controle_moment: controleMoment,
-                max_uren_per_dag: urenPerDagMax, 
                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
-                afgeronde_paragrafen: 0 // Nieuwe teller
+                weken: {}, // Opslag voor handmatige wekelijkse taken
+                is_afgerond: false // Voor de eindtoets zelf
             };
 
             db.collection('users').doc(currentUserId).collection('planning').add(planningData)
                 .then(() => {
                     feedbackEl.style.color = '#27ae60';
-                    feedbackEl.innerText = "Planning succesvol opgeslagen! Schema wordt berekend...";
+                    feedbackEl.innerText = "Nieuwe planning aangemaakt! Vul nu de wekelijkse taken in de tabel in.";
                     document.getElementById('vakInput').value = '';
                     document.getElementById('datumInput').value = '';
-                    document.getElementById('urenPerDagInput').value = '2';
                 })
                 .catch(error => {
                     feedbackEl.style.color = '#c0392b';
@@ -489,38 +487,26 @@
         }
 
         /**
-         * Verhoogt/verlaagt de afgeronde paragrafen in Firestore (UPDATE).
+         * Update de wekelijkse taaktekst (textarea) in Firestore.
          */
-        window.toggleTaakCompletion = function(docId, paragrafen, isChecked) {
+        window.updateWeeklyTaak = function(docId, weekKey, value) {
+            if (!currentUserId) return;
+            
+            // Gebruik de `.` notatie om direct de sub-map te updaten
+            db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
+                [`weken.${weekKey}.taak`]: value
+            }).catch(error => console.error("Fout bij opslaan taaktekst: ", error));
+        }
+
+        /**
+         * Schakelt de wekelijkse afvinkstatus (checkbox) in Firestore.
+         */
+        window.toggleWeeklyCompletion = function(docId, weekKey, isChecked) {
             if (!currentUserId) return;
 
-            const planningRef = db.collection('users').doc(currentUserId).collection('planning').doc(docId);
-            
-            db.runTransaction(transaction => {
-                return transaction.get(planningRef).then(docSnapshot => {
-                    if (!docSnapshot.exists) throw "Document bestaat niet!";
-                    
-                    const data = docSnapshot.data();
-                    let newCompletedParagrafen = data.afgeronde_paragrafen;
-
-                    if (isChecked) {
-                        newCompletedParagrafen += paragrafen;
-                    } else {
-                        newCompletedParagrafen -= paragrafen;
-                    }
-                    
-                    newCompletedParagrafen = Math.max(0, newCompletedParagrafen);
-                    newCompletedParagrafen = Math.min(newCompletedParagrafen, data.totaal_paragrafen); 
-
-                    transaction.update(planningRef, { 
-                        afgeronde_paragrafen: newCompletedParagrafen
-                    });
-                });
-            }).then(() => {
-                console.log(`Afgeronde paragrafen succesvol bijgewerkt. Nieuwe status: ${isChecked}`);
-            }).catch(error => {
-                console.error("Fout bij updaten taak status (Transaction): ", error);
-            });
+             db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
+                [`weken.${weekKey}.afgerond`]: isChecked
+            }).catch(error => console.error("Fout bij updaten status: ", error));
         }
         // =================================================================
 
@@ -539,15 +525,14 @@
 
             planningItems.forEach(item => {
                 const toetsDatumStr = item.toetsdatum.toDate().toLocaleDateString('nl-NL');
-                const paragrafenOver = item.totaal_paragrafen - item.afgeronde_paragrafen;
-                const statusKleur = paragrafenOver > 0 ? '#e67e22' : '#27ae60';
-                const statusText = paragrafenOver > 0 ? `(${paragrafenOver} paragrafen over)` : `(AFGEROND)`;
+                const statusKleur = item.is_afgerond ? '#27ae60' : '#e67e22';
+                const statusText = item.is_afgerond ? `(TOETS AFGEROND)` : `(Toets op ${toetsDatumStr})`;
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'toets-item';
                 itemDiv.innerHTML = `
                     <span>
-                        <strong>${item.vak}</strong> op ${toetsDatumStr} 
+                        <strong>${item.vak}</strong> 
                         <span style="color: ${statusKleur}; font-weight: bold;">${statusText}</span>
                     </span>
                     <button onclick="deletePlanning('${item.id}')">Verwijder Toets</button>
@@ -557,7 +542,7 @@
         }
 
         /**
-         * Berekent en toont de dynamische wekelijkse planning.
+         * Berekent de weken tussen nu en de toets en vult de wekelijkse planner-tabel.
          */
         function updatePlannerUI(planningItems) {
             const plannerTableBody = document.getElementById('planner-table-body');
@@ -568,158 +553,114 @@
                 plannerTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
             }
 
-            // Map om de taken per week te verzamelen
-            const weekTaken = {}; 
             const vandaag = new Date();
             vandaag.setHours(0, 0, 0, 0); 
+
+            // Map om de taken per week te verzamelen
+            const weekTaken = {}; 
             
-            // Loop door alle ingeplande toetsen
             planningItems.forEach(item => {
                 const docId = item.id;
                 const toetsDatum = item.toetsdatum.toDate();
-                const paragrafenTeDoen = item.totaal_paragrafen - item.afgeronde_paragrafen;
-                const dagenTotToets = Math.ceil((toetsDatum - vandaag) / (1000 * 60 * 60 * 24));
-                const wekenTotToets = Math.ceil(dagenTotToets / 7);
 
-                if (paragrafenTeDoen <= 0) {
-                    // Toets is al afgerond, voeg alleen de toets toe aan de kalender
-                    calendarEvents.push({ title: `TOETS: ${item.vak} (AFGEROND)`, start: toetsDatum.toISOString().split('T')[0], color: '#27ae60' });
-                    return;
-                }
-                
-                // Bereken hoeveel paragrafen per week nodig zijn
-                let paragrafenPerWeek = Math.ceil(paragrafenTeDoen / wekenTotToets);
-                let paragrafenOver = paragrafenTeDoen;
-                let huidigeParagraaf = item.afgeronde_paragrafen + 1;
-                
-                let weekStart = new Date(vandaag);
-                
-                // Itereren door de weken tot de toets
-                while (weekStart < toetsDatum && paragrafenOver > 0) {
-                    
-                    // Bepaal het weeknummer voor de tabelgroepering
-                    const weekNummer = getWeekNumber(weekStart);
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-                    
-                    const maxParagrafenDezeWeek = Math.min(paragrafenPerWeek, paragrafenOver);
-                    
-                    // Maak de taakomschrijving
-                    if (maxParagrafenDezeWeek > 0) {
-                        let taakParagrafen = [];
-                        let hoofdstukkenGezien = {};
-                        
-                        // Bepaal de hoofdstukken en paragrafen
-                        const parPerHoofdstuk = item.totaal_paragrafen / item.hoofdstukken; // Gemiddelde par. per hoofdstuk
-                        
-                        for (let i = 0; i < maxParagrafenDezeWeek; i++) {
-                            const hstk = Math.ceil(huidigeParagraaf / parPerHoofdstuk);
-                            const par = huidigeParagraaf - ((hstk - 1) * parPerHoofdstuk);
-                            
-                            taakParagrafen.push(`H${hstk}: §${par.toFixed(1).replace('.0', '')}`); // Bijv. H1: §1.5
-                            huidigeParagraaf++;
-                        }
-                        
-                        // Groepeer de taakomschrijving (bijv. "H1: §1 & §2")
-                        const taakOmschrijving = taakParagrafen.join(', ');
-                        
-                        // Voeg de taak toe aan de weekTaken map
-                        if (!weekTaken[weekNummer]) {
-                            weekTaken[weekNummer] = [];
-                        }
-
-                        // Hoofdtaak
-                        weekTaken[weekNummer].push({
-                            vak: item.vak,
-                            taak: taakOmschrijving,
-                            docId: docId,
-                            paragrafen: maxParagrafenDezeWeek,
-                            type: 'THUIS DOEN'
-                        });
-
-                        // Controle moment toevoegen als het de laatste taak in de week is
-                        if (item.controle_moment !== 'Geen') {
-                            weekTaken[weekNummer].push({
-                                vak: item.vak,
-                                taak: item.controle_moment,
-                                docId: docId,
-                                type: 'CONTROLE'
-                            });
-                        }
-
-                        paragrafenOver -= maxParagrafenDezeWeek;
-                    }
-
-                    // Zet de datum op de start van de volgende week
-                    weekStart.setDate(weekStart.getDate() + 7);
-                }
-
-                // 3. KALENDER TOETS EVENT
+                // 1. KALENDER TOETS EVENT
                 calendarEvents.push({
                     title: `TOETS: ${item.vak}`,
                     start: toetsDatum.toISOString().split('T')[0],
-                    color: '#c0392b' // Rood
+                    color: item.is_afgerond ? '#27ae60' : '#c0392b' // Groen als afgerond
                 });
                 
-            });
-            
-            // Render de verzamelde taken naar de tabel
-            for (const week in weekTaken) {
-                const takenLijst = weekTaken[week];
+                // --- Bepaal de wekelijkse planning ---
                 
-                // Gebruik de eerste taak om de rij te beginnen
-                const eersteTaak = takenLijst[0]; 
+                let huidigeWeekStart = new Date(vandaag);
+                // Zoek de start van de huidige week (zondag)
+                huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); 
+
+                while (huidigeWeekStart < toetsDatum) {
+                    const weekNummer = getWeekNumber(huidigeWeekStart);
+                    const weekKey = `${huidigeWeekStart.getFullYear()}-${weekNummer}`; // Bijv. 2025-48
+                    
+                    const weekEndDeadline = new Date(huidigeWeekStart);
+                    weekEndDeadline.setDate(huidigeWeekStart.getDate() + 6); // Zondag
+
+                    // Haal de opgeslagen status/tekst op, of gebruik defaults
+                    const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : {
+                        taak: "",
+                        afgerond: false
+                    };
+
+                    if (!weekTaken[weekKey]) {
+                        weekTaken[weekKey] = {
+                            weekNummer: weekNummer,
+                            deadline: weekEndDeadline.toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' }),
+                            taken: []
+                        };
+                    }
+                    
+                    // Voeg de taak toe aan de weekTaken map
+                    weekTaken[weekKey].taken.push({
+                        docId: docId,
+                        vak: item.vak,
+                        controle: item.controle_moment,
+                        taakTekst: weekData.taak,
+                        afgerond: weekData.afgerond,
+                        weekKey: weekKey
+                    });
+
+                    // Ga naar de volgende week
+                    huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
+                }
+            });
+
+            // Render de verzamelde taken naar de tabel
+            for (const weekKey in weekTaken) {
+                const week = weekTaken[weekKey];
                 
                 const row = plannerTableBody.insertRow();
                 
-                // WEEK EN VAK
-                row.innerHTML += `<td data-label="WEEK">WEEK ${week}</td>`;
-                row.innerHTML += `<td data-label="VAK">${eersteTaak.vak}</td>`;
+                // WEEK EN VAKKEN (Gegroepeerd)
+                const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
                 
-                // THUIS DOEN (Gegroepeerd)
-                const thuisTaken = takenLijst.filter(t => t.type === 'THUIS DOEN');
-                let thuisTaakHTML = '';
-                thuisTaken.forEach((taak, index) => {
-                    const taakId = `${taak.docId}-${week}-${index}`;
-                    const isCompleted = taak.paragrafen <= 0; // Wordt dynamisch opgelost door herberekening
-
-                    thuisTaakHTML += `
-                        <div class="taak-item ${isCompleted ? 'completed' : ''}">
-                            <input type="checkbox" id="${taakId}" 
-                                   onchange="window.toggleTaakCompletion('${taak.docId}', ${taak.paragrafen}, this.checked)"
-                                   ${isCompleted ? 'checked' : ''}>
-                            <label for="${taakId}">${taak.taak} (${taak.paragrafen} par.)</label>
-                        </div>
-                    `;
-                    // Voeg de individuele studiedagen toe aan de kalender (vereenvoudigd tot één block per week)
-                    calendarEvents.push({
-                        title: `${taak.vak}: ${taak.taak}`,
-                        start: weekStart.toISOString().split('T')[0], // Gebruik weekStart als placeholder
-                        color: '#27ae60' 
-                    });
-                });
+                row.innerHTML += `<td data-label="WEEK">WEEK ${week.weekNummer}<br>(t/m zo ${week.deadline})</td>`;
+                row.innerHTML += `<td data-label="VAK">${alleVakkenInWeek}</td>`;
+                
+                // THUIS DOEN (Bewerkbaar veld)
+                const thuisTaakHTML = week.taken.map(taak => `
+                    <div style="margin-bottom: 10px; border-left: 2px solid #27ae60; padding-left: 5px;">
+                        <strong>${taak.vak}:</strong>
+                        <textarea 
+                            onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
+                            placeholder="Welke paragrafen/oefeningen deze week?"
+                        >${taak.taakTekst}</textarea>
+                    </div>
+                `).join('');
                 row.innerHTML += `<td data-label="THUIS DOEN">${thuisTaakHTML}</td>`;
                 
                 // CONTROLE MOMENT
-                const controleTaak = takenLijst.find(t => t.type === 'CONTROLE');
-                const controleTekst = controleTaak ? `Controle / ${controleTaak.taak}` : 'Geen gepland';
-                row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleTekst}</td>`;
+                const controleMomenten = week.taken.map(t => t.controle !== 'Geen' ? `${t.vak}: ${t.controle}` : '').filter(Boolean).join('<br>');
+                row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleMomenten || 'N.v.t.'}</td>`;
                 
-                // STATUS (vereenvoudigd op basis van voortgang)
-                const totaleParagrafenVanVak = planningItems.find(p => p.vak === eersteTaak.vak).totaal_paragrafen;
-                const afgerondeParagrafenVanVak = planningItems.find(p => p.vak === eersteTaak.vak).afgeronde_paragrafen;
-                const percentage = Math.round((afgerondeParagrafenVanVak / totaleParagrafenVanVak) * 100);
-                let statusBericht = "";
+                // STATUS (Afvinkbaar per week)
+                const weekAfgerond = week.taken.every(t => t.afgerond); // Eén checkbox per week
+                const taak = week.taken[0]; // Gebruik de eerste taak om de status te bepalen
+                
+                row.innerHTML += `
+                    <td data-label="STATUS">
+                        <div class="taak-item">
+                            <input type="checkbox" id="check-${weekKey}" 
+                                   onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked)"
+                                   ${weekAfgerond ? 'checked' : ''}>
+                            <label for="check-${weekKey}">${weekAfgerond ? 'Week Afgerond' : 'Open'}</label>
+                        </div>
+                    </td>
+                `;
 
-                if (percentage >= 100) {
-                    statusBericht = "Klaar voor de toets!";
-                } else if (paragrafenOver < totaleParagrafenVanVak * 0.5) {
-                    statusBericht = "Goed op schema! Focus op herhaling.";
-                } else {
-                    statusBericht = `Voortgang: ${percentage}% afgerond.`;
-                }
-
-                row.innerHTML += `<td data-label="STATUS">${statusBericht}</td>`;
+                // Voeg de wekelijkse deadlines toe aan de kalender
+                calendarEvents.push({
+                    title: `Deadline: ${alleVakkenInWeek}`,
+                    start: weekEndDeadline.toISOString().split('T')[0],
+                    color: '#007bff' // Blauw voor deadline
+                });
             }
 
             // Kalender opnieuw laden
