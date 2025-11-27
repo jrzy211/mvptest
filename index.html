@@ -70,7 +70,7 @@
             width: 100%;
             box-sizing: border-box;
             margin-right: 0 !important;
-            margin-bottom: 5px; /* Added spacing */
+            margin-bottom: 5px; 
         }
         
         .planning-form-container button {
@@ -79,10 +79,10 @@
             border: none;
             cursor: pointer;
             grid-column: 1 / -1; 
-            font-weight: 700; /* Made button font bolder */
-            font-size: 1.1em; /* Made button font larger */
+            font-weight: 700; 
+            font-size: 1.1em; 
             transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Soft shadow */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); 
         }
         .planning-form-container button:hover {
             background-color: #e67e22;
@@ -276,7 +276,7 @@
             display: flex;
             gap: 5px;
             margin-top: 10px;
-            margin-bottom: 10px; /* NEW: Added space below input */
+            margin-bottom: 10px;
         }
         .tutor-view-input input {
             flex-grow: 1;
@@ -288,14 +288,14 @@
             font-size: 1em;
             padding: 8px 15px;
         }
-        /* NEW: Button styling for sharing view */
+        /* FIX: Button styling for sharing view (Knoppen onderaan) */
         .share-button-group {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column; /* Knoppen onder elkaar */
             gap: 10px;
         }
         .share-button-group button {
-            flex-grow: 1;
+            width: 100%;
             padding: 10px;
             font-weight: bold;
             font-size: 1em;
@@ -519,6 +519,7 @@
             } else {
                 currentUserId = null;
                 activeUserId = null;
+                localStorage.removeItem('sharedOwnerId'); // Zorg dat shared ID ook weg is bij uitloggen
                 loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
                 showPage('login-page');
                 
@@ -559,7 +560,7 @@
                 document.getElementById('sharedOwnerIdInput').value = '';
             } else {
                 statusEl.innerHTML = `<span style="color: #c0392b; font-weight: bold;">Je bekijkt een GEDEELD schema (UID: ${activeUserId.substring(0, 8)}...). Je kunt aanpassen!</span>`;
-                // De invoerkaarten blijven zichtbaar, zodat de docent taken kan toevoegen, maar we markeren dat ze schrijven naar de actieve ID.
+                // De invoerkaarten blijven zichtbaar voor bewerking door de docent.
                 planningCard.style.display = 'block'; 
                 algemeneTaakCard.style.display = 'block'; 
                 document.getElementById('sharedOwnerIdInput').value = activeUserId;
@@ -618,7 +619,7 @@
             // Listener 1: Wekelijkse Status (Vakantie)
             const weekStatusRef = db.collection('users').doc(userId).collection('weken').doc('status');
             
-            // Gebruik onSnapshot om real-time updates op te vangen
+            // Unsubscribe van oude listener als die bestaat
             if (window.weekStatusUnsubscribe) { window.weekStatusUnsubscribe(); }
             window.weekStatusUnsubscribe = weekStatusRef.onSnapshot(doc => {
                 weeklyHolidayStatuses = doc.exists ? doc.data() : {};
@@ -639,7 +640,6 @@
              const algemeenRef = db.collection('users').doc(userId).collection('algemeen');
                 
              // We gebruiken nu get() in plaats van onSnapshot voor de hoofddata om de asynchrone keten te vereenvoudigen
-             // De weekstatus listener (setupFirestoreListeners) zorgt al voor de trigger bij wijziging
              Promise.all([
                  plannerRef.orderBy('toetsdatum', 'asc').get(),
                  algemeenRef.orderBy('datum_aangemaakt', 'asc').get() 
@@ -653,8 +653,7 @@
              }).catch(error => console.error("Error loading combined data: ", error));
         }
 
-        /* --- TOETSEN CRUD --- */
-
+        /* --- TOETSEN CRUD (Uses activeUserId) --- */
         function saveNewPlanning() {
             if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
             
@@ -666,7 +665,7 @@
 
             if (!vak || !datumStr || !hoofdstuk) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden (Vak, Hoofdstuk, Datum) in.";
+                feedbackEl.innerText = "Vul alle velden (Vak, Hoofdstuk, Datum) in en zorg dat je bent ingelogd.";
                 return;
             }
             
@@ -713,7 +712,7 @@
                 .catch(error => console.error("Error deleting document: ", error));
         }
 
-        /* --- ALGEMENE TAKEN CRUD --- */
+        /* --- ALGEMENE TAKEN CRUD (Uses activeUserId) --- */
         function saveAlgemeneTaak() {
              if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
              
