@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start - Flexibele Wekelijkse Planner</title>
 
-    <!-- Google Fonts - Roboto --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK's laden (Alleen App, Auth, Firestore) --><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase SDK's laden (Alleen App, Auth, Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -47,17 +49,17 @@
         }
 
         .login-card {
-            max-width: 380px; /* Iets breder voor betere look */
-            padding: 35px; /* Meer padding */
+            max-width: 380px; 
+            padding: 35px; 
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             background-color: rgba(255, 255, 255, 0.95); 
         }
 
         .login-card h1 {
-            color: #1e8449; /* Groen */
+            color: #ff8c00; /* Oranje (voor de branding) */
             margin-bottom: 25px;
-            font-size: 2em; /* Groter lettertype */
+            font-size: 2em; 
             font-weight: 500;
             border-bottom: none;
         }
@@ -65,17 +67,17 @@
         #google-login-button {
             background-color: white; 
             color: #444; 
-            padding: 10px 25px; /* Meer padding */
-            border: 1px solid #ddd; /* Lichtere rand */
-            border-radius: 5px; /* Iets ronder */
+            padding: 10px 25px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
             cursor: pointer;
-            font-size: 1.1em; /* Groter lettertype */
+            font-size: 1.1em; 
             font-weight: 500;
             transition: background-color 0.3s, box-shadow 0.3s;
             display: flex;
             align-items: center;
-            margin: 25px auto 0 auto; /* Meer marge */
-            box-shadow: 0 2px 6px 0 rgba(0,0,0,.15); /* Subtielere schaduw */
+            margin: 25px auto 0 auto; 
+            box-shadow: 0 2px 6px 0 rgba(0,0,0,.15); 
         }
 
         #google-login-button:hover {
@@ -83,20 +85,21 @@
             box-shadow: 0 4px 10px 0 rgba(0,0,0,.2);
         }
 
-        .google-icon { /* Gebruik van een div met background-image */
+        .google-icon { 
             width: 24px; 
             height: 24px;
             margin-right: 12px;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDYuMjVWMjQuMjVDMTQuNSAyNC4yNSAxNyAyMy4yNSAxOC42OCAyMS42NkMxMi43NSAyMC43NSAxMS41IDExLjUzIDEwLjg2IDYuMjVDMTAuODYgNi4yNSAxMS41IDYuMjUgMTIgNi4yNVoiIGZpbGw9IiNFQTQzMzUiLz4KPHBhdGggZD0iTTEyIDYuMjVWMjQuMjVDMTAuNyAyNC4yNSA5LjYyNSAyNC4wNSA4LjYyNSAyMy43OUMxMC44NiAxMS41MyAxMi43NSAyMC43NSAxOC42OCAyMS42NkM2LjI1IDIyLjUgOC4yNSAyMC41IDEyIDYuMjVaIiBmaWxsPSIjRkJDMDM0Ii8+CjxwYXRoIGQ9Ik0xMiA2LjI1VjI0LjI1QzExLjU2IDI0LjI1IDEwLjk1IDI0LjI1IDEwLjM5IDI0LjI1QzEwLjIgMTcuNzkgMTAuODcgNi4yNSAxMiA2LjI1WiIgZmlsbD0iIzM0QTg1MyIvPgo8cGF0aCBkPSJNMjAuNTcgMTMuMTdDMjAuNTcgMTMuMTcgMjIgMTEuMTcgMjIuNzMgOS4zN0MyMi43MyA5LjM3IDIwLjU3IDcuMjcgMTguOTUgNi4wMkMyMi44NyA0LjgyIDIzLjg1IDAgMTggMEMxNy4xNCA1LjU1IDEyLjUyIDYuNzUgMTEuNTIgNi43NUM2LjczIDYuNzUgMi42IDYuMzcgMCA2LjM3QzAgNy4xNyAwIDcuNzYgMCA3Ljk3QzUuNjUgMTEuMTcgMTEuNTIgMTIuNDUgMTEuNTIgMTIuNDVDMTYuNzUgMTIuNDUgMTkuMDggMTIuMTkgMjAuNTcgMTMuMTdaIiBmaWw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEyIDYuMjVWMi41QzExLjUgMi41IDEwLjgzIDIuNSAxMC4yIDIuNUM2LjYzIDUuNzUgNi4xOSA2LjEyIDYgNi4xMkM1Ljg2IDYuMTIgNS43NSA2LjEyIDUuNjcgNi4xMkM1LjQ3IDYuMTIgNS4yNyA2LjEyIDUuMDggNi4xMkM1LjA4IDYuMTIgNS43NSA1LjUxIDcuNSAzLjU1QzkuNDQgMS42IDExLjQyIDAuMjUgMTIgMC4yNUMxMiAwLjI1IDEyIDYuMjUgMTIgNi4yNVoiIGZpbGw9IiNFQTQzMzUiLz4KPHBhdGggZD0iTTE4LjY4IDIxLjY2QzE3IDIzLjI1IDE0LjUgMjQuMjUgMTIgMjQuMjVDMTIuNTYgMjQuMjUgMTIuOTMgMjQuMjUgMTMuMjMgMjQuMjVDMTMuMiAzMC40MiAxMS40NyAyNy40OSAxMC44NiAyNC44MUMxMC44NiAyNC44MSAxMS4yNyAyMi45MiAxMiAyMS42NkMxMiAyMS42NiAxMiAyMS42NiAxMiAyMS42NkgxOC42OFoiIGZpbGw9IiNGQkMwMzQiLz4KPC9zdmc+');
+            /* Ingebouwde SVG van het Google G-logo */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDYuMjVWMjQuMjVDMTQuNSAyNC4yNSAxNyAyMy4yNSAxOC42OCAyMS42NkMxMi43NSAyMC43NSAxMS41IDExLjUzIDEwLjg2IDYuMjVDMTAuODYgNi4yNSAxMS41IDYuMjUgMTIgNi4yNVoiIGZpbGw9IiNFQTQzMzUiLz4KPHBhdGggZD0iTTEyIDYuMjVWMjQuMjVDMTAuNyAyNC4yNSA5LjYyNSAyNC4wNSA4LjYyNSAyMy43OUMxMC44NiAxMS41MyAxMi43NSAyMC43NSAxOC42OCAyMS42NkM2LjI1IDIyLjUgOC4yNSAyMC41IDEyIDYuMjVaIiBmaWxsPSIjRkJDMDM0Ii8+CjxwYXRoIGQ9Ik0xMiA2LjI1VjI0LjI1QzExLjU2IDI0LjI1IDEwLjk1IDI0LjI1IDEwLjM5IDI0LjI1QzEwLjIgMTcuNzkgMTAuODcgNi4yNSAxMiA2LjI1WiIgZmlsbD0iIzM0QTg1MyIvPgo8cGF0aCBkPSJNMjAuNTcgMTMuMTdDMjAuNTcgMTMuMTcgMjIgMTEuMTcgMjIuNzMgOS4zN0MyMi43MyA5LjM3IDIwLjU3IDcuMjcgMTguOTUgNi4wMkMyMi44NyA0LjgyIDIzLjg1IDAgMTggMEMxNy4xNCA1LjU1IDEyLjUyIDYuNzUgMTEuNTIgNi43NUM2LjczIDYuNzUgMi42IDYuMzcgMCA2LjM3QzAgNy4xNyAwIDcuNzYgMCA3Ljk3QzUuNjUgMTEuMTcgMTEuNTIgMTIuNDUgMTEuNTIgMTIuNDVDMTYuNzUgMTIuNDUgMTkuMDggMTIuMTkgMjAuNTcgMTMuMTdaIiBmaWw9IiM0Mjg1RjQiLz4KPHBhdGg dD0iTTEyIDYuMjVWMi41QzExLjUgMi41IDEwLjgzIDIuNSAxMC4yIDIuNUM2LjYzIDUuNzUgNi4xOSA2LjEyIDYgNi4xMkM1Ljg2IDYuMTIgNS43NSA2LjEyIDUuNjcgNi4xMkM1LjQ3IDYuMTIgNS4yNyA2LjEyIDUuMDggNi4xMkM1LjA4IDYuMTIgNS43NSA1LjUxIDcuNSAzLjU1QzkuNDQgMS42IDExLjQyIDAuMjUgMTIgMC4yNUMxMiAwLjI1IDEyIDYuMjUgMTIgNi4yNVoiIGZpbGw9IiNFQTQzMzUiLz4KPHBhdGg gTTE4LjY4IDIxLjY2QzE3IDIzLjI1IDE0LjUgMjQuMjUgMTIgMjQuMjVDMTIuNTYgMjQuMjUgMTIuOTMgMjQuMjUgMTMuMjMgMjQuMjVDMTMuMiAzMC40MiAxMS40NyAyNy40OSAxMC44NiAyNC44MUMxMC44NiAyNC44MSAxMS4yNyAyMi45MiAxMiAyMS42NkMxMiAyMS42NiAxMiAyMS42NiAxMiAyMS42NkgxOC42OFoiIGZpbGw9IiNGQkMwMzQiLz4KPC9zdmc+');
             background-size: cover;
             background-repeat: no-repeat;
         }
 
         header {
             width: 100%;
-            background-color: #27ae60; /* Groene header */
+            background-color: #ff8c00; /* Oranje header */
             color: white;
-            padding: 12px 25px; /* Meer padding */
+            padding: 12px 25px; 
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -106,14 +109,14 @@
         header h1 {
             margin: 0;
             color: white;
-            font-size: 1.6em; /* Iets groter */
+            font-size: 1.6em; 
             font-weight: 500;
         }
 
         #logout-button {
-            background-color: #c0392b; /* Rood */
+            background-color: #e74c3c; /* Rood */
             color: white;
-            padding: 9px 16px; /* Iets meer padding */
+            padding: 9px 16px; 
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -122,28 +125,28 @@
         }
 
         #logout-button:hover {
-            background-color: #e74c3c;
+            background-color: #c0392b;
         }
 
         /* Styling voor het invoerformulier */
         .planning-form-container {
             background-color: #fff;
-            padding: 25px; /* Meer padding */
+            padding: 25px; 
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 30px;
             display: grid;
-            gap: 15px; /* Meer ruimte tussen elementen */
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Flexibeler */
+            gap: 15px; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             align-items: center;
         }
 
         .planning-form-container input, 
         .planning-form-container select, 
         .planning-form-container button {
-            padding: 12px; /* Meer padding */
+            padding: 12px; 
             border: 1px solid #ddd;
-            border-radius: 5px; /* Iets ronder */
+            border-radius: 5px; 
             font-size: 1em;
             width: 100%;
             box-sizing: border-box;
@@ -151,7 +154,7 @@
         }
         
         .planning-form-container button {
-            background-color: #007bff; /* Blauw */
+            background-color: #ff8c00; /* Oranje knop */
             color: white;
             border: none;
             cursor: pointer;
@@ -160,7 +163,7 @@
             transition: background-color 0.3s;
         }
         .planning-form-container button:hover {
-            background-color: #0056b3;
+            background-color: #e67e22;
         }
 
         /* Overzicht Toetsen Styling */
@@ -178,7 +181,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.05em; /* Iets groter */
+            font-size: 1.05em; 
         }
 
         .toets-item:last-child {
@@ -212,37 +215,40 @@
             border-collapse: collapse;
             margin-top: 25px;
             background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Zwaardere schaduw */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
             border-radius: 8px;
             overflow: hidden;
         }
         
         .studie-tabel th, .studie-tabel td {
-            padding: 15px; /* Meer padding */
+            padding: 15px; 
             text-align: left;
-            border-bottom: 1px solid #eee; /* Lichtere lijn */
-            vertical-align: top; /* Textarea bovenin */
+            border-bottom: 1px solid #eee; 
+            vertical-align: top; 
         }
 
         .studie-tabel th {
-            background-color: #ecf0f1; /* Lichtere achtergrond */
-            color: #555; /* Donkerder grijs */
+            background-color: #ff8c00; /* Oranje header */
+            color: white;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.95em;
+            border-bottom: none;
         }
         
         .studie-tabel tbody tr:hover {
-            background-color: #fcfcfc; /* Subtiele hover */
+            background-color: #fcfcfc; 
         }
 
-        /* Specifieke styling voor de rijen op basis van status */
+        /* Specifieke styling voor de rijen op basis van status (GROEN/ORANJE) */
         .studie-tabel tr.week-completed {
             background-color: #e6ffe6; /* Lichtgroen voor afgerond */
+            border-left: 5px solid #27ae60;
         }
 
         .studie-tabel tr.week-pending {
             background-color: #fff4e6; /* Lichtoranje voor openstaand */
+            border-left: 5px solid #ff8c00;
         }
         
         /* Bewerkbare tekstvelden in de tabel */
@@ -254,12 +260,12 @@
             resize: vertical;
             font-size: 0.95em;
             border-radius: 4px;
-            box-sizing: border-box; /* Zorgt dat padding de breedte niet beïnvloedt */
+            box-sizing: border-box; 
         }
         
         .taak-item input[type="checkbox"] {
             margin-right: 8px;
-            transform: scale(1.3); /* Grotere checkbox */
+            transform: scale(1.3); 
             accent-color: #27ae60; /* Groene kleur checkbox */
             cursor: pointer;
         }
@@ -309,27 +315,30 @@
                 color: #555;
             }
             .studie-tabel textarea {
-                width: calc(100% - 10px); /* Iets meer ruimte */
+                width: calc(100% - 10px); 
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) --><div id="login-page" style="display: none;">
+    <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) -->
+    <div id="login-page" style="display: none;">
         <div class="login-card">
             <h1>Welkom bij Study-Start</h1>
             <p>Jouw persoonlijke studieplanner. Log in om je studie-overzicht te laden.</p>
             
             <button id="google-login-button" onclick="signInWithGoogle()">
-                <div class="google-icon"></div> <!-- Hier wordt het Google-icoon via CSS getoond -->Inloggen met Google
+                <div class="google-icon"></div> <!-- Hier wordt het Google-icoon via CSS getoond -->
+                Inloggen met Google
             </button>
 
             <p id="login-status-splash" style="margin-top: 20px; font-size: 0.9em; color: #888;">Controleert inlogstatus...</p>
         </div>
     </div>
 
-    <!-- 2. PLANNER PAGINA (Zichtbaar als WEL ingelogd) --><div id="planner-page" style="display: none;">
+    <!-- 2. PLANNER PAGINA (Zichtbaar als WEL ingelogd) -->
+    <div id="planner-page" style="display: none;">
         <header>
             <h1 id="planner-header">Study-Start</h1>
             <div style="display: flex; align-items: center;">
@@ -339,10 +348,11 @@
         </header>
 
         <div style="padding: 20px;">
-            <p id="welkom-boodschap" style="font-size: 1.1em; color: #27ae60; font-weight: 500;">Welkom!</p>
+            <p id="welkom-boodschap" style="font-size: 1.1em; color: #ff8c00; font-weight: 500;">Welkom!</p>
             <div id="loading-indicator">Laden van persoonlijke planning...</div>
 
-            <!-- NIEUWE TOETS INVOER SECTIE (Vereenvoudigd) --><div style="margin-bottom: 30px;">
+            <!-- NIEUWE TOETS INVOER SECTIE (Vereenvoudigd) -->
+            <div style="margin-bottom: 30px;">
                 <h3>+ Nieuwe Toets Inplannen</h3>
                 <div class="planning-form-container">
                     <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
@@ -357,12 +367,17 @@
                 <p id="feedback-message" style="color: red; margin-top: 10px;"></p>
             </div>
             
-            <!-- TOETSEN OVERZICHT SECTIE --><div id="toetsen-overzicht">
+            <!-- TOETSEN OVERZICHT SECTIE -->
+            <div id="toetsen-overzicht">
                 <h2>📚 Alle Ingeplande Toetsen</h2>
                 <div id="toetsen-lijst">
-                    <!-- Dynamische lijst met toetsen komt hier --></div>
+                    <!-- Dynamische lijst met toetsen komt hier -->
+                </div>
             </div>
-            <!-- EINDE TOETSEN OVERZICHT SECTIE --><!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) --><h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen & Afvinken)</h2>
+            <!-- EINDE TOETSEN OVERZICHT SECTIE -->
+            
+            <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) -->
+            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen & Afvinken)</h2>
             <table class="studie-tabel">
                 <thead>
                     <tr>
@@ -374,11 +389,17 @@
                     </tr>
                 </thead>
                 <tbody id="planner-table-body">
-                    <!-- Dynamische taken komen hier --></tbody>
+                    <!-- Dynamische taken komen hier -->
+                </tbody>
             </table>
-            <!-- EINDE PLANNER TABEL --></div>
+            <!-- EINDE PLANNER TABEL -->
+
+        </div>
     </div>
-    <!-- EINDE PLANNER PAGINA --><script>
+    <!-- EINDE PLANNER PAGINA -->
+
+
+    <script>
         // =================================================================
         // 1. FIREBASE INITIALISATIE EN CONFIGURATIE (met jouw gegevens)
         // =================================================================
@@ -439,14 +460,14 @@
         function signInWithGoogle() {
           const provider = new firebase.auth.GoogleAuthProvider();
           auth.signInWithPopup(provider).catch((error) => {
-            console.error("Login Fout:", error.message);
-            document.getElementById('login-status-splash').innerText = `Fout: Login mislukt. Is Google-inloggen geactiveerd in Firebase? (${error.code})`;
+            console.error("Login Error:", error.message);
+            document.getElementById('login-status-splash').innerText = `Error: Login failed. Check console for details. (${error.code})`;
           });
         }
 
         function signOutUser() {
           auth.signOut().catch((error) => {
-             console.error("Uitlog Fout:", error.message);
+             console.error("Logout Error:", error.message);
           });
         }
         // =================================================================
@@ -464,15 +485,17 @@
                 loadingIndicator.style.display = 'none'; 
                 const planningItems = [];
                 snapshot.forEach(doc => {
+                    // Item ophalen, inclusief de document ID
                     planningItems.push({ id: doc.id, ...doc.data() });
                 });
                 
+                // UI bijwerken
                 updateOverzichtUI(planningItems); 
                 updatePlannerUI(planningItems); 
 
             }, error => {
-                console.error("Fout bij het laden van Firestore data: ", error);
-                loadingIndicator.innerText = "Fout bij laden. Controleer console.";
+                console.error("Error loading Firestore data: ", error);
+                loadingIndicator.innerText = "Error loading planning data. Check console.";
             });
         }
 
@@ -484,7 +507,7 @@
 
             if (!vak || !datumStr || !currentUserId) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle vakken en de toetsdatum in.";
+                feedbackEl.innerText = "Vul alle velden in en zorg dat je bent ingelogd.";
                 return;
             }
             
@@ -502,56 +525,56 @@
                 toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
                 controle_moment: controleMoment,
                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
-                weken: {}, // Opslag voor handmatige wekelijkse taken
-                is_afgerond: false // Voor de eindtoets zelf
+                weken: {}, // Storage for manual weekly tasks (taak: {taak: 'text', afgerond: false})
+                is_afgerond: false // For the end exam itself
             };
 
             db.collection('users').doc(currentUserId).collection('planning').add(planningData)
                 .then(() => {
                     feedbackEl.style.color = '#27ae60';
-                    feedbackEl.innerText = "Nieuwe planning aangemaakt! Vul nu de wekelijkse taken in de tabel in.";
+                    feedbackEl.innerText = "Nieuwe planning aangemaakt!";
                     document.getElementById('vakInput').value = '';
                     document.getElementById('datumInput').value = '';
                 })
                 .catch(error => {
                     feedbackEl.style.color = '#c0392b';
                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
-                    console.error("Fout bij opslaan: ", error);
+                    console.error("Error saving data: ", error);
                 });
         }
         
         window.deletePlanning = function(docId) {
             if (!currentUserId || !confirm(`Weet je zeker dat je deze toets wilt verwijderen?`)) return;
             db.collection('users').doc(currentUserId).collection('planning').doc(docId).delete()
-                .catch(error => console.error("Fout bij verwijderen document: ", error));
+                .catch(error => console.error("Error deleting document: ", error));
         }
 
         /**
-         * Update de wekelijkse taaktekst (textarea) in Firestore.
+         * Update the weekly task text (textarea) in Firestore.
          */
         window.updateWeeklyTaak = function(docId, weekKey, value) {
             if (!currentUserId) return;
             
-            // Gebruik de `.` notatie om direct de sub-map te updaten
+            // Use the `.` notation to directly update the sub-map
             db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.taak`]: value
-            }).catch(error => console.error("Fout bij opslaan taaktekst: ", error));
+            }).catch(error => console.error("Error saving task text: ", error));
         }
 
         /**
-         * Schakelt de wekelijkse afvinkstatus (checkbox) in Firestore.
+         * Toggles the weekly completion status (checkbox) in Firestore.
          */
         window.toggleWeeklyCompletion = function(docId, weekKey, isChecked) {
             if (!currentUserId) return;
 
              db.collection('users').doc(currentUserId).collection('planning').doc(docId).update({
                 [`weken.${weekKey}.afgerond`]: isChecked
-            }).catch(error => console.error("Fout bij updaten status: ", error));
+            }).catch(error => console.error("Error updating completion status: ", error));
         }
         // =================================================================
 
         // =================================================================
-        // 4. UI UPDATES (Overzicht & Dynamische Planning)
+        // 4. UI UPDATES (Overview & Dynamic Planning)
         // =================================================================
 
         function updateOverzichtUI(planningItems) {
@@ -575,4 +598,166 @@
                         <strong>${item.vak}</strong> 
                         <span style="color: ${statusKleur}; font-weight: bold;">${statusText}</span>
                     </span>
-                    <button onclick="delete
+                    <button onclick="deletePlanning('${item.id}')">Verwijder Toets</button>
+                `;
+                toetsenLijst.appendChild(itemDiv);
+            });
+        }
+
+        /**
+         * Calculates the weeks between now and the exam and fills the weekly planner table.
+         * The main function for generating the schedule overview.
+         */
+        function updatePlannerUI(planningItems) {
+            const plannerTableBody = document.getElementById('planner-table-body');
+            plannerTableBody.innerHTML = '';
+            
+            if (planningItems.length === 0) {
+                plannerTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
+                return;
+            }
+
+            const vandaag = new Date();
+            vandaag.setHours(0, 0, 0, 0); 
+
+            // Map to collect tasks per week (WeekKey -> {week data, tasks: []})
+            const weekTaken = {}; 
+            
+            planningItems.forEach(item => {
+                const docId = item.id;
+                const toetsDatum = item.toetsdatum.toDate();
+
+                let huidigeWeekStart = new Date(vandaag);
+                // Find the start of the current week (Sunday)
+                huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); 
+
+                while (huidigeWeekStart <= toetsDatum) {
+                    const weekNummer = getWeekNumber(huidigeWeekStart);
+                    const year = huidigeWeekStart.getFullYear();
+                    const weekKey = `${year}-${weekNummer}`; // E.g., 2025-48
+                    
+                    const weekEndDeadline = new Date(huidigeWeekStart);
+                    weekEndDeadline.setDate(huidigeWeekStart.getDate() + 6); // Sunday
+
+                    // Only show weeks up to AND including the exam week
+                    if (weekEndDeadline < vandaag) {
+                        // Skip already passed weeks
+                        huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
+                        continue;
+                    }
+
+                    // Get saved status/text, or use defaults
+                    const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : {
+                        taak: "",
+                        afgerond: false
+                    };
+
+                    if (!weekTaken[weekKey]) {
+                        weekTaken[weekKey] = {
+                            weekNummer: weekNummer,
+                            deadline: weekEndDeadline.toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' }),
+                            taken: []
+                        };
+                    }
+                    
+                    let controleMomentText = item.controle_moment !== 'Geen' ? item.controle_moment : 'N.v.t.';
+                    let isToetsWeek = weekEndDeadline >= toetsDatum && huidigeWeekStart <= toetsDatum;
+
+                    if (isToetsWeek) {
+                         // Exam day is in this week, overwrite the control moment
+                        controleMomentText = `TOETS: ${item.vak} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
+                    }
+                    
+                    // Add the task to the weekTaken map
+                    weekTaken[weekKey].taken.push({
+                        docId: docId,
+                        vak: item.vak,
+                        controle: controleMomentText,
+                        taakTekst: weekData.taak,
+                        afgerond: weekData.afgerond,
+                        weekKey: weekKey,
+                        isToetsWeek: isToetsWeek
+                    });
+                    
+                    // Go to the next week
+                    huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
+                }
+            });
+
+            // --- Render the collected tasks to the table ---
+            for (const weekKey in weekTaken) {
+                const week = weekTaken[weekKey];
+                
+                const row = plannerTableBody.insertRow();
+                const isWeekCompleted = week.taken.every(t => t.afgerond);
+                
+                // Add styling class for color coding (Green/Orange)
+                row.className = isWeekCompleted ? 'week-completed' : 'week-pending';
+
+                // WEEK AND DEADLINE
+                row.innerHTML += `<td data-label="WEEK">WEEK ${week.weekNummer}<br>(t/m zo ${week.deadline})</td>`;
+                
+                // SUBJECTS
+                const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
+                row.innerHTML += `<td data-label="VAK">${alleVakkenInWeek}</td>`;
+                
+                // HOMEWORK (Editable text area)
+                let thuisTaakHTML = week.taken.map(taak => {
+                    let taakContent = taak.taakTekst;
+                    
+                    if (taak.isToetsWeek) {
+                        // If it's the exam week, show the final check info instead of a large textarea
+                        taakContent = `<span style="font-weight: bold; color: #c0392b;">Laatste herhaling voor toets!</span>`;
+                    }
+                    
+                    return `
+                        <div style="margin-bottom: 10px; border-left: 2px solid ${taak.afgerond ? '#27ae60' : '#ff8c00'}; padding-left: 5px;">
+                            <strong>${taak.vak}:</strong>
+                            ${taak.isToetsWeek ? taakContent : `
+                                <textarea 
+                                    onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
+                                    placeholder="Welke paragrafen/oefeningen deze week?"
+                                    data-doc-id="${taak.docId}"
+                                    data-week-key="${taak.weekKey}"
+                                >${taakContent}</textarea>
+                            `}
+                        </div>
+                    `;
+                }).join('');
+                row.innerHTML += `<td data-label="THUIS DOEN">${thuisTaakHTML}</td>`;
+                
+                // CONTROL MOMENT
+                const controleMomenten = week.taken.map(t => t.controle).filter(Boolean).join('<br>');
+                row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleMomenten || 'N.v.t.'}</td>`;
+                
+                // STATUS (Checkable per week)
+                const taak = week.taken[0]; 
+                const weekAfgerond = week.taken.every(t => t.afgerond);
+                
+                row.innerHTML += `
+                    <td data-label="STATUS">
+                        <div class="taak-item ${weekAfgerond ? 'completed' : ''}">
+                            <input type="checkbox" id="check-${weekKey}-${taak.docId}" 
+                                   onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked)"
+                                   ${weekAfgerond ? 'checked' : ''}>
+                            <label for="check-${weekKey}-${taak.docId}">${weekAfgerond ? 'Afgerond' : 'Open'}</label>
+                        </div>
+                    </td>
+                `;
+            }
+        }
+        
+        /**
+         * Helper function to get the ISO week number.
+         */
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
+        // =================================================================
+    </script>
+</body>
+</html>
