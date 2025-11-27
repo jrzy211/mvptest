@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studieplanner & Progressietracker (study-start MVP)</title>
+    <title>Study-Start - De Georganiseerde Studieplanner</title>
 
     <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,22 +16,102 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
+        /* Algemene styling */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
+            margin: 0;
             background-color: #f4f7f6;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        h1 {
-            color: #1e8449; /* Donkergroen */
-            border-bottom: 3px solid #1e8449;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        /* Paginaweergaven */
+        #login-page, #planner-page {
+            flex-grow: 1;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        /* Styling voor de Login/Logout knoppen */
-        #login-button, #logout-button {
+        /* Login Pagina Styling (Jouw Landingspagina) */
+        #login-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #ffffff; /* Wit als basis voor jouw ontwerp */
+            padding-top: 100px;
+        }
+
+        .login-card {
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+
+        .login-card h1 {
+            color: #1e8449;
+            margin-bottom: 30px;
+            border-bottom: none;
+        }
+        
+        /* Google Login Knop */
+        #google-login-button {
+            background-color: #4285F4; /* Google Blue */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        #google-login-button:hover {
+            background-color: #357ae8;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-color: white;
+            padding: 5px;
+            border-radius: 2px;
+        }
+
+        /* Planner Pagina Styling */
+        header {
+            width: 100%;
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            color: white;
+            font-size: 1.5em;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        #logout-button {
+            background-color: #c0392b;
+            color: white;
             padding: 8px 15px;
             border: none;
             border-radius: 5px;
@@ -39,22 +119,8 @@
             font-weight: bold;
             transition: background-color 0.3s;
         }
-        #login-button {
-            background-color: #3498db; /* Blauw */
-            color: white;
-        }
-        #login-button:hover {
-            background-color: #2980b9;
-        }
-        #logout-button {
-            background-color: #e74c3c; /* Rood */
-            color: white;
-        }
-        #logout-button:hover {
-            background-color: #c0392b;
-        }
 
-
+        /* Overige Planner Elementen */
         .studie-tabel {
             width: 100%;
             border-collapse: collapse;
@@ -62,7 +128,8 @@
             background-color: #fff;
             margin-bottom: 30px;
         }
-
+        
+        /* De rest van de tabel CSS... */
         .studie-tabel th, .studie-tabel td {
             border: 1px solid #ddd;
             padding: 12px;
@@ -71,7 +138,7 @@
         }
 
         .studie-tabel th {
-            background-color: #27ae60; /* Medium Groen */
+            background-color: #27ae60;
             color: white;
             font-weight: bold;
             text-transform: uppercase;
@@ -148,188 +215,213 @@
 </head>
 <body>
 
-    <!-- LOGIN SECTIE -->
-    <div style="text-align: right; margin-bottom: 20px;">
-        <span id="login-status">Niet ingelogd.</span>
-        <button id="login-button" onclick="signInWithGoogle()">Login met Google</button>
-        <button id="logout-button" onclick="signOutUser()" style="display: none;">Uitloggen</button>
+    <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) -->
+    <div id="login-page" style="display: none;">
+        <!-- Dit is de plek voor JOUW afbeelding en ontwerp -->
+        <div class="login-card">
+            <h1>Welkom bij Study-Start</h1>
+            <p>Jouw persoonlijke studieplanner, agenda en progressietracker in één. Log in om je studie-overzicht te laden.</p>
+            
+            <!-- De Google Login Knop -->
+            <button id="google-login-button" onclick="signInWithGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" alt="Google logo" class="google-icon">
+                Inloggen met Google
+            </button>
+
+            <!-- Statusmelding -->
+            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.9em; color: #888;">Controleert inlogstatus...</p>
+        </div>
     </div>
-    <!-- EINDE LOGIN SECTIE -->
 
-    <h1>Studieplanner & Progressietracker</h1>
-    <p>Vink taken af om je progressie bij te houden. Zodra je inlogt, kunnen we deze data in de toekomst opslaan in de database.</p>
+    <!-- 2. PLANNER PAGINA (Zichtbaar als WEL ingelogd) -->
+    <div id="planner-page" style="display: none;">
+        <header>
+            <h1 id="planner-header">Study-Start</h1>
+            <div style="display: flex; align-items: center;">
+                <span id="login-status-header" style="margin-right: 15px; font-size: 0.9em;"></span>
+                <button id="logout-button" onclick="signOutUser()">Uitloggen</button>
+            </div>
+        </header>
 
-    <!-- KALENDER SECTIE -->
-    <div id="kalender-container" style="margin-bottom: 50px;">
-        <h2>🗓️ Mijn Persoonlijke Studieplanning</h2>
-        <div id='kalender'></div>
+        <div style="padding: 20px;">
+            <p id="welkom-boodschap" style="font-size: 1.1em; color: #27ae60; font-weight: 500;">Welkom!</p>
+            
+            <!-- KALENDER SECTIE -->
+            <div id="kalender-container" style="margin-bottom: 50px;">
+                <h2>🗓️ Mijn Persoonlijke Studieplanning</h2>
+                <p>Bekijk en beheer alle deadlines en bijlessen in de kalenderweergave.</p>
+                <div id='kalender'></div>
+            </div>
+            <!-- EINDE KALENDER SECTIE -->
+
+            <!-- PLANNER TABEL -->
+            <h2 style="color: #333;">📅 Overzicht en Progressie</h2>
+            <table class="studie-tabel">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">WEEK (Deadline)</th>
+                        <th style="width: 10%;">Vak</th>
+                        <th style="width: 30%;">THUIS DOEN (Voorbereiden)</th>
+                        <th style="width: 25%;">IN DE BIJLES (Samen doen)</th>
+                        <th style="width: 20%;">STATUS & TOETSEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- WEEK 48 -->
+                    <tr id="week-48">
+                        <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
+                        <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="48" data-taak="nask1">
+                                <input type="checkbox" id="nask1"><label for="nask1">• NaSk H5: §1 en §2</label>
+                            </div>
+                            <div class="taak-item" data-week="48" data-taak="wis1">
+                                <input type="checkbox" id="wis1"><label for="wis1">• Wis H3: §1</label>
+                            </div>
+                            <div class="taak-item" data-week="48" data-taak="bio1">
+                                <input type="checkbox" id="bio1"><label for="bio1">• Bio H8: §8.1</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">N.v.t.</td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            Start gemaakt. Focus op NL toets (27/11).
+                        </td>
+                    </tr>
+                    <!-- WEEK 49 -->
+                    <tr id="week-49">
+                        <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
+                        <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="49" data-taak="nask2">
+                                <input type="checkbox" id="nask2"><label for="nask2">• NaSk H5: §4 (Afronden voor toets)</label>
+                            </div>
+                            <div class="taak-item" data-week="49" data-taak="wis2">
+                                <input type="checkbox" id="wis2"><label for="wis2">• Wis H3: §2</label>
+                            </div>
+                            <div class="taak-item" data-week="49" data-taak="bio2">
+                                <input type="checkbox" id="bio2"><label for="bio2">• Bio H8: §8.2</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">
+                            <div class="taak-item" data-week="49" data-taak="bijles_nask1">
+                                <input type="checkbox" id="bijles_nask1"><label for="bijles_nask1">Bijles 04/12 (NaSk): Samen §3 maken & uitleg.</label>
+                            </div>
+                            <div class="taak-item" data-week="49" data-taak="bijles_nask2">
+                                <input type="checkbox" id="bijles_nask2"><label for="bijles_nask2">Bijles 09/12 (NaSk): Proeftoets maken / Herhalen.</label>
+                            </div>
+                        </td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
+                        </td>
+                    </tr>
+                    <!-- WEEK 50 -->
+                    <tr id="week-50">
+                        <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
+                        <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="50" data-taak="wis3">
+                                <input type="checkbox" id="wis3"><label for="wis3">• Wis H3: §3</label>
+                            </div>
+                            <div class="taak-item" data-week="50" data-taak="bio3">
+                                <input type="checkbox" id="bio3"><label for="bio3">• Bio H8: §8.3</label>
+                            </div>
+                            <div class="taak-item" data-week="50" data-taak="wis_resit1">
+                                <input type="checkbox" id="wis_resit1"><label for="wis_resit1">• Wis H1 (Resit): §1 en §2</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">
+                            <span style="font-weight: bold; color: red;">NaSk Toets (10/12)</span><br>
+                            <div class="taak-item" data-week="50" data-taak="bijles_wis1">
+                                <input type="checkbox" id="bijles_wis1"><label for="bijles_wis1">Bijles 16/12 (Wis): Samen §4 maken (lastige stof).</label>
+                            </div>
+                        </td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
+                        </td>
+                    </tr>
+                    <!-- WEEK 51 -->
+                    <tr id="week-51">
+                        <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
+                        <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="51" data-taak="wis4">
+                                <input type="checkbox" id="wis4"><label for="wis4">• Wis H3: Afronden</label>
+                            </div>
+                            <div class="taak-item" data-week="51" data-taak="bio4">
+                                <input type="checkbox" id="bio4"><label for="bio4">• Bio H8: §8.4 (Klaar!)</label>
+                            </div>
+                            <div class="taak-item" data-week="51" data-taak="wis_resit2">
+                                <input type="checkbox" id="wis_resit2"><label for="wis_resit2">• Wis H1 (Resit): §3</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">
+                            <div class="taak-item" data-week="51" data-taak="bijles_wis2">
+                                <input type="checkbox" id="bijles_wis2"><label for="bijles_wis2">Bijles 18/12 (Wis): Samen §5 maken & H3 afsluiten.</label>
+                            </div>
+                        </td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
+                        </td>
+                    </tr>
+                    <!-- VAKANTIE -->
+                    <tr class="vakantie-row" id="week-vakantie">
+                        <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
+                        <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
+                        <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
+                    </tr>
+                    <!-- WEEK 2 -->
+                    <tr id="week-2">
+                        <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
+                        <td data-label="Vak">Wis H1<br>Wis H2</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="2" data-taak="wis_resit3">
+                                <input type="checkbox" id="wis_resit3"><label for="wis_resit3">• Wis H1: §4 en §5 (Afronden)</label>
+                            </div>
+                            <div class="taak-item" data-week="2" data-taak="wis_h2_1">
+                                <input type="checkbox" id="wis_h2_1"><label for="wis_h2_1">• Wis H2: §1 en §2</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">
+                            <div class="taak-item" data-week="2" data-taak="bijles_bio_herhaal">
+                                <input type="checkbox" id="bijles_bio_herhaal"><label for="bijles_bio_herhaal">Bijles 05/01 (Bio): Herhalen voor toets.</label>
+                            </div>
+                            <div class="taak-item" data-week="2" data-taak="bijles_wis_herhaal">
+                                <input type="checkbox" id="bijles_wis_herhaal"><label for="bijles_wis_herhaal">Bijles 06/01 (Wis): Herhalen voor toets.</label>
+                            </div>
+                            <span style="font-weight: bold; color: red;">Toetsen: 08/1 (Wis) & 09/1 (Bio).</span>
+                        </td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            Toetsweek!<br>In het weekend focus op Herkansing.
+                        </td>
+                    </tr>
+                    <!-- WEEK 3 -->
+                    <tr id="week-3">
+                        <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
+                        <td data-label="Vak">Wis H1/2</td>
+                        <td data-label="THUIS DOEN">
+                            <div class="taak-item" data-week="3" data-taak="wis_h2_2">
+                                <input type="checkbox" id="wis_h2_2"><label for="wis_h2_2">• Wis H2: §3</label>
+                            </div>
+                        </td>
+                        <td data-label="IN DE BIJLES">
+                            <div class="taak-item" data-week="3" data-taak="bijles_wis_h2">
+                                <input type="checkbox" id="bijles_wis_h2"><label for="bijles_wis_h2">Bijles 13/01 (Wis): Samen §4 (H2) maken + Vragen H1.</label>
+                            </div>
+                            <div class="taak-item" data-week="3" data-taak="bijles_wis_rep">
+                                <input type="checkbox" id="bijles_wis_rep"><label for="bijles_wis_rep">Bijles 15/01 (Wis): Generale repetitie (Oefentoets).</label>
+                            </div>
+                            <span style="font-weight: bold; color: red;">Herkansing 16/01</span>
+                        </td>
+                        <td data-label="STATUS & TOETSEN" class="status-cell">
+                            Je hebt alles behandeld.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- EINDE PLANNER TABEL -->
+        </div>
     </div>
-    <!-- EINDE KALENDER SECTIE -->
-
-    <table class="studie-tabel">
-        <thead>
-            <tr>
-                <th style="width: 15%;">WEEK (Deadline)</th>
-                <th style="width: 10%;">Vak</th>
-                <th style="width: 30%;">THUIS DOEN (Voorbereiden)</th>
-                <th style="width: 25%;">IN DE BIJLES (Samen doen)</th>
-                <th style="width: 20%;">STATUS & TOETSEN</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- WEEK 48 -->
-            <tr id="week-48">
-                <td data-label="WEEK">WEEK 48<br>(t/m zo 30 nov)</td>
-                <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="48" data-taak="nask1">
-                        <input type="checkbox" id="nask1"><label for="nask1">• NaSk H5: §1 en §2</label>
-                    </div>
-                    <div class="taak-item" data-week="48" data-taak="wis1">
-                        <input type="checkbox" id="wis1"><label for="wis1">• Wis H3: §1</label>
-                    </div>
-                    <div class="taak-item" data-week="48" data-taak="bio1">
-                        <input type="checkbox" id="bio1"><label for="bio1">• Bio H8: §8.1</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">N.v.t.</td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    Start gemaakt. Focus op NL toets (27/11).
-                </td>
-            </tr>
-            <!-- WEEK 49 -->
-            <tr id="week-49">
-                <td data-label="WEEK">WEEK 49<br>(t/m zo 7 dec)</td>
-                <td data-label="Vak">NaSk<br>Wis H3<br>Bio</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="49" data-taak="nask2">
-                        <input type="checkbox" id="nask2"><label for="nask2">• NaSk H5: §4 (Afronden voor toets)</label>
-                    </div>
-                    <div class="taak-item" data-week="49" data-taak="wis2">
-                        <input type="checkbox" id="wis2"><label for="wis2">• Wis H3: §2</label>
-                    </div>
-                    <div class="taak-item" data-week="49" data-taak="bio2">
-                        <input type="checkbox" id="bio2"><label for="bio2">• Bio H8: §8.2</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">
-                    <div class="taak-item" data-week="49" data-taak="bijles_nask1">
-                        <input type="checkbox" id="bijles_nask1"><label for="bijles_nask1">Bijles 04/12 (NaSk): Samen §3 maken & uitleg.</label>
-                    </div>
-                    <div class="taak-item" data-week="49" data-taak="bijles_nask2">
-                        <input type="checkbox" id="bijles_nask2"><label for="bijles_nask2">Bijles 09/12 (NaSk): Proeftoets maken / Herhalen.</label>
-                    </div>
-                </td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    NaSk H5 is klaar voor toets.<br>Wiskunde & Bio lopen mooi mee.
-                </td>
-            </tr>
-            <!-- WEEK 50 -->
-            <tr id="week-50">
-                <td data-label="WEEK">WEEK 50<br>(t/m zo 14 dec)</td>
-                <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="50" data-taak="wis3">
-                        <input type="checkbox" id="wis3"><label for="wis3">• Wis H3: §3</label>
-                    </div>
-                    <div class="taak-item" data-week="50" data-taak="bio3">
-                        <input type="checkbox" id="bio3"><label for="bio3">• Bio H8: §8.3</label>
-                    </div>
-                    <div class="taak-item" data-week="50" data-taak="wis_resit1">
-                        <input type="checkbox" id="wis_resit1"><label for="wis_resit1">• Wis H1 (Resit): §1 en §2</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">
-                    <span style="font-weight: bold; color: red;">NaSk Toets (10/12)</span><br>
-                    <div class="taak-item" data-week="50" data-taak="bijles_wis1">
-                        <input type="checkbox" id="bijles_wis1"><label for="bijles_wis1">Bijles 16/12 (Wis): Samen §4 maken (lastige stof).</label>
-                    </div>
-                </td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    NaSk is afgerond.<br>Focus verschuift naar Wiskunde.
-                </td>
-            </tr>
-            <!-- WEEK 51 -->
-            <tr id="week-51">
-                <td data-label="WEEK">WEEK 51<br>(t/m VRIJ 19 dec)</td>
-                <td data-label="Vak">Wis H3<br>Bio<br>Wis H1</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="51" data-taak="wis4">
-                        <input type="checkbox" id="wis4"><label for="wis4">• Wis H3: Afronden</label>
-                    </div>
-                    <div class="taak-item" data-week="51" data-taak="bio4">
-                        <input type="checkbox" id="bio4"><label for="bio4">• Bio H8: §8.4 (Klaar!)</label>
-                    </div>
-                    <div class="taak-item" data-week="51" data-taak="wis_resit2">
-                        <input type="checkbox" id="wis_resit2"><label for="wis_resit2">• Wis H1 (Resit): §3</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">
-                    <div class="taak-item" data-week="51" data-taak="bijles_wis2">
-                        <input type="checkbox" id="bijles_wis2"><label for="bijles_wis2">Bijles 18/12 (Wis): Samen §5 maken & H3 afsluiten.</label>
-                    </div>
-                </td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    Je bent nu KLAAR voor na de vakantie.<br>Alles voor Jan is af.<br>Alvast §3 van herkansing gedaan.
-                </td>
-            </tr>
-            <!-- VAKANTIE -->
-            <tr class="vakantie-row" id="week-vakantie">
-                <td data-label="WEEK" colspan="2">VAKANTIE<br>(19 dec - 5 jan)</td>
-                <td data-label="THUIS DOEN" colspan="2">🎄 RUST & GENIETEN 🎄<br>Geen bijles.</td>
-                <td data-label="STATUS & TOETSEN">Je hoofd leegmaken.</td>
-            </tr>
-            <!-- WEEK 2 -->
-            <tr id="week-2">
-                <td data-label="WEEK">WEEK 2<br>(t/m zo 11 jan)</td>
-                <td data-label="Vak">Wis H1<br>Wis H2</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="2" data-taak="wis_resit3">
-                        <input type="checkbox" id="wis_resit3"><label for="wis_resit3">• Wis H1: §4 en §5 (Afronden)</label>
-                    </div>
-                    <div class="taak-item" data-week="2" data-taak="wis_h2_1">
-                        <input type="checkbox" id="wis_h2_1"><label for="wis_h2_1">• Wis H2: §1 en §2</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">
-                    <div class="taak-item" data-week="2" data-taak="bijles_bio_herhaal">
-                        <input type="checkbox" id="bijles_bio_herhaal"><label for="bijles_bio_herhaal">Bijles 05/01 (Bio): Herhalen voor toets.</label>
-                    </div>
-                    <div class="taak-item" data-week="2" data-taak="bijles_wis_herhaal">
-                        <input type="checkbox" id="bijles_wis_herhaal"><label for="bijles_wis_herhaal">Bijles 06/01 (Wis): Herhalen voor toets.</label>
-                    </div>
-                    <span style="font-weight: bold; color: red;">Toetsen: 08/1 (Wis) & 09/1 (Bio).</span>
-                </td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    Toetsweek!<br>In het weekend focus op Herkansing.
-                </td>
-            </tr>
-            <!-- WEEK 3 -->
-            <tr id="week-3">
-                <td data-label="WEEK">WEEK 3<br>(t/m 16 jan)</td>
-                <td data-label="Vak">Wis H1/2</td>
-                <td data-label="THUIS DOEN">
-                    <div class="taak-item" data-week="3" data-taak="wis_h2_2">
-                        <input type="checkbox" id="wis_h2_2"><label for="wis_h2_2">• Wis H2: §3</label>
-                    </div>
-                </td>
-                <td data-label="IN DE BIJLES">
-                    <div class="taak-item" data-week="3" data-taak="bijles_wis_h2">
-                        <input type="checkbox" id="bijles_wis_h2"><label for="bijles_wis_h2">Bijles 13/01 (Wis): Samen §4 (H2) maken + Vragen H1.</label>
-                    </div>
-                    <div class="taak-item" data-week="3" data-taak="bijles_wis_rep">
-                        <input type="checkbox" id="bijles_wis_rep"><label for="bijles_wis_rep">Bijles 15/01 (Wis): Generale repetitie (Oefentoets).</label>
-                    </div>
-                    <span style="font-weight: bold; color: red;">Herkansing 16/01</span>
-                </td>
-                <td data-label="STATUS & TOETSEN" class="status-cell">
-                    Je hebt alles behandeld.
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- EINDE TABEL -->
+    <!-- EINDE PLANNER PAGINA -->
 
 
     <script>
@@ -346,7 +438,6 @@
           measurementId: "G-Z4YN3HVQTR"
         };
 
-        // Initialiseer Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore(); 
@@ -354,37 +445,52 @@
 
 
         // =================================================================
-        // 2. AUTHENTICATIE FUNCTIES
+        // 2. AUTHENTICATIE FUNCTIES & PAGINASCHAKELING
         // =================================================================
-        function updateLoginStatus(user) {
-            const loginStatusEl = document.getElementById('login-status');
-            const loginButtonEl = document.getElementById('login-button');
-            const logoutButtonEl = document.getElementById('logout-button');
+        function showPage(pageId) {
+            // Verberg alle hoofdcontainers
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('planner-page').style.display = 'none';
+            
+            // Toon de gevraagde container
+            if (pageId === 'login-page') {
+                 // Gebruik 'flex' voor login om de card te centreren
+                document.getElementById(pageId).style.display = 'flex'; 
+            } else {
+                 // Gebruik 'block' of 'flex' voor de planner, afhankelijk van de header
+                document.getElementById(pageId).style.display = 'block'; 
+            }
+        }
+
+        function handleUser(user) {
+            const welkomBoodschap = document.getElementById('welkom-boodschap');
+            const loginStatusSplash = document.getElementById('login-status-splash');
+            const loginStatusHeader = document.getElementById('login-status-header');
 
             if (user) {
-                // Gebruiker is ingelogd
-                loginStatusEl.innerText = `Welkom, ${user.displayName || user.email}!`;
-                loginButtonEl.style.display = 'none';
-                logoutButtonEl.style.display = 'block';
-                console.log("Gebruiker ingelogd:", user.uid);
+                // GEBRUIKER IS INGELOGD
+                const userName = user.displayName ? user.displayName.split(' ')[0] : (user.email || 'Gebruiker');
+                
+                welkomBoodschap.innerText = `Welkom terug, ${userName}! Dit is je persoonlijke studieomgeving.`;
+                loginStatusHeader.innerText = `Ingelogd als: ${userName}`;
+                
+                showPage('planner-page');
+                initializePlannerComponents(); // Start de kalender pas na inloggen
             } else {
-                // Gebruiker is uitgelogd
-                loginStatusEl.innerText = 'Niet ingelogd.';
-                loginButtonEl.style.display = 'block';
-                logoutButtonEl.style.display = 'none';
-                console.log("Gebruiker uitgelogd.");
+                // GEBRUIKER IS UITGELOGD
+                loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
+                showPage('login-page');
             }
         }
         
-        // Luister naar de authenticatiestatus
-        auth.onAuthStateChanged(updateLoginStatus);
+        // Hoofdluisteraar: Regelt de weergave van de pagina
+        auth.onAuthStateChanged(handleUser);
 
         function signInWithGoogle() {
           const provider = new firebase.auth.GoogleAuthProvider();
-          // We gebruiken signInWithPopup, wat nodig is in de meeste webbrowsers
           auth.signInWithPopup(provider).catch((error) => {
-            // Gebruikersvriendelijke foutmelding in de console, geen alert()
             console.error("Login Fout:", error.message);
+            // Je kunt hier eventueel een foutmelding op de pagina tonen in plaats van de console.
           });
         }
 
@@ -397,10 +503,10 @@
 
 
         // =================================================================
-        // 3. BESTAANDE PLANNER & KALENDER LOGICA
+        // 3. PLANNER & KALENDER LOGICA (Start alleen na succesvolle login)
         // =================================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            // A. CHECKBOX LOGICA (Bestaande lokale opslag)
+        function initializePlannerComponents() {
+            // A. CHECKBOX LOGICA (Blijft lokaal tot we Firestore koppelen)
             const checkboxes = document.querySelectorAll('.taak-item input[type="checkbox"]');
 
             const loadTasks = () => {
@@ -468,7 +574,7 @@
             var kalender = new FullCalendar.Calendar(kalenderEl, {
                 initialView: 'dayGridMonth',
                 locale: 'nl',
-                initialDate: '2025-12-01', // Begin bij de week van de eerste taak
+                initialDate: '2025-12-01',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -481,7 +587,7 @@
             kalender.render();
             // EINDE KALENDER LOGICA
 
-        });
+        }
         // =================================================================
     </script>
 </body>
