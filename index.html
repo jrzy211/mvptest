@@ -143,7 +143,8 @@
 
         .planning-form-container input, 
         .planning-form-container select, 
-        .planning-form-container button {
+        .planning-form-container button,
+        .planning-form-container datalist { /* datalist styling fix */
             padding: 12px; 
             border: 1px solid #ddd;
             border-radius: 5px; 
@@ -385,7 +386,43 @@
             <div style="margin-bottom: 30px;">
                 <h3>+ Nieuwe Toets Inplannen</h3>
                 <div class="planning-form-container">
-                    <input type="text" id="vakInput" placeholder="Vak (bv. Wiskunde H3)" required>
+                    <!-- VAKKEUZE MET DATALIST -->
+                    <input type="text" list="vakken-list" id="vakInput" placeholder="Vak (typ of kies)" required>
+                    <datalist id="vakken-list">
+                        <option value="Wiskunde">
+                        <option value="Nederlands">
+                        <option value="Engels">
+                        <option value="Duits">
+                        <option value="Frans">
+                        <option value="Geschiedenis">
+                        <option value="Aardrijkskunde">
+                        <option value="Natuurkunde">
+                        <option value="Scheikunde">
+                        <option value="Biologie">
+                        <option value="Economie">
+                        <option value="Bedrijfseconomie">
+                        <option value="Latijn">
+                        <option value="Grieks">
+                        <option value="Muziek">
+                    </datalist>
+
+                    <!-- HOOFDSTUKKEUZE -->
+                    <select id="hoofdstukInput">
+                        <option value="">Hoofdstuk</option>
+                        <option value="H1">H1</option>
+                        <option value="H2">H2</option>
+                        <option value="H3">H3</option>
+                        <option value="H4">H4</option>
+                        <option value="H5">H5</option>
+                        <option value="H6">H6</option>
+                        <option value="H7">H7</option>
+                        <option value="H8">H8</option>
+                        <option value="H9">H9</option>
+                        <option value="H10">H10</option>
+                        <option value="H11">H11</option>
+                        <option value="H12">H12</option>
+                    </select>
+
                     <input type="date" id="datumInput" required>
                     <select id="controleMomentInput">
                         <option value="Geen">Controle/Bijles: Geen</option>
@@ -558,13 +595,14 @@
 
         function saveNewPlanning() {
             const vak = document.getElementById('vakInput').value.trim();
+            const hoofdstuk = document.getElementById('hoofdstukInput').value;
             const datumStr = document.getElementById('datumInput').value;
             const controleMoment = document.getElementById('controleMomentInput').value;
             const feedbackEl = document.getElementById('feedback-message');
 
-            if (!vak || !datumStr || !currentUserId) {
+            if (!vak || !datumStr || !currentUserId || !hoofdstuk) {
                 feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Vul alle velden in en zorg dat je bent ingelogd.";
+                feedbackEl.innerText = "Vul alle velden (Vak, Hoofdstuk, Datum) in en zorg dat je bent ingelogd.";
                 return;
             }
             
@@ -579,6 +617,7 @@
 
             const planningData = {
                 vak: vak,
+                hoofdstuk: hoofdstuk,
                 toetsdatum: firebase.firestore.Timestamp.fromDate(toetsDatum),
                 controle_moment: controleMoment,
                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -591,6 +630,7 @@
                     feedbackEl.style.color = '#27ae60';
                     feedbackEl.innerText = "Nieuwe planning aangemaakt!";
                     document.getElementById('vakInput').value = '';
+                    document.getElementById('hoofdstukInput').value = '';
                     document.getElementById('datumInput').value = '';
                 })
                 .catch(error => {
@@ -607,42 +647,50 @@
         }
 
         /**
-         * Update de wekelijkse taaktekst (textarea) in Firestore (met merge).
+         * Update de wekelijkse taaktekst (textarea) in Firestore (ROBUUSTE FIX).
          */
-        window.updateWeeklyTaak = function(docId, weekKey, value) {
+        window.updateWeeklyTaak = function(docId, weekKey, value, taakId) {
             if (!currentUserId) return;
             
-            // Gebruik set met merge:true om alleen de sub-map te updaten
-            db.collection('users').doc(currentUserId).collection('planning').doc(docId).set({
-                weken: {
-                    [weekKey]: {
-                        taak: value,
-                        // Als er al een status is, behoud deze (anders false)
-                        afgerond: (db.collection('users').doc(currentUserId).collection('planning').doc(docId).get().then(doc => doc.data().weken[weekKey]?.afgerond || false))._delegate._result || false 
+            // Haal de huidige status op voordat we updaten om overschrijven te voorkomen
+            db.collection('users').doc(currentUserId).collection('planning').doc(docId).get().then(doc => {
+                const currentStatus = doc.data().weken[weekKey]?.afgerond || false;
+
+                // Voer de update uit met merge:true
+                db.collection('users').doc(currentUserId).collection('planning').doc(docId).set({
+                    weken: {
+                        [weekKey]: {
+                            taak: value,
+                            afgerond: currentStatus,
+                        }
                     }
-                }
-            }, { merge: true }).catch(error => console.error("Error saving task text: ", error));
+                }, { merge: true });
+            }).catch(error => console.error(`Error fetching/saving task text for ${taakId}:`, error));
         }
 
         /**
-         * Toggles the weekly completion status (checkbox) in Firestore (met merge).
+         * Toggles the weekly completion status (checkbox) in Firestore (ROBUUSTE FIX).
          */
-        window.toggleWeeklyCompletion = function(docId, weekKey, isChecked) {
+        window.toggleWeeklyCompletion = function(docId, weekKey, isChecked, taakId) {
             if (!currentUserId) return;
             
-             // Gebruik set met merge:true om de taakstatus te updaten
-             db.collection('users').doc(currentUserId).collection('planning').doc(docId).set({
-                weken: {
-                    [weekKey]: {
-                        // Haal de bestaande taaktekst op om niet te overschrijven (of gebruik een lege string)
-                        taak: (db.collection('users').doc(currentUserId).collection('planning').doc(docId).get().then(doc => doc.data().weken[weekKey]?.taak || ''))._delegate._result || '',
-                        afgerond: isChecked
+            // Haal de huidige taaktekst op voordat we updaten om overschrijven te voorkomen
+            db.collection('users').doc(currentUserId).collection('planning').doc(docId).get().then(doc => {
+                const currentTaakText = doc.data().weken[weekKey]?.taak || '';
+                
+                // Voer de update uit met merge:true
+                db.collection('users').doc(currentUserId).collection('planning').doc(docId).set({
+                    weken: {
+                        [weekKey]: {
+                            taak: currentTaakText,
+                            afgerond: isChecked
+                        }
                     }
-                }
-            }, { merge: true }).catch((error) => {
-                 console.error("Error updating completion status: ", error);
-                 // Fallback: Als er een fout is, behoud dan de oude status op de UI
-                 document.getElementById(`check-${weekKey}-${docId}`).checked = !isChecked;
+                }, { merge: true });
+            }).catch((error) => {
+                 console.error(`Error fetching/saving completion status for ${taakId}:`, error);
+                 // Fallback
+                 document.getElementById(taakId).checked = !isChecked;
              });
         }
         
@@ -653,7 +701,7 @@
 
             const weekStatusRef = db.collection('users').doc(currentUserId).collection('weken').doc('status');
             
-            // Gebruik update om alleen de specifieke week in de 'status' document te updaten
+            // Gebruik set om alleen de specifieke week in de 'status' document te updaten
             weekStatusRef.set({
                 [weekKey]: {
                     isVakantie: isChecked
@@ -680,12 +728,13 @@
                 const toetsDatumStr = item.toetsdatum.toDate().toLocaleDateString('nl-NL');
                 const statusKleur = item.is_afgerond ? '#27ae60' : '#e67e22';
                 const statusText = item.is_afgerond ? `(TOETS AFGEROND)` : `(Toets op ${toetsDatumStr})`;
+                const vakHoofdstuk = `${item.vak}${item.hoofdstuk ? ' ' + item.hoofdstuk : ''}`;
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'toets-item';
                 itemDiv.innerHTML = `
                     <span>
-                        <strong>${item.vak}</strong> 
+                        <strong>${vakHoofdstuk}</strong> 
                         <span style="color: ${statusKleur}; font-weight: bold;">${statusText}</span>
                     </span>
                     <button onclick="deletePlanning('${item.id}')">Verwijder Toets</button>
@@ -696,7 +745,6 @@
         
         /**
          * Hoofdfunctie om de wekelijkse planner-tabel te renderen.
-         * De vakantiestatus wordt uit de globale weeklyHolidayStatuses gehaald.
          */
         function updatePlannerUI(planningItems) {
             const plannerTableBody = document.getElementById('planner-table-body');
@@ -719,7 +767,8 @@
                 const toetsDatum = item.toetsdatum.toDate();
 
                 let huidigeWeekStart = new Date(vandaag);
-                huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); // Start op zondag
+                // Start op zondag van de huidige week
+                huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); 
 
                 while (huidigeWeekStart <= toetsDatum) {
                     const weekNummer = getWeekNumber(huidigeWeekStart);
@@ -747,7 +796,7 @@
                         weekTaken[weekKey].isVakantie = true;
                     }
                     
-                    // Alleen planningstaken toevoegen als het geen vakantie is EN het de toetsweek niet is
+                    
                     if (!isVakantie) {
                         const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : {
                             taak: "",
@@ -758,13 +807,15 @@
                         let isToetsWeek = weekEndDeadline >= toetsDatum && huidigeWeekStart <= toetsDatum;
 
                         if (isToetsWeek) {
-                            controleMomentText = `TOETS: ${item.vak} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
+                            controleMomentText = `TOETS: ${item.vak} ${item.hoofdstuk} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
                         }
                         
+                        const vakHoofdstuk = `${item.vak}${item.hoofdstuk ? ' ' + item.hoofdstuk : ''}`;
+
                         // Voeg de taak toe aan de weekTaken map
                         weekTaken[weekKey].taken.push({
                             docId: docId,
-                            vak: item.vak,
+                            vak: vakHoofdstuk,
                             controle: controleMomentText,
                             taakTekst: weekData.taak,
                             afgerond: weekData.afgerond,
@@ -783,6 +834,7 @@
                 const week = weekTaken[weekKey];
                 
                 const row = plannerTableBody.insertRow();
+                const vakantieCheckId = `vakantie-check-${weekKey}`;
                 
                 // Vakantie rijen
                 if (week.isVakantie) {
@@ -792,7 +844,7 @@
                         <td colspan="4" data-label="VAKANTIE">🎉 VAKANTIE - RUST UIT! 🎉</td>
                         <td data-label="VAKANTIE">
                             <div class="vakantie-check">
-                                <input type="checkbox" id="vakantie-check-${weekKey}" checked onchange="toggleVakantieWeek('${weekKey}', this.checked)">
+                                <input type="checkbox" id="${vakantieCheckId}" checked onchange="toggleVakantieWeek('${weekKey}', this.checked)">
                             </div>
                         </td>
                     `;
@@ -812,6 +864,7 @@
                 
                 // HOMEWORK (Editable text area)
                 let thuisTaakHTML = week.taken.map(taak => {
+                    const taakId = `check-${taak.weekKey}-${taak.docId}`;
                     let taakContent = taak.taakTekst;
                     
                     if (taak.isToetsWeek) {
@@ -823,7 +876,7 @@
                             <strong>${taak.vak}:</strong>
                             ${taak.isToetsWeek ? taakContent : `
                                 <textarea 
-                                    onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
+                                    onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value, '${taakId}')"
                                     placeholder="Welke paragrafen/oefeningen deze week?"
                                 >${taakContent || ''}</textarea>
                             `}
@@ -838,14 +891,15 @@
                 
                 // STATUS (Checkable per week - Gebruikt alleen de eerste taak voor de ID)
                 const taak = week.taken[0]; 
+                const taakId = `check-${weekKey}-${taak.docId}`;
                 
                 row.innerHTML += `
                     <td data-label="STATUS">
                         <div class="taak-item ${isWeekCompleted ? 'completed' : ''}">
-                            <input type="checkbox" id="check-${weekKey}-${taak.docId}" 
-                                   onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked)"
+                            <input type="checkbox" id="${taakId}" 
+                                   onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked, '${taakId}')"
                                    ${isWeekCompleted ? 'checked' : ''}>
-                            <label for="check-${weekKey}-${taak.docId}">${isWeekCompleted ? 'Afgerond' : 'Open'}</label>
+                            <label for="${taakId}">${isWeekCompleted ? 'Afgerond' : 'Open'}</label>
                         </div>
                     </td>
                 `;
@@ -854,7 +908,7 @@
                  row.innerHTML += `
                     <td data-label="VAKANTIE">
                         <div class="vakantie-check">
-                            <input type="checkbox" id="vakantie-check-${weekKey}" onchange="toggleVakantieWeek('${weekKey}', this.checked)">
+                            <input type="checkbox" id="${vakantieCheckId}" onchange="toggleVakantieWeek('${weekKey}', this.checked)">
                         </div>
                     </td>
                 `;
