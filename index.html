@@ -276,6 +276,7 @@
             display: flex;
             gap: 5px;
             margin-top: 10px;
+            margin-bottom: 10px; /* NEW: Added space below input */
         }
         .tutor-view-input input {
             flex-grow: 1;
@@ -286,6 +287,19 @@
             min-width: 100px;
             font-size: 1em;
             padding: 8px 15px;
+        }
+        /* NEW: Button styling for sharing view */
+        .share-button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .share-button-group button {
+            flex-grow: 1;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
     </style>
@@ -374,8 +388,10 @@
                         <input type="text" id="sharedOwnerIdInput" placeholder="Deelcode (UID)" value="">
                         <button onclick="setSharedOwner()">Bekijk</button>
                     </div>
-                    <button onclick="clearSharedOwner()" style="background-color: #f39c12; margin-top: 10px;">Stop met Bekijken</button>
-                    <p id="viewing-status" style="font-size: 0.9em; color: #e67e22; margin-top: 10px;">Je bekijkt je eigen schema.</p>
+                    <p id="viewing-status" style="font-size: 0.9em; color: #e67e22; margin-bottom: 10px;">Je bekijkt je eigen schema.</p>
+                    <div class="share-button-group">
+                        <button onclick="clearSharedOwner()" style="background-color: #f39c12;">Stop met Bekijken</button>
+                    </div>
                 </div>
 
 
