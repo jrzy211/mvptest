@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Flexibele, Persoonlijke Planner</title>
+    <title>Study-Start - Flexibele Wekelijkse Planner</title>
 
-    <!-- Firebase SDK's laden (Compatibele versies voor eenvoudige JS-integratie) -->
+    <!-- Firebase SDK's laden (Alleen App, Auth, Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-    <!-- FullCalendar CSS & JS via CDN voor de kalender -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
     <style>
         /* Algemene styling */
@@ -307,13 +302,13 @@
             <!-- EINDE TOETSEN OVERZICHT SECTIE -->
             
             <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) -->
-            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen)</h2>
+            <h2 style="color: #333; margin-top: 30px;">📅 Wekelijks Leerschema (Zelf Invullen & Afvinken)</h2>
             <table class="studie-tabel">
                 <thead>
                     <tr>
                         <th style="width: 15%;">WEEK (Deadline)</th>
                         <th style="width: 15%;">VAK</th>
-                        <th style="width: 45%;">THUIS DOEN (Paragrafen)</th>
+                        <th style="width: 45%;">THUIS DOEN (Zelf Invullen)</th>
                         <th style="width: 15%;">CONTROLE MOMENT</th>
                         <th style="width: 10%;">STATUS</th>
                     </tr>
@@ -323,13 +318,6 @@
                 </tbody>
             </table>
             <!-- EINDE PLANNER TABEL -->
-
-            <!-- KALENDER SECTIE -->
-            <div id="kalender-container" style="margin-top: 30px; margin-bottom: 50px;">
-                <h2>🗓️ Kalenderweergave</h2>
-                <div id='kalender'></div>
-            </div>
-            <!-- EINDE KALENDER SECTIE -->
 
         </div>
     </div>
@@ -354,7 +342,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore(); 
         let currentUserId = null; 
-        let kalenderInstance = null; 
         // =================================================================
 
 
@@ -389,7 +376,6 @@
                 loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
                 showPage('login-page');
                 
-                if(kalenderInstance) kalenderInstance.destroy();
                 document.getElementById('planner-table-body').innerHTML = '';
             }
         }
@@ -547,10 +533,10 @@
         function updatePlannerUI(planningItems) {
             const plannerTableBody = document.getElementById('planner-table-body');
             plannerTableBody.innerHTML = '';
-            const calendarEvents = [];
             
             if (planningItems.length === 0) {
                 plannerTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">Voeg een toets toe om je leerschema te zien.</td></tr>';
+                return;
             }
 
             const vandaag = new Date();
@@ -563,25 +549,23 @@
                 const docId = item.id;
                 const toetsDatum = item.toetsdatum.toDate();
 
-                // 1. KALENDER TOETS EVENT
-                calendarEvents.push({
-                    title: `TOETS: ${item.vak}`,
-                    start: toetsDatum.toISOString().split('T')[0],
-                    color: item.is_afgerond ? '#27ae60' : '#c0392b' // Groen als afgerond
-                });
-                
-                // --- Bepaal de wekelijkse planning ---
-                
                 let huidigeWeekStart = new Date(vandaag);
                 // Zoek de start van de huidige week (zondag)
                 huidigeWeekStart.setDate(huidigeWeekStart.getDate() - huidigeWeekStart.getDay()); 
 
-                while (huidigeWeekStart < toetsDatum) {
+                while (huidigeWeekStart <= toetsDatum) {
                     const weekNummer = getWeekNumber(huidigeWeekStart);
                     const weekKey = `${huidigeWeekStart.getFullYear()}-${weekNummer}`; // Bijv. 2025-48
                     
                     const weekEndDeadline = new Date(huidigeWeekStart);
                     weekEndDeadline.setDate(huidigeWeekStart.getDate() + 6); // Zondag
+
+                    // Alleen weken tot EN met de toetsweek tonen
+                    if (weekEndDeadline < vandaag) {
+                        // Sla reeds gepasseerde weken over
+                        huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
+                        continue;
+                    }
 
                     // Haal de opgeslagen status/tekst op, of gebruik defaults
                     const weekData = item.weken && item.weken[weekKey] ? item.weken[weekKey] : {
@@ -597,16 +581,28 @@
                         };
                     }
                     
+                    // Bepaal het controle moment voor deze week
+                    let controleMomentText = item.controle_moment !== 'Geen' ? item.controle_moment : 'N.v.t.';
+                    
+                    // Als het de toetsweek is, overschrijf dan de taak
+                    let isToetsWeek = weekEndDeadline >= toetsDatum && huidigeWeekStart <= toetsDatum;
+
+                    if (isToetsWeek) {
+                         // Toetsdag is in deze week, voeg dit als apart item toe
+                        controleMomentText = `TOETS: ${item.vak} op ${toetsDatum.toLocaleDateString('nl-NL')}`;
+                    }
+
                     // Voeg de taak toe aan de weekTaken map
                     weekTaken[weekKey].taken.push({
                         docId: docId,
                         vak: item.vak,
-                        controle: item.controle_moment,
+                        controle: controleMomentText,
                         taakTekst: weekData.taak,
                         afgerond: weekData.afgerond,
-                        weekKey: weekKey
+                        weekKey: weekKey,
+                        isToetsWeek: isToetsWeek
                     });
-
+                    
                     // Ga naar de volgende week
                     huidigeWeekStart.setDate(huidigeWeekStart.getDate() + 7);
                 }
@@ -616,59 +612,51 @@
             for (const weekKey in weekTaken) {
                 const week = weekTaken[weekKey];
                 
+                // Groepeer vakken en taken per rij
                 const row = plannerTableBody.insertRow();
                 
-                // WEEK EN VAKKEN (Gegroepeerd)
-                const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
-                
+                // WEEK EN DEADLINE
                 row.innerHTML += `<td data-label="WEEK">WEEK ${week.weekNummer}<br>(t/m zo ${week.deadline})</td>`;
+                
+                // VAKKEN
+                const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
                 row.innerHTML += `<td data-label="VAK">${alleVakkenInWeek}</td>`;
                 
-                // THUIS DOEN (Bewerkbaar veld)
-                const thuisTaakHTML = week.taken.map(taak => `
-                    <div style="margin-bottom: 10px; border-left: 2px solid #27ae60; padding-left: 5px;">
-                        <strong>${taak.vak}:</strong>
-                        <textarea 
-                            onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
-                            placeholder="Welke paragrafen/oefeningen deze week?"
-                        >${taak.taakTekst}</textarea>
-                    </div>
-                `).join('');
+                // THUIS DOEN (ZELF INVULLEN)
+                let thuisTaakHTML = week.taken.map(taak => {
+                    if (taak.isToetsWeek) {
+                        return `<span style="font-style: italic;">Laatste herhaling voor toets.</span>`;
+                    }
+                    return `
+                        <div style="margin-bottom: 10px; border-left: 2px solid #27ae60; padding-left: 5px;">
+                            <strong>${taak.vak}:</strong>
+                            <textarea 
+                                onblur="updateWeeklyTaak('${taak.docId}', '${taak.weekKey}', this.value)"
+                                placeholder="Welke paragrafen/oefeningen deze week?"
+                            >${taak.taakTekst}</textarea>
+                        </div>
+                    `;
+                }).join('');
                 row.innerHTML += `<td data-label="THUIS DOEN">${thuisTaakHTML}</td>`;
                 
                 // CONTROLE MOMENT
-                const controleMomenten = week.taken.map(t => t.controle !== 'Geen' ? `${t.vak}: ${t.controle}` : '').filter(Boolean).join('<br>');
+                const controleMomenten = week.taken.map(t => t.controle).filter(Boolean).join('<br>');
                 row.innerHTML += `<td data-label="CONTROLE MOMENT">${controleMomenten || 'N.v.t.'}</td>`;
                 
                 // STATUS (Afvinkbaar per week)
-                const weekAfgerond = week.taken.every(t => t.afgerond); // Eén checkbox per week
                 const taak = week.taken[0]; // Gebruik de eerste taak om de status te bepalen
+                const weekAfgerond = taak.afgerond;
                 
                 row.innerHTML += `
                     <td data-label="STATUS">
                         <div class="taak-item">
-                            <input type="checkbox" id="check-${weekKey}" 
+                            <input type="checkbox" id="check-${weekKey}-${taak.docId}" 
                                    onchange="toggleWeeklyCompletion('${taak.docId}', '${taak.weekKey}', this.checked)"
                                    ${weekAfgerond ? 'checked' : ''}>
-                            <label for="check-${weekKey}">${weekAfgerond ? 'Week Afgerond' : 'Open'}</label>
+                            <label for="check-${weekKey}-${taak.docId}">${weekAfgerond ? 'Afgerond' : 'Open'}</label>
                         </div>
                     </td>
                 `;
-
-                // Voeg de wekelijkse deadlines toe aan de kalender
-                calendarEvents.push({
-                    title: `Deadline: ${alleVakkenInWeek}`,
-                    start: weekEndDeadline.toISOString().split('T')[0],
-                    color: '#007bff' // Blauw voor deadline
-                });
-            }
-
-            // Kalender opnieuw laden
-            if (kalenderInstance) {
-                kalenderInstance.removeAllEvents();
-                kalenderInstance.addEventSource(calendarEvents);
-            } else {
-                initializeFullCalendar(calendarEvents);
             }
         }
         
@@ -681,32 +669,6 @@
             var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
             var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
             return weekNo;
-        }
-
-        // =================================================================
-        // 5. KALENDER INITIALISATIE
-        // =================================================================
-        function initializeFullCalendar(events) {
-            const kalenderEl = document.getElementById('kalender');
-            
-            if(kalenderInstance) {
-                kalenderInstance.destroy();
-            }
-
-            kalenderInstance = new FullCalendar.Calendar(kalenderEl, {
-                initialView: 'dayGridMonth',
-                locale: 'nl',
-                initialDate: new Date().toISOString().split('T')[0],
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                events: events,
-                editable: false, 
-            });
-
-            kalenderInstance.render();
         }
         // =================================================================
     </script>
