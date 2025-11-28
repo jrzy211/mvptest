@@ -21,19 +21,19 @@
     <style>
         :root {
             /* OFF-WHITE THEME VARIABLES */
-            --off-white: #fafafa; /* De nieuwe basiskleur */
-            --bg-color: #f0f2f5; /* Achtergrond (iets donkerder voor contrast) */
+            --off-white: #fafafa; 
+            --bg-color: #f0f2f5; 
             --sidebar-bg: var(--off-white);
             --card-bg: var(--off-white);
             
             --text-color: #333333;
             --text-muted: #666666;
             
-            --primary-color: #007aff; /* Modern Blauw */
+            --primary-color: #007aff; 
             --primary-hover: #005bb5;
             
             --border-color: #e4e6eb;
-            --input-bg: #ffffff; /* Wit in inputs voor contrast met off-white kaart */
+            --input-bg: #ffffff; 
             
             --table-header-bg: #f5f7f9;
             --table-row-even: var(--off-white);
@@ -122,7 +122,7 @@
 
         /* --- HEADER --- */
         header {
-            background-color: rgba(250, 250, 250, 0.85); /* Off-white semi-transparent */
+            background-color: rgba(250, 250, 250, 0.85); 
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
             padding: 15px 30px;
@@ -171,7 +171,7 @@
 
         input, select, textarea {
             width: 100%;
-            background-color: var(--input-bg); /* Wit voor contrast */
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
             padding: 12px;
@@ -206,6 +206,19 @@
             border-radius: 8px; text-transform: none; font-weight: 500;
         }
         button.secondary:hover { background-color: #eaeaea; color: var(--text-color); transform: none; box-shadow: none; }
+        
+        button.delete-btn {
+            background-color: transparent;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+        button.delete-btn:hover {
+            background-color: #e74c3c;
+            color: white;
+        }
 
         /* --- PLANNER SPECIFIC --- */
         #planner-column { flex: 3; min-width: 60%; }
@@ -250,12 +263,12 @@
         
         .studie-tabel tr:last-child td { border-bottom: none; }
         
-        /* Kolom specifieke stijlen */
+        /* Kolom specifieke stijlen - STATUS AANGEPAST */
         .col-week { width: 12%; font-weight: 700; color: var(--primary-color); border-right: 1px solid var(--border-color); }
         .col-vak { width: 15%; font-weight: 600; color: #000; }
         .col-thuis { width: 38%; }
         .col-bijles { width: 25%; }
-        .col-status { width: 10%; }
+        .col-status { width: 5%; text-align: center; } /* Smaller & centered */
 
         /* Vakantie Modus */
         tr.is-holiday td {
@@ -307,6 +320,7 @@
         .status-container {
             display: flex;
             align-items: center;
+            justify-content: center; /* Centered */
             gap: 8px;
             cursor: pointer;
             user-select: none;
@@ -314,7 +328,7 @@
         }
         .status-container input[type="checkbox"] {
             appearance: none;
-            width: 22px; height: 22px;
+            width: 24px; height: 24px; /* Iets groter voor touch targets */
             border: 2px solid #c7c7cc;
             border-radius: 6px;
             cursor: pointer;
@@ -326,7 +340,7 @@
         }
         .status-container input[type="checkbox"]::before {
             content: "";
-            width: 10px; height: 10px;
+            width: 12px; height: 12px;
             transform: scale(0);
             transition: 0.1s transform ease-in-out;
             box-shadow: inset 1em 1em white;
@@ -339,9 +353,6 @@
         }
         .status-container input[type="checkbox"]:checked::before { transform: scale(1); }
         
-        .status-text { font-size: 0.85em; font-weight: 600; color: var(--text-muted); }
-        .status-text.completed { color: var(--success-color); }
-
         /* Switch Toggle */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; vertical-align: middle; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -356,6 +367,22 @@
         }
         input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(16px); }
+        
+        /* --- NOTITIES SPECIFIC --- */
+        .note-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            position: relative;
+        }
+        .note-meta { font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; display: block;}
+        .note-subject { font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 5px;}
+        
+        /* --- CIJFERS SPECIFIC --- */
+        .grade-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .grade-avg { font-size: 1.2em; font-weight: bold; color: var(--primary-color); text-align: right; margin-top: 10px;}
 
         @media (max-width: 1000px) {
             body { flex-direction: column; height: auto; }
@@ -423,7 +450,7 @@
             <div id="tools-column">
                 <div class="card">
                     <h3>⚡ Automatisch Inplannen</h3>
-                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer een schema tot aan je toets.</p>
+                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch een schema tot aan je toets.</p>
                     <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een Vak">
                     <datalist id="vakken-list">
                         <option value="Wiskunde A"><option value="Wiskunde B"><option value="Natuurkunde">
@@ -448,21 +475,50 @@
             </div>
         </div>
 
-        <!-- OVERIGE PAGINA'S -->
+        <!-- PAGINA 2: CIJFERS -->
         <div id="page-cijfers" class="page-section">
             <h2>Mijn Cijfers</h2>
-            <div class="card"><p style="color: var(--text-muted);">WIP: Cijferlijst komt hier.</p></div>
-        </div>
-        <div id="page-notities" class="page-section">
-            <h2>Notities</h2>
-            <div class="card" style="height: 100%; display: flex; flex-direction: column;">
-                <textarea id="global-notes" style="flex-grow: 1; min-height: 400px; border: none; background: transparent; resize: none;" placeholder="Typ hier..." onblur="saveNotes(this.value)"></textarea>
-                <p id="notes-status" style="font-size: 0.8em; color: var(--success-color); margin-top: 5px; min-height: 1.2em;"></p>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="card" style="flex: 1; min-width: 300px;">
+                    <h3>Cijfer Toevoegen</h3>
+                    <input type="text" list="vakken-list" id="gradeSubject" placeholder="Vak">
+                    <input type="number" id="gradeValue" placeholder="Cijfer (1-10)" step="0.1">
+                    <input type="number" id="gradeWeight" placeholder="Weging (bv. 1)" value="1">
+                    <button onclick="addGrade()">Toevoegen</button>
+                </div>
+                <div class="card" style="flex: 2; min-width: 300px;">
+                    <h3>Overzicht & Gemiddelden</h3>
+                    <div id="grades-list">Loading...</div>
+                </div>
             </div>
         </div>
+
+        <!-- PAGINA 3: NOTITIES -->
+        <div id="page-notities" class="page-section">
+            <h2>Notities</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="card" style="flex: 1; min-width: 300px; height: fit-content;">
+                    <h3>Nieuwe Notitie</h3>
+                    <input type="text" list="vakken-list" id="noteSubject" placeholder="Vak">
+                    <input type="date" id="noteDate">
+                    <textarea id="noteContent" style="min-height: 150px;" placeholder="Typ je notitie..."></textarea>
+                    <button onclick="addNote()">Opslaan</button>
+                </div>
+                <div class="card" style="flex: 2; min-width: 300px;">
+                    <h3>Mijn Notities</h3>
+                    <div id="notes-list-container">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGINA 4: FOCUS TIMER -->
         <div id="page-timer" class="page-section" style="align-items: center; text-align: center;">
             <h2>Focus Timer</h2>
             <div class="card" style="max-width: 400px; width: 100%;">
+                <div class="input-group">
+                    <label style="color: var(--text-muted); font-size: 0.9em;">Tijd (minuten):</label>
+                    <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em;">
+                </div>
                 <div id="timer-display" style="font-size: 4em; font-weight: 700; margin: 20px 0; color: var(--primary-color);">25:00</div>
                 <div style="display: flex; gap: 10px;">
                     <button onclick="startTimer()">Start</button>
@@ -471,9 +527,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- PAGINA 5: INSTELLINGEN -->
         <div id="page-instellingen" class="page-section">
             <h2>Instellingen</h2>
-            <div class="card"><p style="color: var(--text-muted);">Account settings WIP</p></div>
+            <div class="card">
+                <h3>Account</h3>
+                <div class="input-group">
+                    <label style="color: var(--text-muted);">Weergavenaam</label>
+                    <input type="text" id="settings-name" placeholder="Jouw naam">
+                </div>
+                <button onclick="saveSettings()" style="width: auto;">Opslaan</button>
+            </div>
         </div>
 
     </main>
@@ -510,11 +575,15 @@
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('app-sidebar').style.display = 'flex';
                 document.getElementById('main-content').style.display = 'flex';
-                
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?share=${currentUserId}`;
 
                 loadPlanning(activeUserId);
-                loadNotes();
+                
+                // Load other data only if owning user
+                if(activeUserId === currentUserId) {
+                    loadGrades();
+                    loadSubjectNotes();
+                }
             } else {
                 document.getElementById('login-page').style.display = 'flex';
                 document.getElementById('app-sidebar').style.display = 'none';
@@ -525,7 +594,7 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message)); }
         function signOutUser() { auth.signOut().then(() => window.location.reload()); }
 
-        /* --- NAV --- */
+        /* --- NAVIGATION --- */
         function navigate(pageId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -533,7 +602,7 @@
             document.getElementById(`page-${pageId}`).classList.add('active');
         }
 
-        /* --- PLANNING GENERATOR --- */
+        /* --- PLANNING LOGIC --- */
         function generateAutoPlanning() {
             if (activeUserId !== currentUserId) return alert("Read-only.");
             const vak = document.getElementById('autoVakInput').value;
@@ -573,26 +642,18 @@
                 snap.forEach(doc => {
                     const data = doc.data();
                     data.id = doc.id;
-                    // Converteer timestamp naar date voor sortering
                     data.jsDate = data.weekStart.toDate();
                     const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
                     if(!grouped[key]) grouped[key] = [];
                     grouped[key].push(data);
                 });
 
-                // Sorteer keys (weken)
-                const keys = Object.keys(grouped).sort((a,b) => {
-                    return grouped[a][0].jsDate - grouped[b][0].jsDate;
-                });
-
+                const keys = Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate);
                 if (keys.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--text-muted);">Nog geen planning.</td></tr>';
                     return;
                 }
-
-                keys.forEach(key => {
-                    renderGroupedRow(tbody, grouped[key], userId === currentUserId);
-                });
+                keys.forEach(key => renderGroupedRow(tbody, grouped[key], userId === currentUserId));
             });
         }
 
@@ -604,7 +665,6 @@
             const row = document.createElement('tr');
             if (isHoliday) row.classList.add('is-holiday');
 
-            // HTML bouw
             let vakHtml = '', thuisHtml = '', bijlesHtml = '', statusHtml = '';
 
             items.forEach((item, index) => {
@@ -633,15 +693,12 @@
                     </div>`;
 
                 statusHtml += `
-                    <div style="${borderStyle} display:flex; align-items:center; justify-content:space-between; min-height:40px;">
+                    <div style="${borderStyle} display:flex; align-items:center; justify-content:center; min-height:40px;">
                          <label class="status-container">
                             <input type="checkbox" ${item.isAfgerond ? 'checked' : ''} 
                                 onchange="updateField('${item.id}', 'isAfgerond', this.checked)">
-                            <span class="status-text ${item.isAfgerond ? 'completed' : ''}">
-                                ${item.isAfgerond ? 'Klaar' : 'Ongedaan'}
-                            </span>
                         </label>
-                        ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:auto; padding:4px 8px; font-size:0.7em; background:transparent; color:#ccc; width:auto;">×</button>` : ''}
+                        ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:10px; padding:0; border:none; background:transparent; color:#999; font-size:1.2em; cursor:pointer;">&times;</button>` : ''}
                     </div>`;
             });
 
@@ -663,37 +720,125 @@
                 <td class="col-bijles">${bijlesHtml}</td>
                 <td class="col-status">${statusHtml}</td>
             `;
-            
             container.appendChild(row);
             row.querySelectorAll('textarea').forEach(autoResize);
         }
 
-        function updateField(id, f, v) { if(activeUserId===currentUserId) db.collection('users').doc(currentUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        
-        function toggleHoliday(ids, val) {
-            if(activeUserId!==currentUserId) return;
-            const batch = db.batch();
-            ids.split(',').forEach(id => {
-                batch.update(db.collection('users').doc(currentUserId).collection('planner_items').doc(id), { isVakantie: val });
+        /* --- GRADES LOGIC --- */
+        function addGrade() {
+            const subject = document.getElementById('gradeSubject').value;
+            const grade = parseFloat(document.getElementById('gradeValue').value);
+            const weight = parseFloat(document.getElementById('gradeWeight').value);
+
+            if (!subject || isNaN(grade) || isNaN(weight)) return alert("Vul alle velden correct in.");
+
+            db.collection('users').doc(currentUserId).collection('grades').add({
+                subject, grade, weight, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('gradeSubject').value = '';
+                document.getElementById('gradeValue').value = '';
             });
-            batch.commit();
         }
 
-        function deleteItem(docId) { if (confirm("Verwijderen?")) db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete(); }
-        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        function loadGrades() {
+            db.collection('users').doc(currentUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                const list = document.getElementById('grades-list');
+                list.innerHTML = '';
+                
+                const subjects = {};
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if (!subjects[d.subject]) subjects[d.subject] = { sum: 0, weightSum: 0, grades: [] };
+                    subjects[d.subject].sum += (d.grade * d.weight);
+                    subjects[d.subject].weightSum += d.weight;
+                    subjects[d.subject].grades.push({id: doc.id, ...d});
+                });
 
-        /* --- EXTRAS --- */
-        function loadNotes() { db.collection('users').doc(currentUserId).collection('data').doc('notes').get().then(d => { if(d.exists) document.getElementById('global-notes').value = d.data().content||''; }); }
-        function saveNotes(v) { db.collection('users').doc(currentUserId).collection('data').doc('notes').set({content:v}, {merge:true}).then(() => document.getElementById('notes-status').innerText='Opgeslagen!'); }
-        
+                for(const subj in subjects) {
+                    const data = subjects[subj];
+                    const avg = (data.sum / data.weightSum).toFixed(1);
+                    
+                    let html = `<div style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">`;
+                    html += `<div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:5px;"><span>${subj}</span><span>Gem: <span style="color:var(--primary-color);">${avg}</span></span></div>`;
+                    
+                    data.grades.forEach(g => {
+                        html += `<div style="display:flex; justify-content:space-between; font-size:0.9em; color:var(--text-muted);">
+                            <span>${g.grade} (x${g.weight})</span>
+                            <button onclick="db.collection('users').doc('${currentUserId}').collection('grades').doc('${g.id}').delete()" style="background:none; border:none; color:#e74c3c; cursor:pointer; padding:0;">&times;</button>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                    list.innerHTML += html;
+                }
+                if(snap.empty) list.innerHTML = '<p style="color:var(--text-muted)">Nog geen cijfers.</p>';
+            });
+        }
+
+        /* --- NOTES LOGIC --- */
+        function addNote() {
+            const subj = document.getElementById('noteSubject').value;
+            const date = document.getElementById('noteDate').value;
+            const content = document.getElementById('noteContent').value;
+            if(!subj || !content) return alert("Vul vak en inhoud in.");
+
+            db.collection('users').doc(currentUserId).collection('subject_notes').add({
+                subject: subj, date: date ? firebase.firestore.Timestamp.fromDate(new Date(date)) : null, content, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('noteContent').value = '';
+                alert("Notitie opgeslagen");
+            });
+        }
+
+        function loadSubjectNotes() {
+            db.collection('users').doc(currentUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                const container = document.getElementById('notes-list-container');
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString() : 'Geen datum';
+                    const div = document.createElement('div');
+                    div.className = 'note-card';
+                    div.innerHTML = `
+                        <span class="note-meta">${dateStr}</span>
+                        <span class="note-subject">${d.subject}</span>
+                        <p style="margin:5px 0; white-space: pre-wrap;">${d.content}</p>
+                        <button onclick="db.collection('users').doc('${currentUserId}').collection('subject_notes').doc('${doc.id}').delete()" class="delete-btn">Verwijderen</button>
+                    `;
+                    container.appendChild(div);
+                });
+                if(snap.empty) container.innerHTML = '<p style="color:var(--text-muted)">Nog geen notities.</p>';
+            });
+        }
+
+        /* --- TIMER LOGIC --- */
         function updateTimerDisplay() { 
             const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
             document.getElementById('timer-display').innerText = `${m}:${s}`;
         }
-        function startTimer() { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); }
+        function startTimer() { 
+            const inputVal = document.getElementById('timerInput').value;
+            if(timeLeft === 25*60 && inputVal != 25) timeLeft = inputVal * 60; // Set custom time only if not already running/paused
+
+            if(!timerInterval) timerInterval = setInterval(() => { 
+                if(timeLeft>0){timeLeft--;updateTimerDisplay()}
+                else{stopTimer();alert("Klaar!")} 
+            }, 1000); 
+        }
         function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
-        function resetTimer() { stopTimer(); timeLeft=25*60; updateTimerDisplay(); }
+        function resetTimer() { 
+            stopTimer(); 
+            const val = document.getElementById('timerInput').value;
+            timeLeft = (val ? val : 25) * 60; 
+            updateTimerDisplay(); 
+        }
+
+        /* --- DB HELPERS --- */
+        function updateField(id, f, v) { if(activeUserId===currentUserId) db.collection('users').doc(currentUserId).collection('planner_items').doc(id).update({[f]: v}); }
+        function toggleHoliday(ids, val) { if(activeUserId!==currentUserId)return; const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(currentUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); }
+        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>alert("Opgeslagen")); }
     </script>
 </body>
 </html>
