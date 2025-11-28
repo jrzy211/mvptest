@@ -3,432 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Wekelijkse Planner</title>
+    <title>Study-Start - Dark Mode Planner</title>
     
-    <!-- FAVICON: Oranje Bolletje -->
+    <!-- FAVICON -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FF8C00'/></svg>" type="image/svg+xml">
 
-    <!-- Google Fonts - Roboto -->
+    <!-- Google Fonts - Inter (Modern) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK's laden -->
+    <!-- Firebase SDK's -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* [ALGEMEEN] */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-color: #111111;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a1a1a1;
+            --primary-color: #ff8c00;
+            --primary-hover: #e07b00;
+            --border-color: #333;
+            --table-header-bg: #2a2a2a;
+            --success-color: #2ecc71;
+            --holiday-bg: #2d2b20; /* Donkergeel/bruin tintje */
         }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f7f6; /* Algemene achtergrond voor planner */
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* [LAYOUT] - Centraal login scherm */
+        /* --- LAYOUT --- */
+        #planner-content-wrapper {
+            display: flex;
+            gap: 25px;
+            padding: 25px;
+            flex-grow: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #main-planner-area { flex: 3; min-width: 60%; }
+        #sidebar-area { flex: 1; min-width: 320px; max-width: 400px; }
+
+        /* --- LOGIN PAGE --- */
         #login-page {
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Centraal verticaal */
-            align-items: center; /* Centraal horizontaal */
+            justify-content: center;
+            align-items: center;
             flex-grow: 1;
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-            background-size: cover;
-            background-position: center;
-            background-color: #ff8c00; /* ORANJE ACHTERGROND VOOR LOGIN PAGINA */
+            background-color: var(--primary-color); /* Oranje achtergrond zoals gevraagd */
         }
-
-        /* [LAYOUT] - Tweekoloms indeling voor de plannerpagina */
-        #planner-page {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        
-        #planner-content-wrapper {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            flex-grow: 1;
-        }
-
-        #main-planner-area {
-            flex: 3; 
-            min-width: 60%;
-        }
-
-        #sidebar-area {
-            flex: 1; 
-            min-width: 300px;
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
             max-width: 400px;
-        }
-        
-        /* [COMPONENT STYLING] */
-        .card {
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            width: 100%;
         }
 
-        /* [KNOP STYLING FIX] */
-        .planning-form-container input, 
-        .planning-form-container select, 
-        .planning-form-container button,
-        .planning-form-container textarea,
-        .planning-form-container datalist { 
-            padding: 12px; 
-            border: 1px solid #ddd;
-            border-radius: 5px; 
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            margin-right: 0 !important;
-            margin-bottom: 5px; 
-        }
-        
-        .planning-form-container button {
-            background-color: #ff8c00; 
-            color: white;
-            border: none;
-            cursor: pointer;
-            grid-column: 1 / -1; 
-            font-weight: 700; 
-            font-size: 1.1em; 
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); 
-        }
-        .planning-form-container button:hover {
-            background-color: #e67e22;
-            transform: translateY(-1px);
-        }
-        
-        /* [OVERIGE STYLING] - Behoud van oranje/groen thema */
+        /* --- HEADER --- */
         header {
-            width: 100%;
-            background-color: #ff8c00; /* Oranje header */
-            color: white;
-            padding: 12px 25px;
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { margin: 0; font-size: 1.2em; font-weight: 600; color: var(--primary-color); }
+
+        /* --- CARDS & FORM --- */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
         }
         
-        .login-card h1 {
-            color: #ff8c00; 
-            margin-bottom: 25px;
-            font-size: 2em; 
-            font-weight: 500;
-            border-bottom: none;
-        }
+        h2, h3 { margin-top: 0; font-weight: 600; letter-spacing: -0.5px; }
+
+        .input-group { margin-bottom: 15px; }
         
-        #google-login-button {
-            background-color: white; 
-            color: #444; 
-            padding: 10px 25px; 
-            border: 1px solid #ddd; 
-            border-radius: 5px; 
+        input, select, textarea {
+            width: 100%;
+            background-color: #252525;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 12px;
+            border-radius: 12px; /* Ronde randjes */
+            font-family: inherit;
+            font-size: 0.95em;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50px; /* Ronde knoppen */
+            font-weight: 600;
             cursor: pointer;
-            font-size: 1.1em; 
-            font-weight: 500;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            display: flex;
-            align-items: center;
-            margin: 25px auto 0 auto; 
-            box-shadow: 0 2px 6px 0 rgba(0,0,0,.15); 
+            transition: transform 0.1s, background-color 0.2s;
         }
+        button:hover { background-color: var(--primary-hover); transform: scale(1.02); }
+        button.secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
+        button.secondary:hover { background-color: #333; color: white; }
 
-        #google-login-button:hover {
-            background-color: #f0f0f0;
-            box-shadow: 0 4px 10px 0 rgba(0,0,0,.2);
-        }
-
-        .google-icon { 
-            width: 24px; 
-            height: 24px;
-            margin-right: 12px;
-            /* Ingebouwde SVG van het Google G-logo */
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="%23FFC107" d="M43.61 20.08v4.92h-18.06c0 5.4 3.82 9.87 9.17 10.87-2.67 1.83-6 2.92-9.61 2.92-10.74 0-19.45-8.71-19.45-19.45S14.26 5.83 25 5.83c5.44 0 9.77 2.22 12.87 5.17l-3.69 3.69c-2.18-1.95-4.99-3.21-9.18-3.21-6.9 0-12.55 5.65-12.55 12.55s5.65 12.55 12.55 12.55c7.34 0 10.32-5.45 11.23-8.22h-11.23V20.08z"/></svg>');
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
-
+        /* --- TABEL --- */
         .studie-tabel {
             width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .studie-tabel th, .studie-tabel td {
-            border: 1px solid #eee;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-            word-wrap: break-word;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
         }
 
         .studie-tabel th {
-            background-color: #ff8c00; 
-            color: white;
-            font-weight: 600;
+            background-color: var(--table-header-bg);
+            color: var(--text-muted);
             text-transform: uppercase;
-            font-size: 0.95em;
-            border-bottom: none;
-        }
-
-        /* [NIEUW: AFWISSELENDE RIJ KLEUREN] */
-        .studie-tabel tbody tr.week-even:not(.week-completed):not(.week-holiday) {
-            background-color: #fcfcfc; /* Zeer licht wit */
-        }
-        .studie-tabel tbody tr.week-odd:not(.week-completed):not(.week-holiday) {
-            background-color: #f9f9f9; /* Zeer licht grijs */
-        }
-
-        /* [RESPONSIVE ANPASSINGEN] */
-        @media (max-width: 1024px) {
-            #planner-content-wrapper {
-                flex-direction: column; 
-            }
-            #sidebar-area {
-                max-width: 100%;
-            }
-        }
-        
-        /* Overige styling voor status */
-        .stat-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-size: 0.75em;
+            letter-spacing: 1px;
             padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-weight: 500;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .stat-item-completed {
-            background-color: #e6ffe6; 
-            border-left: 5px solid #27ae60;
-        }
-
-        .stat-item-pending {
-            background-color: #fff4e6; 
-            border-left: 5px solid #ff8c00;
-        }
-
-        .stat-number {
-            font-size: 1.5em;
-            font-weight: 700;
-        }
-
-        .studie-tabel tr.week-completed {
-            background-color: #e6ffe6; 
-            border-left: 5px solid #27ae60;
-        }
-
-        .studie-tabel tr.week-pending {
-            background-color: #fff4e6; 
-            border-left: 5px solid #ff8c00;
+        .studie-tabel td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+            background-color: var(--card-bg);
+            font-size: 0.95em;
         }
         
-        .studie-tabel tr.week-holiday {
-            background-color: #fffae0; 
-            border-left: 5px solid #ffd700;
-            font-style: italic;
-        }
-        .studie-tabel tr.week-holiday td {
-             text-align: center;
-             color: #a0522d;
-        }
-        .studie-tabel tr.week-holiday td[data-label="VAKANTIE"] {
-             text-align: left;
-        }
+        .studie-tabel tr:last-child td { border-bottom: none; }
 
-        .studie-tabel textarea {
+        /* Kolom breedtes */
+        .col-week { width: 15%; font-weight: bold; color: var(--primary-color); }
+        .col-vak { width: 10%; font-weight: 600; }
+        .col-thuis { width: 35%; }
+        .col-bijles { width: 25%; }
+        .col-status { width: 15%; }
+
+        /* Bewerkbare area's */
+        .editable-area {
             width: 100%;
-            min-height: 80px;
-            border: 1px solid #ddd;
-            padding: 8px;
+            min-height: 60px;
+            background: transparent;
+            border: 1px dashed transparent;
+            color: var(--text-color);
             resize: vertical;
-            font-size: 0.95em;
-            border-radius: 4px;
-            box-sizing: border-box; 
-            transition: background-color 0.3s;
-        }
-        
-        .taak-item input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.3); 
-            accent-color: #27ae60; 
-            cursor: pointer;
-        }
-        
-        .vakantie-check {
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 5px;
+            border-radius: 8px;
         }
-        .vakantie-check label {
-            font-weight: 400;
-            font-size: 0.9em;
-            color: #ff8c00;
-            margin-left: 5px;
-        }
-        
-        /* Deelfunctie specifieke styling */
-        .sharing-code-box {
-            background-color: #f0f0f0;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            font-family: monospace;
-            word-break: break-all;
-            margin-top: 10px;
-        }
-        
-        /* FIX: Button styling for sharing view (Knoppen onderaan) */
-        .share-button-group {
-            display: flex;
-            flex-direction: column; /* Knoppen onder elkaar */
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .share-button-group button {
-            width: 100%;
-            padding: 10px;
-            font-weight: bold;
-            font-size: 1em;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .editable-area:hover, .editable-area:focus {
+            border-color: #444;
+            background-color: #252525;
         }
 
-        .share-email-input-group {
-             display: flex;
-             gap: 5px;
-             margin-bottom: 10px;
+        /* Vakantie Modus */
+        tr.is-holiday td {
+            background-color: var(--holiday-bg);
+            color: #e6b800;
         }
-        .share-email-input-group input {
-            flex-grow: 1;
+        
+        /* Switch Toggle voor Vakantie */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+            vertical-align: middle;
         }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(14px); }
 
+        /* Responsive */
+        @media (max-width: 1000px) {
+            #planner-content-wrapper { flex-direction: column; }
+            #sidebar-area { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. LANDINGSPAGINA (Zichtbaar als NIET ingelogd) --><div id="login-page" style="display: none;">
-        <div class="card login-card">
-            <h1>Welkom bij Study-Start</h1>
-            <p>Jouw persoonlijke studieplanner. Log in om je wekelijkse taken te laden.</p>
-            
-            <button id="google-login-button" onclick="signInWithGoogle()">
-                <div class="google-icon"></div>
-                Inloggen met Google
+    <!-- LOGIN PAGINA -->
+    <div id="login-page" style="display: none;">
+        <div class="login-card">
+            <h1 style="color: white;">Study-Start</h1>
+            <p style="color: #eee; margin-bottom: 30px;">Log in om je studieplanner te openen.</p>
+            <button id="google-login-button" onclick="signInWithGoogle()" style="background-color: white; color: black;">
+                <span style="margin-right: 10px;">G</span> Inloggen met Google
             </button>
-
-            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.9em; color: #888;">Controleert inlogstatus...</p>
+            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.8em; color: rgba(255,255,255,0.7);">Wachten op input...</p>
         </div>
     </div>
 
-    <!-- 2. PLANNER PAGINA (Zichtbaar als WEL ingelogd) --><div id="planner-page" style="display: none;">
+    <!-- PLANNER PAGINA -->
+    <div id="planner-page" style="display: none;">
         <header>
-            <h1 id="planner-header">Study-Start</h1>
-            <div style="display: flex; align-items: center;">
-                <span id="login-status-header" style="margin-right: 15px; font-size: 0.9em;"></span>
-                <button id="logout-button" onclick="signOutUser()">Uitloggen</button>
-            </div>
+            <h1>Study-Start</h1>
+            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 20px;">Uitloggen</button>
         </header>
 
         <div id="planner-content-wrapper">
             
-            <!-- LINKER KOLOM: PLANNER & TOETSEN OVERZICHT --><div id="main-planner-area">
-                <p id="welkom-boodschap" style="font-size: 1.1em; color: #ff8c00; font-weight: 500;">Welkom!</p>
-                <div id="loading-indicator">Laden van persoonlijke planning...</div>
-                
-                <!-- PLANNER TABEL (Wekelijks Schema - Handmatig Invullen) --><h2 style="color: #333;">📅 Wekelijks Leerschema</h2>
+            <!-- LINKER KOLOM: TABEL -->
+            <div id="main-planner-area">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin:0;">Jouw Planning</h2>
+                    <button onclick="exportToICS()" style="width: auto; font-size: 0.9em; padding: 10px 20px;">
+                        📅 Download voor Agenda
+                    </button>
+                </div>
+
+                <div id="loading-indicator" style="padding: 20px; text-align: center; color: var(--text-muted);">Planning laden...</div>
+
                 <table class="studie-tabel">
                     <thead>
                         <tr>
-                            <th style="width: 15%;">WEEK</th>
-                            <th style="width: 15%;">VAK</th>
-                            <th style="width: 35%;">TAAKOMSCHRIJVING</th>
-                            <th style="width: 15%;">GOOGLE CALENDAR</th>
-                            <th style="width: 10%;">STATUS</th>
-                            <th style="width: 10%;">VAKANTIE</th>
+                            <th class="col-week">Week / Deadline</th>
+                            <th class="col-vak">Vak</th>
+                            <th class="col-thuis">Thuis Doen</th>
+                            <th class="col-bijles">In de Bijles</th>
+                            <th class="col-status">Status / Vakantie</th>
                         </tr>
                     </thead>
                     <tbody id="planner-table-body">
-                        <!-- Dynamische taken komen hier --></tbody>
+                        <!-- Rows worden hier gegenereerd -->
+                    </tbody>
                 </table>
-                <!-- EINDE PLANNER TABEL -->
+            </div>
 
-                <!-- DUMMY OVERZICHT - NOG NIET GEBRUIKT IN DIT MODEL --><div id="toetsen-overzicht" class="card" style="margin-top: 20px; display: none;">
-                    <h2>📚 Alle Taken</h2>
-                    <div id="toetsen-lijst">
-                        <p style="font-style: italic; color: #777;">Laden...</p>
-                    </div>
-                </div>
-                <!-- EINDE DUMMY OVERZICHT --></div>
-            
-            <!-- RECHTER KOLOM: INVOER & STATISTIEKEN --><div id="sidebar-area">
-
-                <!-- NIEUWE WEKELIJKSE TAAK INVOER --><div class="card" id="new-algemene-taak-card">
-                    <h3>+ Nieuwe Wekelijkse Taak</h3>
-                    <div class="planning-form-container">
-                        <!-- VAKKEUZE MET DATALIST --><input type="text" list="vakken-list" id="algemeenVakInput" placeholder="Vak (typ of kies)" required>
-                        <datalist id="vakken-list">
-                            <option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Duits">
-                            <option value="Frans"><option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Natuurkunde">
-                            <option value="Scheikunde"><option value="Biologie"><option value="Economie"><option value="Bedrijfseconomie">
-                            <option value="Latijn"><option value="Grieks"><option value="Muziek">
-                        </datalist>
-                        
-                        <input type="date" id="algemeenDatumInput" required>
-                        <textarea id="algemeenTaakInput" placeholder="Taakomschrijving (bv. Paragraaf 2.1 & 2.2 oefenen)"></textarea>
-                        <button onclick="saveAlgemeneTaak()">Plan Taak In</button>
-                    </div>
-                    <p id="algemeen-feedback-message" style="color: red; margin-top: 10px;"></p>
-                </div>
-                
-                <!-- DEEL FUNCTIE VOOR EIGENAAR (STUDENT) --><div class="card" id="sharing-owner-card">
-                    <h3>🤝 Deel Toegang via E-mail</h3>
-                    <p style="font-size: 0.9em; margin-bottom: 5px;">Voer het e-mailadres van de docent/ouder in:</p>
+            <!-- RECHTER KOLOM: TOOLS -->
+            <div id="sidebar-area">
+                <div class="card">
+                    <h3>⚡ Automatisch Inplannen</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch een schema tot aan je toets.</p>
                     
-                    <div class="share-email-input-group">
-                        <input type="email" id="docentEmailInput" placeholder="docent@voorbeeld.nl">
-                        <button onclick="addAccessByEmail()" style="background-color: #2ecc71; width: auto; font-size: 0.9em; padding: 5px 10px;">Toevoegen</button>
+                    <div class="input-group">
+                        <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een Vak">
+                        <datalist id="vakken-list">
+                            <option value="Wiskunde A"><option value="Wiskunde B"><option value="Natuurkunde">
+                            <option value="Scheikunde"><option value="Biologie"><option value="Economie">
+                            <option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Nederlands">
+                            <option value="Engels"><option value="Duits"><option value="Frans">
+                        </datalist>
                     </div>
 
-                    <p style="font-size: 0.8em; font-weight: bold; margin-bottom: 5px;">Huidige Gedeelde Gebruikers:</p>
-                    <ul id="shared-users-list" style="list-style: disc; margin: 0; padding-left: 20px; font-size: 0.9em;">
-                        <!-- Lijst van gedeelde e-mails komt hier --></ul>
-                    <p id="share-feedback" style="font-size: 0.8em; margin-top: 10px;"></p>
+                    <div class="input-group">
+                        <select id="autoHoofdstukInput">
+                            <option value="" disabled selected>Kies Hoofdstuk</option>
+                            <option value="H1">Hoofdstuk 1</option><option value="H2">Hoofdstuk 2</option>
+                            <option value="H3">Hoofdstuk 3</option><option value="H4">Hoofdstuk 4</option>
+                            <option value="H5">Hoofdstuk 5</option><option value="H6">Hoofdstuk 6</option>
+                            <option value="H7">Hoofdstuk 7</option><option value="H8">Hoofdstuk 8</option>
+                            <option value="H9">Hoofdstuk 9</option><option value="H10">Hoofdstuk 10</option>
+                            <option value="H11">Hoofdstuk 11</option><option value="H12">Hoofdstuk 12</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label style="font-size: 0.8em; color: var(--text-muted);">Toetsdatum:</label>
+                        <input type="date" id="autoDatumInput">
+                    </div>
+
+                    <button onclick="generateAutoPlanning()">Genereer Planning</button>
+                    <p id="feedback-message" style="font-size: 0.8em; margin-top: 10px; text-align: center;"></p>
                 </div>
 
-                <!-- STATISTIEKEN PANEEL --><div class="card">
-                    <h3>📊 Studie Statistieken</h3>
-                    <div id="statistieken-container">
-                        <p style="font-style: italic; color: #777;">Laden...</p>
-                    </div>
+                <div class="card">
+                    <h3>Deel je Schema</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted);">Deel deze link met je docent:</p>
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
                 </div>
-                <!-- EINDE STATISTIEKEN PANEEL --></div>
-            <!-- EINDE RECHTER KOLOM --></div>
+            </div>
+
+        </div>
     </div>
-    <!-- EINDE PLANNER PAGINA --><script>
-        // =================================================================
-        // 1. FIREBASE INITIALISATIE EN CONFIGURATIE (jouw gegevens)
-        // =================================================================
+
+    <script>
+        /* --- CONFIG --- */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
           authDomain: "study-start-c510c.firebaseapp.com",
@@ -442,557 +346,236 @@
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore(); 
-        
-        // Globale variabelen voor de staat
-        let currentUserId = null; // UID van de ingelogde gebruiker
-        let currentUserEmail = null; // E-mail van de ingelogde gebruiker
-        let activeUserId = null;  // UID van de gebruiker wiens data getoond wordt (kan gedeeld zijn)
-        let weeklyHolidayStatuses = {}; 
-        
-        // =================================================================
-        // 2. AUTHENTICATIE FUNCTIES & PAGINASCHAKELING
-        // =================================================================
-        function showPage(pageId) {
-            document.getElementById('login-page').style.display = 'none';
-            document.getElementById('planner-page').style.display = 'none';
-            
-            if (pageId === 'login-page') {
-                document.getElementById(pageId).style.display = 'flex'; 
-            } else {
-                document.getElementById(pageId).style.display = 'block'; 
-            }
-        }
 
-        function handleUser(user) {
-            const loginStatusSplash = document.getElementById('login-status-splash');
+        let currentUserId = null;
+        let activeUserId = null;
+        let planningDataCache = []; // Lokale cache voor export
 
+        /* --- AUTHENTICATION --- */
+        auth.onAuthStateChanged(user => {
             if (user) {
-                currentUserId = user.uid; 
-                currentUserEmail = user.email.toLowerCase(); // Altijd lowercase e-mail gebruiken
+                currentUserId = user.uid;
                 
-                document.getElementById('welkom-boodschap').innerText = `Welkom terug, ${user.displayName.split(' ')[0]}!`;
-                document.getElementById('login-status-header').innerText = `Ingelogd als: ${user.email}`;
-                
-                showPage('planner-page');
-                
-                // 1. Controleer of de ingelogde gebruiker een gedeeld schema kan bekijken
-                checkSharedAccess(currentUserEmail).then(studentId => {
-                    activeUserId = studentId || currentUserId;
+                // Check URL param voor gedeelde view
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedId = urlParams.get('share');
+                activeUserId = sharedId || currentUserId;
 
-                    // 2. Start de listeners op de juiste (gedeelde of eigen) ID
-                    setupFirestoreListeners(activeUserId); 
-                    updateViewingStatus();
-                });
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('planner-page').style.display = 'flex';
+                
+                // Zet deel link
+                document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?share=${currentUserId}`;
 
+                loadPlanning(activeUserId);
             } else {
-                currentUserId = null;
-                activeUserId = null;
-                loginStatusSplash.innerText = 'Log in om je persoonlijke planner te zien.';
-                showPage('login-page');
-                
-                document.getElementById('planner-table-body').innerHTML = '';
+                document.getElementById('login-page').style.display = 'flex';
+                document.getElementById('planner-page').style.display = 'none';
             }
-        }
-        
-        auth.onAuthStateChanged(handleUser);
+        });
 
         function signInWithGoogle() {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          auth.signInWithPopup(provider).catch((error) => {
-            console.error("Login Error:", error.message);
-            alert(`Fout bij inloggen: ${error.code}. Controleer of Google-inloggen en geautoriseerde domeinen in Firebase zijn ingesteld.`);
-          });
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message));
         }
-
         function signOutUser() {
-            // Dit is de enige plek om uit te loggen en de staat te reseten
-            auth.signOut().then(() => {
-                window.location.href = window.location.origin + window.location.pathname;
-            }).catch((error) => {
-                 console.error("Logout Error:", error.message);
-            });
+            auth.signOut().then(() => window.location.href = window.location.origin + window.location.pathname);
         }
-        
-        // =================================================================
-        // 3. DEEL FUNCTIES (E-MAIL CONTROLE)
-        // =================================================================
-        
-        function checkSharedAccess(email) {
-            if (!email) return Promise.resolve(null);
-            
-            // Zoekt in alle /users/{userId}/toegang/{email} documenten
-            const accessCheckRef = db.collectionGroup('toegang').where(firebase.firestore.FieldPath.documentId(), '==', email);
 
-            return accessCheckRef.get().then(snapshot => {
-                if (!snapshot.empty) {
-                    const doc = snapshot.docs[0];
-                    const studentId = doc.ref.parent.parent.id; // Pad: /users/{studentId}/toegang
-                    return studentId;
+        /* --- CORE LOGIC --- */
+
+        // 1. GENERATE LOGIC (Slimme Planning)
+        function generateAutoPlanning() {
+            if (activeUserId !== currentUserId) return alert("Je kunt alleen je eigen schema bewerken.");
+
+            const vak = document.getElementById('autoVakInput').value;
+            const hoofdstuk = document.getElementById('autoHoofdstukInput').value;
+            const datumStr = document.getElementById('autoDatumInput').value;
+
+            if (!vak || !hoofdstuk || !datumStr) return alert("Vul alle velden in.");
+
+            const toetsDate = new Date(datumStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            if (toetsDate <= today) return alert("Kies een datum in de toekomst.");
+
+            // Bereken weken
+            let currentWeekStart = new Date(today);
+            currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); // Maandag
+
+            const batch = db.batch();
+            const collectionRef = db.collection('users').doc(currentUserId).collection('planner_items');
+
+            let weekCount = 0;
+
+            while (currentWeekStart <= toetsDate) {
+                weekCount++;
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(currentWeekStart.getDate() + 6); // Zondag
+
+                // Unieke ID voor deze rij: vak + weekstart
+                const docId = `${vak}-${currentWeekStart.getTime()}`;
+                const docRef = collectionRef.doc(docId);
+
+                // Slimme inhoud: Wat te doen?
+                let huiswerkText = `Oefenen ${vak} ${hoofdstuk}`;
+                let bijlesText = `Vragen stellen over ${hoofdstuk}`;
+                
+                // Als het de toetsweek is
+                if (toetsDate >= currentWeekStart && toetsDate <= weekEnd) {
+                    huiswerkText = `HERHALING & TOETS ${vak} ${hoofdstuk} (${toetsDate.toLocaleDateString('nl-NL', {day:'numeric', month:'short'})})`;
+                    bijlesText = "Proeftoets maken";
+                } else if (weekCount === 1) {
+                    huiswerkText = `Starten ${vak} ${hoofdstuk}: Basis doornemen`;
                 }
-                return null;
-            }).catch(error => {
-                console.error("Fout bij controleren gedeelde toegang:", error);
-                return null; 
-            });
-        }
-        
-        function updateViewingStatus() {
-            const statusEl = document.getElementById('welkom-boodschap');
-            const sharingCard = document.getElementById('sharing-owner-card');
-            
-            if (!activeUserId) return;
 
-            if (activeUserId === currentUserId) {
-                // EIGEN SCHEMA
-                sharingCard.style.display = 'block';
-                statusEl.innerHTML = `Welkom! Je bekijkt je <span style="font-weight: bold;">eigen schema</span>.`;
-
-            } else {
-                // GEDEELD SCHEMA
-                sharingCard.style.display = 'none'; // Docent kan niet zijn eigen toegang beheren
-                statusEl.innerHTML = `Welkom! Je bekijkt nu een <span style="color: #c0392b; font-weight: bold;">gedeeld schema</span>.`;
-            }
-        }
-        
-        /* --- TOEGANG BEHEER FUNCTIES (Alleen voor de eigenaar) --- */
-
-        window.renderSharedUsers = function(sharedEmails) {
-             const listEl = document.getElementById('shared-users-list');
-             listEl.innerHTML = '';
-             if (sharedEmails.length === 0) {
-                 listEl.innerHTML = '<li style="color: #777;">Nog geen e-mails toegevoegd.</li>';
-                 return;
-             }
-             sharedEmails.forEach(email => {
-                 const listItem = document.createElement('li');
-                 listItem.style.display = 'flex';
-                 listItem.style.justifyContent = 'space-between';
-                 listItem.style.alignItems = 'center';
-                 listItem.style.marginBottom = '5px';
-                 listItem.innerHTML = `
-                    <span>${email}</span>
-                    <button onclick="removeAccessByEmail('${email}')" style="background-color: #e74c3c; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em;">Verwijder</button>
-                 `;
-                 listEl.appendChild(listItem);
-             });
-        }
-
-        window.addAccessByEmail = function() {
-            if (activeUserId !== currentUserId) { alert("Je kunt alleen e-mails toevoegen aan je eigen schema."); return; }
-            
-            const emailInput = document.getElementById('docentEmailInput');
-            const email = emailInput.value.trim().toLowerCase();
-            const feedbackEl = document.getElementById('share-feedback');
-
-            if (!email || !email.includes('@')) {
-                 feedbackEl.style.color = '#c0392b';
-                 feedbackEl.innerText = "Voer een geldig e-mailadres in.";
-                 return;
-            }
-            
-            // Gebruik het e-mailadres als document ID
-            db.collection('users').doc(currentUserId).collection('toegang').doc(email).set({
-                toegevoegd_op: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                feedbackEl.style.color = '#27ae60';
-                feedbackEl.innerText = `Toegang verleend aan ${email}!`;
-                emailInput.value = '';
-            }).catch(error => {
-                feedbackEl.style.color = '#c0392b';
-                feedbackEl.innerText = "Fout bij toevoegen toegang: " + error.message;
-                console.error("Error adding access: ", error);
-            });
-        }
-
-        window.removeAccessByEmail = function(email) {
-             if (!currentUserId) return;
-             
-             db.collection('users').doc(currentUserId).collection('toegang').doc(email).delete().catch(error => {
-                 console.error("Error removing access: ", error);
-             });
-        }
-        
-        // =================================================================
-        // 4. FIRESTORE LISTENERS & DATA OPHALEN
-        // =================================================================
-        
-        // Global storage for the unsubscribe function
-        window.weekStatusUnsubscribe = null;
-        window.accessListUnsubscribe = null; 
-        window.algemeenUnsubscribe = null;
-
-        function setupFirestoreListeners(userId) {
-            if (!userId) return;
-            
-            const loadingIndicator = document.getElementById('loading-indicator');
-            loadingIndicator.innerText = `Laden van planning voor ${userId.substring(0, 8)}...`;
-            
-            // Oude listeners stoppen
-            if (window.weekStatusUnsubscribe) { window.weekStatusUnsubscribe(); window.weekStatusUnsubscribe = null; }
-            if (window.accessListUnsubscribe) { window.accessListUnsubscribe(); window.accessListUnsubscribe = null; }
-            if (window.algemeenUnsubscribe) { window.algemeenUnsubscribe(); window.algemeenUnsubscribe = null; }
-
-            // Listener 1: Wekelijkse Status (Vakantie)
-            const weekStatusRef = db.collection('users').doc(userId).collection('weken').doc('status');
-            window.weekStatusUnsubscribe = weekStatusRef.onSnapshot(doc => {
-                weeklyHolidayStatuses = doc.exists ? doc.data() : {};
-                // Trigger hoofdrender
-                fetchAndRenderData(userId); 
-            }, error => {
-                console.error("Error loading Weekly Status data: ", error);
-            });
-            
-            // Listener 2: Algemene Taken (De wekelijkse planner data)
-            const algemeenRef = db.collection('users').doc(userId).collection('algemeen');
-            window.algemeenUnsubscribe = algemeenRef.orderBy('datum_aangemaakt', 'asc').onSnapshot(snapshot => {
-                const algemeneTaken = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Zorgen dat de data direct bijgewerkt wordt zonder de hele functie opnieuw te draaien.
-                updatePlannerUI([], algemeneTaken); 
-
-            }, error => {
-                console.error("Error loading Algemene taken data: ", error);
-            });
-            
-            // Listener 3: Toegang Lijst (Alleen voor de eigenaar)
-            if (userId === currentUserId) {
-                 const accessRef = db.collection('users').doc(userId).collection('toegang');
-                 window.accessListUnsubscribe = accessRef.onSnapshot(snapshot => {
-                     const sharedEmails = [];
-                     snapshot.forEach(doc => {
-                         sharedEmails.push(doc.id); // ID is het e-mailadres
-                     });
-                     renderSharedUsers(sharedEmails);
-                 });
-            }
-            
-            loadingIndicator.style.display = 'none';
-        }
-
-        function fetchAndRenderData(userId) {
-             if (!userId) return;
-             
-             // In dit model baseren we de weergave alleen op de Algemene Taken (algemeen collectie)
-             // De planningItems (toetsen) collectie is hier overbodig, maar wordt leeg gehouden om compatibiliteit te garanderen
-             updatePlannerUI([], []); // Alleen algemene taken worden nu getoond via onSnapshot, dus geef lege arrays mee
-        }
-
-        /* --- CRUD FUNCTIES (onpage/window) --- */
-
-        window.saveAlgemeneTaak = function() {
-             if (!activeUserId) { alert("Je bent niet ingelogd of er is geen actief schema gekozen."); return; }
-             
-             const vak = document.getElementById('algemeenVakInput').value.trim();
-             const datumStr = document.getElementById('algemeenDatumInput').value;
-             const taak = document.getElementById('algemeenTaakInput').value.trim();
-             const feedbackEl = document.getElementById('algemeen-feedback-message');
-             
-             if (!vak || !datumStr || !taak) {
-                 feedbackEl.style.color = '#c0392b';
-                 feedbackEl.innerText = "Vul alle velden in.";
-                 return;
-             }
-             
-             const datum = new Date(datumStr);
-             const weekKey = getYearWeekKey(datum); // Bepaal weekKey op basis van datum
-
-             const taakData = {
-                 vak: vak,
-                 taak: taak,
-                 weekKey: weekKey,
-                 datum_start: firebase.firestore.Timestamp.fromDate(datum),
-                 afgerond: false,
-                 datum_aangemaakt: firebase.firestore.FieldValue.serverTimestamp()
-             };
-
-             db.collection('users').doc(activeUserId).collection('algemeen').add(taakData)
-                 .then(() => {
-                     feedbackEl.style.color = '#27ae60';
-                     feedbackEl.innerText = `Taak succesvol gepland voor week ${getWeekNumber(datum)}!`;
-                     document.getElementById('algemeenVakInput').value = '';
-                     document.getElementById('algemeenDatumInput').value = '';
-                     document.getElementById('algemeenTaakInput').value = '';
-                     
-                     // De listener zorgt nu voor de update, dus geen handmatige call nodig
-                 })
-                 .catch(error => {
-                     feedbackEl.style.color = '#c0392b';
-                     feedbackEl.innerText = "Fout bij opslaan: " + error.message;
-                     console.error("Error saving algemene taak: ", error);
-                 });
-        }
-        
-        window.deleteAlgemeneTaak = function(docId) {
-             if (!activeUserId || !confirm(`Weet je zeker dat je deze taak wilt verwijderen?`)) return;
-             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).delete()
-                 .catch(error => console.error("Error deleting algemene taak: ", error));
-        }
-
-        window.updateAlgemeneTaakText = function(docId, value) {
-             if (!activeUserId) return;
-             
-             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).update({
-                 taak: value
-             }).then(() => {
-                const textarea = document.querySelector(`textarea[data-taak-id='${docId}']`);
-                if (textarea) {
-                    textarea.style.backgroundColor = '#e6ffe6';
-                    setTimeout(() => textarea.style.backgroundColor = 'white', 500);
-                }
-             }).catch(error => {
-                 console.error("Error saving taak text: ", error);
-                 alert("Opslagfout voor taakomschrijving. Controleer de console.");
-             });
-        }
-
-        window.toggleAlgemeneTaakCompletion = function(docId, isChecked) {
-             if (!activeUserId) return;
-             db.collection('users').doc(activeUserId).collection('algemeen').doc(docId).update({
-                 afgerond: isChecked
-             }).catch(error => {
-                 console.error("Error toggling algemene taak: ", error);
-                 alert("Opslagfout voor algemene taak. Controleer de console.");
-             });
-        }
-        
-        window.toggleVakantieWeek = function(weekKey, isChecked) {
-            if (!activeUserId) return;
-            const weekStatusRef = db.collection('users').doc(activeUserId).collection('weken').doc('status');
-            weekStatusRef.set({
-                [weekKey]: { isVakantie: isChecked }
-            }, { merge: true }).catch(error => {
-                 console.error("Error saving holiday status: ", error);
-                 alert("Opslagfout voor vakantiestatus. Controleer de console.");
-            });
-        }
-        
-        window.addToGoogleCalendar = function(taakDocId) {
-            // Deze functie haalt de taakdetails op en genereert de kalender link
-            if (!activeUserId) return;
-
-            db.collection('users').doc(activeUserId).collection('algemeen').doc(taakDocId).get()
-                .then(doc => {
-                    if (!doc.exists) {
-                        alert("Taak niet gevonden.");
-                        return;
-                    }
-                    const taak = doc.data();
-                    
-                    const date = taak.datum_start.toDate();
-                    const dateFormatted = date.toISOString().split('T')[0].replace(/-/g, ''); // YYYYMMDD
-                    
-                    const eventTitle = `STUDIE: ${taak.vak} - ${taak.taak}`;
-                    const eventDescription = `Deze taak is gepland via Study-Start voor week ${getWeekNumber(date)}.`;
-                    
-                    // Calendar URL genereert een afspraak van 1 uur op de startdatum van de week (dag/maand is wat de gebruiker kiest)
-                    const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${dateFormatted}/${dateFormatted}&details=${encodeURIComponent(eventDescription)}&sf=true&output=xml`;
-                    
-                    window.open(calendarUrl, '_blank');
-                })
-                .catch(error => {
-                    console.error("Error fetching task for calendar: ", error);
-                    alert("Fout bij het ophalen van taakdetails voor Google Calendar.");
+                batch.set(docRef, {
+                    weekStart: firebase.firestore.Timestamp.fromDate(currentWeekStart),
+                    weekEnd: firebase.firestore.Timestamp.fromDate(weekEnd),
+                    weekNummer: getWeekNumber(currentWeekStart),
+                    vak: vak,
+                    thuisDoen: huiswerkText,
+                    bijlesDoen: bijlesText,
+                    isAfgerond: false,
+                    isVakantie: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+
+                // Volgende week
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            }
+
+            batch.commit().then(() => {
+                alert(`Planning gegenereerd! ${weekCount} weken toegevoegd.`);
+                document.getElementById('autoVakInput').value = '';
+            }).catch(err => console.error(err));
         }
 
+        // 2. LOAD & RENDER LOGIC
+        function loadPlanning(userId) {
+            db.collection('users').doc(userId).collection('planner_items')
+              .orderBy('weekStart', 'asc')
+              .onSnapshot(snapshot => {
+                  document.getElementById('loading-indicator').style.display = 'none';
+                  const tbody = document.getElementById('planner-table-body');
+                  tbody.innerHTML = '';
+                  planningDataCache = [];
 
-        // =================================================================
-        // 5. UI UPDATES (Renderen)
-        // =================================================================
+                  snapshot.forEach(doc => {
+                      const data = doc.data();
+                      data.id = doc.id;
+                      planningDataCache.push(data);
+                      renderRow(tbody, data, userId === currentUserId);
+                  });
 
-        function updatePlannerUI(planningItems, algemeneTaken) {
-            const plannerTableBody = document.getElementById('planner-table-body');
-            plannerTableBody.innerHTML = '';
+                  if (planningDataCache.length === 0) {
+                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: #555;">Nog geen planning. Gebruik de generator rechts.</td></tr>';
+                  }
+              });
+        }
+
+        function renderRow(container, data, isEditable) {
+            const row = document.createElement('tr');
+            const weekStart = data.weekStart.toDate();
+            const weekEnd = data.weekEnd.toDate();
+            const deadlineStr = weekEnd.toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
             
-            const weekTaken = {}; // Map om alle taken per week te verzamelen
+            if (data.isVakantie) row.classList.add('is-holiday');
 
-            // 1. Taken verzamelen van Algemene Taken (Algemeen collectie)
-            algemeneTaken.forEach(item => {
-                const weekKey = item.weekKey;
-                if (!weekTaken[weekKey]) weekTaken[weekKey] = { taken: [] };
-                
-                weekTaken[weekKey].taken.push({
-                    id: item.id,
-                    vak: item.vak,
-                    taakTekst: item.taak,
-                    afgerond: item.afgerond,
-                    datum: item.datum_start.toDate(),
-                    isToetsWeek: false
-                });
-            });
-
-
-            // --- RENDEREN EN STATISTIEKEN BEREKENEN ---
-            let totalWeeks = 0;
-            let completedWeeks = 0;
-            let rowIndex = 0;
-            
-            const gesorteerdeWeekKeys = Object.keys(weekTaken).sort((a, b) => {
-                // Sorteert op jaar en dan weeknummer (bv. 2025-48 komt voor 2026-1)
-                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-            });
-
-
-            gesorteerdeWeekKeys.forEach(weekKey => {
-                const week = weekTaken[weekKey];
-                
-                // Bepaal de begindatum van de week voor weergave
-                const weekStartDate = parseYearWeekKey(weekKey);
-                const deadline = weekEndDeadline(weekStartDate).toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' });
-                const weekNummer = getWeekNumber(weekStartDate);
-                const vakantieCheckId = `vakantie-check-${weekKey}`;
-                const isVakantie = weeklyHolidayStatuses[weekKey]?.isVakantie || false;
-                
-                const row = plannerTableBody.insertRow();
-                
-                if (isVakantie) {
-                    row.className = 'week-holiday';
-                    row.innerHTML = `
-                        <td data-label="WEEK">WEEK ${weekNummer}<br>(t/m zo ${deadline})</td>
-                        <td colspan="4" data-label="VAKANTIE">🎉 VAKANTIE - RUST UIT! 🎉</td>
-                        <td data-label="VAKANTIE">
-                            <div class="vakantie-check">
-                                <input type="checkbox" id="${vakantieCheckId}" checked onchange="toggleVakantieWeek('${weekKey}', this.checked)">
-                                <label for="${vakantieCheckId}">Vakantie</label>
-                            </div>
-                        </td>
-                    `;
-                    plannerTableBody.appendChild(row);
-                    return;
-                }
-                
-                // NORMALE WEEK RIJ
-                totalWeeks++;
-                
-                // Bepaal status: Afgerond als ALLE taken voor die week zijn afgerond
-                const isWeekCompleted = week.taken.length > 0 && week.taken.every(t => t.afgerond);
-                if (isWeekCompleted) completedWeeks++;
-
-                row.className = isWeekCompleted ? 'week-completed' : 'week-pending';
-                // Voeg afwisselende kleurklasse toe
-                row.classList.add(rowIndex % 2 === 0 ? 'week-even' : 'week-odd');
-                rowIndex++;
-
-                // WEEK AND DEADLINE
-                row.innerHTML += `<td data-label="WEEK">WEEK ${weekNummer}<br>(t/m zo ${deadline})</td>`;
-                
-                // SUBJECTS
-                const alleVakkenInWeek = [...new Set(week.taken.map(t => t.vak))].join('<br>');
-                row.innerHTML += `<td data-label="VAK">${alleVakkenInWeek}</td>`;
-                
-                // TAAKOMSCHRIJVING
-                let taakOmschrijvingHTML = week.taken.map(taak => {
-                    return `
-                        <div style="margin-bottom: 10px; border-left: 2px solid ${taak.afgerond ? '#27ae60' : '#ff8c00'}; padding-left: 5px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong>${taak.vak}</strong>
-                                <button onclick="deleteAlgemeneTaak('${taak.id}')" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 0.8em; padding: 0;">&times;</button>
-                            </div>
-                            <textarea 
-                                data-taak-id="${taak.id}"
-                                onblur="updateAlgemeneTaakText('${taak.id}', this.value)"
-                                placeholder="Taakomschrijving..."
-                            >${taak.taakTekst || ''}</textarea>
-                        </div>
-                    `;
-                }).join('');
-                row.innerHTML += `<td data-label="TAAKOMSCHRIJVING">${taakOmschrijvingHTML}</td>`;
-                
-                // GOOGLE CALENDAR
-                const calendarButtons = week.taken.map(taak => `
-                    <button onclick="addToGoogleCalendar('${taak.id}')" style="background-color: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; font-size: 0.8em; margin-bottom: 5px;">
-                        📅 Taak ${taak.vak}
-                    </button>
-                `).join('<br>');
-                row.innerHTML += `<td data-label="GOOGLE CALENDAR">${calendarButtons}</td>`;
-                
-                // STATUS (Checkable per week)
-                const completionCheckboxes = week.taken.map(taak => {
-                    const taakId = `check-${taak.id}`;
-                    return `
-                        <div class="taak-item ${taak.afgerond ? 'completed' : ''}" style="margin-bottom: 5px; display: flex; align-items: center;">
-                            <input type="checkbox" id="${taakId}" 
-                                   onchange="toggleAlgemeneTaakCompletion('${taak.id}', this.checked)"
-                                   ${taak.afgerond ? 'checked' : ''}>
-                            <label for="${taakId}">${taak.vak}</label>
-                        </div>
-                    `;
-                }).join('');
-
-                row.innerHTML += `
-                    <td data-label="STATUS">
-                        ${completionCheckboxes}
-                    </td>
-                `;
-                
-                // VAKANTIE CHECKBOX
-                 row.innerHTML += `
-                    <td data-label="VAKANTIE">
-                        <div class="vakantie-check">
-                            <input type="checkbox" id="${vakantieCheckId}" onchange="toggleVakantieWeek('${weekKey}', this.checked)" ${isVakantie ? 'checked' : ''}>
-                            <label for="${vakantieCheckId}">Vakantie</label>
-                        </div>
-                    </td>
-                `;
-                 plannerTableBody.appendChild(row);
-            });
-            
-            // STATISTIEKEN UPDATEN
-            const statsContainer = document.getElementById('statistieken-container');
-            if (totalWeeks === 0 && algemeneTaken.length === 0) {
-                 statsContainer.innerHTML = '<p style="font-style: italic; color: #777;">Begin met plannen in de invoer hierboven.</p>';
-                 return;
-            }
-            
-            const progress = totalWeeks > 0 ? Math.round((completedWeeks / totalWeeks) * 100) : 0;
-            
-            statsContainer.innerHTML = `
-                <div class="stat-card stat-item-completed">
-                    <span>Afgeronde Weken</span>
-                    <span class="stat-number">${completedWeeks}</span>
-                </div>
-                <div class="stat-card stat-item-pending">
-                    <span>Openstaande Weken</span>
-                    <span class="stat-number">${totalWeeks - completedWeeks}</span>
-                </div>
-                <div class="card" style="margin-top: 15px;">
-                    <h3>Huidige Progressie</h3>
-                    <div style="text-align: center; font-size: 2em; font-weight: 700; color: ${progress >= 75 ? '#27ae60' : '#ff8c00'};">
-                        ${progress}%
+            // HTML structuur
+            row.innerHTML = `
+                <td class="col-week">
+                    WEEK ${data.weekNummer}<br>
+                    <span style="font-size:0.8em; font-weight:400; color:var(--text-muted)">t/m zo ${deadlineStr}</span>
+                    <div style="margin-top:5px;">
+                        <label class="switch" title="Vakantie modus">
+                            <input type="checkbox" ${data.isVakantie ? 'checked' : ''} 
+                                onchange="updateField('${data.id}', 'isVakantie', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:0.7em; vertical-align:middle; margin-left:5px;">Vakantie</span>
                     </div>
-                    <progress value="${progress}" max="100" style="width: 100%; height: 10px; accent-color: #ff8c00;"></progress>
-                </div>
+                </td>
+                <td class="col-vak">${data.vak}</td>
+                <td class="col-thuis">
+                    <textarea class="editable-area" 
+                        onblur="updateField('${data.id}', 'thuisDoen', this.value)" 
+                        ${!isEditable || data.isVakantie ? 'disabled' : ''}>${data.isVakantie ? '🎉 GENIETEN!' : data.thuisDoen}</textarea>
+                </td>
+                <td class="col-bijles">
+                    <textarea class="editable-area" 
+                        onblur="updateField('${data.id}', 'bijlesDoen', this.value)"
+                        ${!isEditable || data.isVakantie ? 'disabled' : ''}>${data.isVakantie ? '-' : data.bijlesDoen}</textarea>
+                </td>
+                <td class="col-status">
+                    <label style="display:flex; align-items:center; cursor:pointer;">
+                        <input type="checkbox" ${data.isAfgerond ? 'checked' : ''} 
+                            style="width:20px; height:20px; margin-right:10px; accent-color:var(--success-color);"
+                            onchange="updateField('${data.id}', 'isAfgerond', this.checked)">
+                        <span style="color: ${data.isAfgerond ? 'var(--success-color)' : 'inherit'}">
+                            ${data.isAfgerond ? 'Afgerond' : 'Open'}
+                        </span>
+                    </label>
+                    <br>
+                    ${isEditable ? `<button onclick="deleteItem('${data.id}')" style="padding:5px 10px; font-size:0.7em; background:#333; margin-top:10px; width:auto;">Verwijder</button>` : ''}
+                </td>
             `;
+            container.appendChild(row);
         }
-        
-        /**
-         * Helper function to get the ISO week number.
-         */
+
+        // 3. UPDATE LOGIC
+        function updateField(docId, field, value) {
+            if (activeUserId !== currentUserId) return; // Read-only for guests
+            db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).update({
+                [field]: value
+            });
+        }
+
+        function deleteItem(docId) {
+            if (confirm("Rij verwijderen?")) {
+                db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete();
+            }
+        }
+
+        // 4. EXPORT TO ICS (Bulk Export)
+        function exportToICS() {
+            if (planningDataCache.length === 0) return alert("Geen items om te exporteren.");
+
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStart//NL\n";
+
+            planningDataCache.forEach(item => {
+                if (item.isVakantie || item.isAfgerond) return; // Skip vakantie of afgeronde items
+
+                const startDate = item.weekStart.toDate().toISOString().replace(/-|:|\.\d+/g, "").substring(0, 15) + "Z";
+                // Zet tijd op 09:00 voor agenda
+                const eventStart = startDate.substring(0, 9) + "090000Z"; 
+                const eventEnd = startDate.substring(0, 9) + "100000Z"; 
+
+                icsContent += "BEGIN:VEVENT\n";
+                icsContent += `SUMMARY:Studie ${item.vak}\n`;
+                icsContent += `DESCRIPTION:${item.thuisDoen} / Bijles: ${item.bijlesDoen}\n`;
+                icsContent += `DTSTART:${eventStart}\n`;
+                icsContent += `DTEND:${eventEnd}\n`;
+                icsContent += "END:VEVENT\n";
+            });
+
+            icsContent += "END:VCALENDAR";
+
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'studieplanning.ics';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Helper
         function getWeekNumber(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
             var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-            return weekNo;
-        }
-
-        function getYearWeekKey(d) {
-             const weekNummer = getWeekNumber(d);
-             const year = d.getFullYear();
-             return `${year}-${weekNummer}`;
-        }
-        
-        function weekEndDeadline(d) {
-            const date = new Date(d.getTime());
-            date.setDate(date.getDate() + 6);
-            return date;
-        }
-        
-        function parseYearWeekKey(weekKey) {
-            const [year, weekNum] = weekKey.split('-').map(Number);
-            const date = new Date(year, 0, 1);
-            date.setDate(date.getDate() + (weekNum - 1) * 7);
-            date.setDate(date.getDate() - (date.getDay() || 7) + 1); 
-            return date;
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         }
     </script>
 </body>
