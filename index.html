@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start</title>
+    <title>Study-Start Pro</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23007aff'/></svg>" type="image/svg+xml">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -25,141 +25,103 @@
             --border-color: #e4e6eb;
             --table-header-bg: #f8f9fa;
             --success-color: #34c759;
+            --warning-color: #ff9500;
+            --danger-color: #ff3b30;
             --holiday-bg: #fff9e6; 
-            --sidebar-width: 280px;
-            --sidebar-collapsed-width: 0px;
         }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; transition: all 0.3s; }
 
-        /* --- SIDEBAR --- */
-        #app-sidebar { 
-            width: var(--sidebar-width); 
-            background-color: var(--sidebar-bg); 
-            border-right: 1px solid var(--border-color); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 25px; 
-            flex-shrink: 0; 
-            transition: margin-left 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-        
-        /* Class om sidebar te verbergen */
-        #app-sidebar.collapsed {
-            margin-left: calc(-1 * var(--sidebar-width));
-        }
-
-        .sidebar-logo { font-size: 1.4em; font-weight: 800; color: var(--primary-color); margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;}
-        .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        /* SIDEBAR */
+        #app-sidebar { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; flex-shrink: 0; transition: margin-left 0.3s; }
+        .sidebar-logo { font-size: 1.4em; font-weight: 800; color: var(--primary-color); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
         .nav-item:hover, .nav-item.active { background-color: rgba(0, 122, 255, 0.1); color: var(--primary-color); }
 
-        /* --- CONTENT --- */
-        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; transition: width 0.3s; }
+        /* CONTENT */
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        header { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; transition: top 0.3s; }
         
-        header { 
-            background-color: rgba(255,255,255,0.9); 
-            backdrop-filter: blur(10px); 
-            border-bottom: 1px solid var(--border-color); 
-            padding: 10px 20px; 
-            display: flex; 
-            justify-content: space-between; /* Changed for toggle button */
-            align-items: center; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-        }
-        
-        /* Toggle Button Style */
-        #sidebar-toggle {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #sidebar-toggle:hover { background-color: #eee; }
-
         /* LAYOUTS */
-        .page-section { display: none; padding: 20px; max-width: 100%; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        .page-section.active { display: flex; gap: 20px; height: 100%; }
-        
-        /* Planner Kolommen */
+        .page-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .page-section.active { display: flex; gap: 30px; flex-direction: column; }
         #page-planning.active { flex-direction: row; }
-        #planner-column { flex: 1; min-width: 0; display: flex; flex-direction: column; } 
-        #tools-column { width: 320px; flex-shrink: 0; overflow-y: auto; padding-right: 5px; }
+        #planner-column { flex: 1; min-width: 0; } 
+        #tools-column { width: 350px; flex-shrink: 0; }
+
+        /* DASHBOARD GRID */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; }
+        .stat-big-number { font-size: 3em; font-weight: 800; color: var(--primary-color); line-height: 1; }
+        .xp-bar-container { background: #eee; height: 10px; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary-color), #00c6ff); width: 0%; transition: width 0.5s ease; }
 
         /* CARDS & UI */
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.4em; }
-        h3 { margin-top: 0; font-size: 1.1em; margin-bottom: 15px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.6em; letter-spacing: -0.5px; }
+        h3 { margin-top: 0; font-size: 1.1em; margin-bottom: 15px; font-weight: 600; }
         
-        input, select, textarea { width: 100%; background-color: #fff; border: 1px solid #ddd; color: var(--text-color); padding: 10px; border-radius: 8px; font-family: inherit; box-sizing: border-box; margin-bottom: 10px; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1); }
+        input, select, textarea { width: 100%; background-color: #fff; border: 1px solid #ddd; color: var(--text-color); padding: 12px; border-radius: 8px; font-family: inherit; box-sizing: border-box; margin-bottom: 10px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
 
-        button { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { background-color: var(--primary-hover); }
+        button { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95em; }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
         button.secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
-        button.secondary:hover { background-color: #f5f5f5; color: var(--text-color); }
+        button.secondary:hover { background-color: #f5f5f5; color: var(--text-color); transform: none; }
+
+        /* ZEN MODE */
+        body.zen-mode #app-sidebar { margin-left: -260px; }
+        body.zen-mode header { top: -100px; }
+        body.zen-mode #main-content { background-color: #111; color: #eee; } /* Dark mode voor focus */
+        body.zen-mode .card { background-color: #222; border-color: #333; color: #eee; box-shadow: none; }
+        body.zen-mode #zen-exit-btn { display: block !important; }
+
+        #zen-exit-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 2000;
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);
+            width: auto; backdrop-filter: blur(5px); display: none;
+        }
+        #zen-exit-btn:hover { background: rgba(255,255,255,0.2); }
 
         /* LOGIN */
         #login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background-color: var(--bg-color); }
-        .login-card { background: white; padding: 40px; border-radius: 16px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .login-card { background: white; padding: 50px; border-radius: 24px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
 
-        /* TABLE FIXES */
-        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; height: 100%; }
-        .studie-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; /* Kleiner minimum voor betere fit */ }
-        
-        .studie-tabel th { background-color: var(--table-header-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75em; padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .studie-tabel td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        /* TABLE */
+        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; }
+        .studie-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
+        .studie-tabel th { background-color: var(--table-header-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75em; padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .studie-tabel td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
         .studie-tabel tr:last-child td { border-bottom: none; }
         
-        .col-week { width: 10%; font-weight: 700; color: var(--primary-color); }
+        .col-week { width: 12%; font-weight: 700; color: var(--primary-color); }
         .col-vak { width: 12%; font-weight: 600; }
-        .col-thuis { width: 45%; } /* Meer ruimte voor de taken */
+        .col-thuis { width: 40%; } 
         .col-bijles { width: 25%; }
-        .col-status { width: 50px; text-align: center; padding: 12px 5px; } /* Compact */
+        .col-status { width: 50px; text-align: center; padding-left: 0; padding-right: 0; }
 
-        .editable-area { width: 100%; min-height: 40px; border: 1px solid transparent; padding: 5px; border-radius: 6px; resize: none; overflow: hidden; }
+        .editable-area { width: 100%; min-height: 40px; border: 1px solid transparent; padding: 8px; border-radius: 6px; resize: none; overflow: hidden; font-family: inherit; transition: 0.2s; }
         .editable-area:hover { background-color: #f9f9f9; }
-        .editable-area:focus { border-color: var(--primary-color); background: white; }
+        .editable-area:focus { border-color: var(--primary-color); background: white; box-shadow: 0 0 0 2px rgba(0,122,255,0.1); }
 
+        /* Checkbox */
         .status-container { display: flex; justify-content: center; align-items: center; height: 100%; }
         .status-container input { width: 24px; height: 24px; margin: 0; cursor: pointer; accent-color: var(--success-color); }
         
-        /* Vakantie */
-        tr.is-holiday td { background-color: var(--holiday-bg); color: #967d00; }
-        
-        /* Subject Management List */
-        .subject-mgmt-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .subject-mgmt-item:last-child { border-bottom: none; }
-        .btn-delete-sm { background-color: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-size: 0.8em; width: auto; }
-        .btn-delete-sm:hover { background-color: #fecaca; }
+        /* Calc & Grades */
+        .calc-result { margin-top: 15px; padding: 15px; background: #f0f8ff; border-radius: 8px; color: var(--primary-color); font-weight: bold; text-align: center; display: none; }
 
-        /* Collaborators List */
-        .collab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
-        .collab-item span { overflow: hidden; text-overflow: ellipsis; }
-        .role-badge { font-size: 0.75em; padding: 2px 6px; border-radius: 4px; background: #eee; margin-left: 5px; }
-
-        /* Timer */
-        #timer-display { font-size: 4em; font-weight: 700; color: var(--primary-color); text-align: center; margin: 20px 0; }
-
-        @media (max-width: 1000px) {
+        @media (max-width: 1100px) {
             body { flex-direction: column; height: auto; overflow-y: auto;}
-            #app-sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-color); padding: 15px; }
-            #app-sidebar.collapsed { margin-left: 0; display: none; } /* Op mobiel verbergen we hem gewoon */
-            #page-planning.active { flex-direction: column; }
+            #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; height: auto; }
+            .page-section.active { flex-direction: column; }
             #tools-column { width: 100%; order: -1; }
-            #sidebar-toggle { display: block; } /* Toon toggle knop */
         }
     </style>
 </head>
 <body>
+
+    <!-- ZEN MODE EXIT BUTTON -->
+    <button id="zen-exit-btn" onclick="toggleZenMode()">✕ Sluit Focus Mode</button>
 
     <!-- LOGIN -->
     <div id="login-page" style="display: none;">
@@ -172,168 +134,204 @@
         </div>
     </div>
 
-    <!-- APP WRAPPER -->
-    <div style="display: flex; width: 100%; height: 100%;">
-        
-        <!-- SIDEBAR -->
-        <nav id="app-sidebar" style="display: none;">
-            <div class="sidebar-logo">Study-Start</div>
-            <div class="nav-item active" onclick="navigate('planning')">📅 Planning</div>
-            <div class="nav-item" onclick="navigate('cijfers')">📊 Cijfers</div>
-            <div class="nav-item" onclick="navigate('timer')">⏱️ Timer</div>
-            <div class="nav-item" onclick="navigate('notities')">📝 Notities</div>
-            <div class="nav-item" onclick="navigate('instellingen')">⚙️ Instellingen</div>
-        </nav>
+    <!-- APP -->
+    <nav id="app-sidebar" style="display: none;">
+        <div class="sidebar-logo">Study-Start</div>
+        <div class="nav-item active" onclick="navigate('dashboard')">🏠 Dashboard</div>
+        <div class="nav-item" onclick="navigate('planning')">📅 Planning</div>
+        <div class="nav-item" onclick="navigate('cijfers')">📊 Cijfers</div>
+        <div class="nav-item" onclick="navigate('timer')">⏱️ Focus Timer</div>
+        <div class="nav-item" onclick="navigate('notities')">📝 Notities</div>
+        <div class="nav-item" onclick="navigate('instellingen')">⚙️ Instellingen</div>
+    </nav>
 
-        <main id="main-content" style="display: none;">
-            <header>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button id="sidebar-toggle" onclick="toggleSidebar()" title="Zijbalk in/uitklappen">
-                        ☰
-                    </button>
-                    <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; border: 1px solid #ffeeba;">
-                        👁️ Je kijkt mee
-                    </div>
-                    <div id="read-only-badge" style="display: none; background: #e2e3e5; color: #383d41; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; border: 1px solid #d6d8db;">
-                        🔒 Alleen Lezen
-                    </div>
-                </div>
-                
-                <div style="display: flex; align-items: center;">
-                    <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
-                    <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
-                </div>
-            </header>
+    <main id="main-content" style="display: none;">
+        <header>
+            <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #ffeeba;">
+                👁️ Je kijkt mee
+            </div>
+            <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
+            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
+        </header>
 
-            <!-- PLANNING PAGE -->
-            <div id="page-planning" class="page-section active">
-                <div id="planner-column">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                         <h2>Jouw Planning</h2>
-                    </div>
-                    <div id="loading-indicator" style="color: var(--text-muted);">Laden...</div>
-                    <div class="table-container">
-                        <table class="studie-tabel">
-                            <thead>
-                                <tr>
-                                    <th class="col-week">Week</th>
-                                    <th class="col-vak">Vak</th>
-                                    <th class="col-thuis">Thuis Doen</th>
-                                    <th class="col-bijles">Bijles</th>
-                                    <th class="col-status"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="planner-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div id="tools-column">
-                    
-                    <!-- VAKKEN BEHEER (VERWIJDEREN) -->
-                    <div class="card" id="manage-card">
-                        <h3>🗑️ Beheer Vakken</h3>
-                        <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">Verwijder een vak (en alle geplande taken) als het verkeerd is ingepland of afgerond.</p>
-                        <div id="subjects-list" style="max-height: 200px; overflow-y: auto;">
-                            <!-- Dynamische lijst -->
-                            <p style="color:#ccc; font-size:0.9em;">Laden...</p>
+        <!-- PAGINA 0: DASHBOARD (NIEUW) -->
+        <div id="page-dashboard" class="page-section active">
+            <h2>👋 Welkom terug!</h2>
+            <div class="dashboard-grid">
+                <!-- Widget 1: Profiel & XP -->
+                <div class="card">
+                    <h3>Jouw Profiel</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <div class="stat-big-number" id="dash-level">1</div>
+                            <div style="color: var(--text-muted);">Huidig Level</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="stat-big-number" style="color: var(--warning-color);" id="dash-streak">0</div>
+                            <div style="color: var(--text-muted);">Dagen Streak 🔥</div>
                         </div>
                     </div>
-
-                    <!-- SHARE CARD -->
-                    <div class="card" id="share-card" style="border: 1px solid var(--primary-color);">
-                        <h3 style="color: var(--primary-color);">🤝 Samenwerken</h3>
-                        <p style="font-size: 0.9em; color: var(--text-muted);">Voeg het e-mailadres van je docent toe:</p>
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
-                            <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
-                            <div style="display: flex; gap: 5px;">
-                                <select id="collabRole" style="margin-bottom:0; flex: 1;">
-                                    <option value="read">Alleen Lezen</option>
-                                    <option value="edit">Bewerken</option>
-                                </select>
-                                <button onclick="addCollaborator()" style="width: auto;">Toevoegen</button>
-                            </div>
-                        </div>
-                        <div id="collaborators-list"></div>
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-                        <p style="font-size: 0.85em; color: var(--text-muted);">Jouw Deel-Link:</p>
-                        <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                    <div class="xp-bar-container">
+                        <div id="xp-fill" class="xp-bar-fill"></div>
                     </div>
+                    <p style="font-size: 0.8em; text-align: right; margin-top: 5px; color: var(--text-muted);"><span id="dash-xp">0</span> / 100 XP</p>
+                </div>
 
-                    <!-- AUTOMATIC PLANNER -->
-                    <div class="card" id="auto-planner-card">
-                        <h3>⚡ Nieuwe Toets</h3>
-                        <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een Vak">
-                        <datalist id="vakken-list">
-                            <option value="Wiskunde A"><option value="Wiskunde B"><option value="Natuurkunde">
-                            <option value="Scheikunde"><option value="Biologie"><option value="Economie">
-                            <option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Nederlands">
-                            <option value="Engels">
-                        </datalist>
-                        <select id="autoHoofdstukInput">
-                            <option value="" disabled selected>Kies Hoofdstuk</option>
-                            <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
-                            <option value="H4">H4</option><option value="H5">H5</option><option value="H6">H6</option>
-                            <option value="H7">H7</option><option value="H8">H8</option><option value="H9">H9</option>
-                        </select>
-                        <label style="font-size: 0.8em; color: var(--text-muted);">Toetsdatum:</label>
-                        <input type="date" id="autoDatumInput">
-                        <button onclick="generateAutoPlanning()">Inplannen</button>
+                <!-- Widget 2: Volgende Deadline -->
+                <div class="card">
+                    <h3>📅 Eerstvolgende Toets</h3>
+                    <div id="dash-next-exam">
+                        <p style="color: var(--text-muted);">Geen toetsen gepland.</p>
                     </div>
+                    <button onclick="navigate('planning')" class="secondary" style="margin-top: 15px;">Ga naar Planning</button>
+                </div>
+
+                <!-- Widget 3: Quick Actions -->
+                <div class="card">
+                    <h3>🚀 Snelstart</h3>
+                    <button onclick="navigate('timer')" style="margin-bottom: 10px;">Start Focus Sessie</button>
+                    <button onclick="navigate('notities')" class="secondary">Nieuwe Notitie</button>
                 </div>
             </div>
+        </div>
 
-            <!-- CIJFERS PAGE -->
-            <div id="page-cijfers" class="page-section">
-                <h2>Mijn Cijfers</h2>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div class="card" style="flex: 1; min-width: 300px;">
-                        <h3>Toevoegen</h3>
+        <!-- PAGINA 1: PLANNING -->
+        <div id="page-planning" class="page-section">
+            <div id="planner-column">
+                <h2>Jouw Planning</h2>
+                <div id="loading-indicator" style="color: var(--text-muted);">Laden...</div>
+                <div class="table-container">
+                    <table class="studie-tabel">
+                        <thead>
+                            <tr>
+                                <th class="col-week">Week</th>
+                                <th class="col-vak">Vak</th>
+                                <th class="col-thuis">Thuis Doen</th>
+                                <th class="col-bijles">Bijles</th>
+                                <th class="col-status"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="planner-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="tools-column">
+                <!-- SHARE -->
+                <div class="card" id="share-card" style="border: 1px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color);">🤝 Samenwerken</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted);">Voeg e-mail van docent toe:</p>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
+                        <div style="display: flex; gap: 5px;">
+                            <select id="collabRole" style="margin-bottom:0; flex: 1;">
+                                <option value="read">Lezen</option>
+                                <option value="edit">Bewerken</option>
+                            </select>
+                            <button onclick="addCollaborator()" style="width: auto;">+</button>
+                        </div>
+                    </div>
+                    <div id="collaborators-list"></div>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Deel-Link:</p>
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                </div>
+
+                <!-- AUTO PLANNER -->
+                <div class="card" id="auto-planner-card">
+                    <h3>⚡ Nieuwe Toets</h3>
+                    <input type="text" list="vakken-list" id="autoVakInput" placeholder="Vak">
+                    <datalist id="vakken-list">
+                        <option value="Wiskunde A"><option value="Wiskunde B"><option value="Natuurkunde">
+                        <option value="Scheikunde"><option value="Biologie"><option value="Economie">
+                        <option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Nederlands">
+                        <option value="Engels">
+                    </datalist>
+                    <select id="autoHoofdstukInput">
+                        <option value="" disabled selected>Hoofdstuk</option>
+                        <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
+                        <option value="H4">H4</option><option value="H5">H5</option><option value="H6">H6</option>
+                    </select>
+                    <input type="date" id="autoDatumInput">
+                    <button onclick="generateAutoPlanning()">Inplannen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGINA 2: CIJFERS & CALCULATOR -->
+        <div id="page-cijfers" class="page-section">
+            <h2>Mijn Cijfers</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="card">
+                        <h3>Cijfer Toevoegen</h3>
                         <input type="text" id="gradeSubject" placeholder="Vak">
                         <input type="number" id="gradeValue" placeholder="Cijfer" step="0.1">
                         <input type="number" id="gradeWeight" placeholder="Weging" value="1">
                         <button onclick="addGrade()">Opslaan</button>
                     </div>
-                    <div class="card" style="flex: 2; min-width: 300px;">
-                        <h3>Overzicht</h3>
-                        <div id="grades-list">Laden...</div>
+                    <!-- TARGET CALCULATOR -->
+                    <div class="card" style="border-top: 4px solid var(--primary-color);">
+                        <h3>🎯 Doel Calculator</h3>
+                        <p style="font-size:0.9em; color:var(--text-muted);">Wat moet ik halen?</p>
+                        <input type="number" id="calcCurrentAvg" placeholder="Huidig Gemiddelde" step="0.1">
+                        <input type="number" id="calcCurrentWeight" placeholder="Totaal gewicht tot nu" step="1">
+                        <input type="number" id="calcNewWeight" placeholder="Gewicht nieuwe toets" value="1">
+                        <input type="number" id="calcTarget" placeholder="Gewenst Eindcijfer" step="0.1">
+                        <button class="secondary" onclick="calculateGradeTarget()">Bereken</button>
+                        <div id="calcResult" class="calc-result"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- TIMER PAGE -->
-            <div id="page-timer" class="page-section" style="align-items: center; text-align: center;">
-                <h2>Focus Timer</h2>
-                <div class="card" style="max-width: 400px; width: 100%;">
-                    <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em; width: 80px; margin: 0 auto 10px;">
-                    <div id="timer-display">25:00</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="startTimer()">Start</button>
-                        <button onclick="stopTimer()" class="secondary">Stop</button>
-                        <button onclick="resetTimer()" class="secondary">Reset</button>
-                    </div>
+                <div class="card" style="flex: 2; min-width: 300px;">
+                    <h3>Overzicht</h3>
+                    <div id="grades-list">Laden...</div>
                 </div>
             </div>
+        </div>
 
-            <!-- NOTITIES PAGE -->
-            <div id="page-notities" class="page-section">
-                <h2>Notities</h2>
-                <div class="card" style="height: 100%; display: flex; flex-direction: column;">
-                    <textarea id="global-notes" style="flex-grow: 1; min-height: 400px; border: none; background: transparent; resize: none;" placeholder="Typ hier..." onblur="saveNotes(this.value)"></textarea>
-                    <p id="notes-status" style="font-size: 0.8em; color: var(--success-color); margin-top: 5px; min-height: 1.2em;"></p>
+        <!-- PAGINA 3: TIMER & ZEN MODE -->
+        <div id="page-timer" class="page-section" style="align-items: center; text-align: center;">
+            <h2>Focus Timer</h2>
+            <div class="card" style="max-width: 400px; width: 100%;">
+                <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em; width: 80px; margin: 0 auto 10px;">
+                <div id="timer-display" style="font-size: 4em; font-weight: 700; color: var(--primary-color); margin: 20px 0;">25:00</div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="startTimer()">Start</button>
+                    <button onclick="stopTimer()" class="secondary">Stop</button>
+                    <button onclick="resetTimer()" class="secondary">Reset</button>
                 </div>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <button onclick="toggleZenMode()" style="background: #222; color: #fff;">🧘 Start Zen Mode</button>
             </div>
+        </div>
 
-            <!-- INSTELLINGEN -->
-            <div id="page-instellingen" class="page-section">
-                <h2>Instellingen</h2>
-                <div class="card">
-                    <h3>Account</h3>
-                    <input type="text" id="settings-name" placeholder="Jouw naam">
-                    <button onclick="saveSettings()" style="width: auto;">Opslaan</button>
-                </div>
+        <!-- PAGINA 4: NOTITIES -->
+        <div id="page-notities" class="page-section">
+            <h2>Notities</h2>
+            <div style="display: flex; gap: 20px;">
+                 <div class="card" style="width: 300px;">
+                     <h3>Nieuwe Notitie</h3>
+                     <input type="text" id="noteSubject" placeholder="Vak">
+                     <input type="date" id="noteDate">
+                     <textarea id="noteContent" style="height: 100px;" placeholder="Inhoud..."></textarea>
+                     <button onclick="addNote()">Opslaan</button>
+                 </div>
+                 <div class="card" style="flex: 1;">
+                     <h3>Mijn Notities</h3>
+                     <div id="notes-list-container">Laden...</div>
+                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+
+        <!-- PAGINA 5: INSTELLINGEN -->
+        <div id="page-instellingen" class="page-section">
+            <h2>Instellingen</h2>
+            <div class="card">
+                <h3>Account</h3>
+                <input type="text" id="settings-name" placeholder="Jouw naam">
+                <button onclick="saveSettings()" style="width: auto;">Opslaan</button>
+            </div>
+        </div>
+    </main>
 
     <script>
         /* CONFIG */
@@ -401,11 +399,20 @@
         }
 
         function initApp() {
+            updateInterfaceForRole();
+            initPlanner();
+            if(userRole === 'owner' || userRole === 'edit') {
+                loadUserProfile(); // Laad XP/Streak
+                loadNotes();
+                loadGrades();
+            }
+        }
+
+        function updateInterfaceForRole() {
             if (userRole === 'read') {
                 document.getElementById('read-only-badge').style.display = 'inline-block';
                 document.getElementById('share-card').style.display = 'none';
                 document.getElementById('auto-planner-card').style.display = 'none'; 
-                document.getElementById('manage-card').style.display = 'none'; // Verberg beheer voor lezers
             } else if (userRole === 'edit') {
                 document.getElementById('shared-badge').style.display = 'inline-block';
                 document.getElementById('share-card').style.display = 'none';
@@ -413,26 +420,11 @@
                 document.getElementById('share-card').style.display = 'block';
                 loadCollaborators();
             }
-
-            initPlanner();
-            if(userRole === 'owner' || userRole === 'edit') {
-                loadSubjectsList(); // Laad de lijst om vakken te verwijderen
-            }
-            
-            if(userRole === 'owner') {
-                loadNotes();
-                loadGrades();
-            }
         }
 
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert(e.message)); }
         function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
         
-        function toggleSidebar() {
-            const sidebar = document.getElementById('app-sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
-
         function navigate(id) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
@@ -440,19 +432,68 @@
             event.currentTarget.classList.add('active');
         }
 
-        /* COLLABORATION LOGIC */
+        /* --- GAMIFICATION & DASHBOARD --- */
+        function loadUserProfile() {
+            const todayStr = new Date().toDateString();
+            const userRef = db.collection('users').doc(viewUserId);
+            
+            userRef.onSnapshot(doc => {
+                const data = doc.data() || { xp: 0, streak: 0, lastLogin: '' };
+                
+                // Streak Logic (simpel)
+                if (data.lastLogin !== todayStr) {
+                    // Update login date, eventueel streak logica hier uitbreiden
+                    if (userRole === 'owner') userRef.set({ lastLogin: todayStr }, { merge: true });
+                }
+
+                const level = Math.floor(data.xp / 100) + 1;
+                const xpProgress = data.xp % 100;
+
+                document.getElementById('dash-level').innerText = level;
+                document.getElementById('dash-streak').innerText = data.streak || 0;
+                document.getElementById('dash-xp').innerText = data.xp || 0;
+                document.getElementById('xp-fill').style.width = `${xpProgress}%`;
+            });
+        }
+
+        function addXP(amount) {
+            if (userRole !== 'owner') return;
+            db.collection('users').doc(currentUserId).update({
+                xp: firebase.firestore.FieldValue.increment(amount)
+            });
+        }
+
+        /* --- CALC --- */
+        function calculateGradeTarget() {
+            const curAvg = parseFloat(document.getElementById('calcCurrentAvg').value);
+            const curWeight = parseFloat(document.getElementById('calcCurrentWeight').value);
+            const newWeight = parseFloat(document.getElementById('calcNewWeight').value);
+            const target = parseFloat(document.getElementById('calcTarget').value);
+            
+            if(isNaN(curAvg) || isNaN(curWeight) || isNaN(newWeight) || isNaN(target)) return;
+            
+            // Formule: (Doel * (TotaalGewicht + NieuwGewicht) - (Huidig * TotaalGewicht)) / NieuwGewicht
+            const required = ((target * (curWeight + newWeight)) - (curAvg * curWeight)) / newWeight;
+            
+            const resDiv = document.getElementById('calcResult');
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = `Je moet een <span style="font-size:1.2em;">${required.toFixed(1)}</span> halen!`;
+        }
+
+        /* --- ZEN MODE --- */
+        function toggleZenMode() {
+            document.body.classList.toggle('zen-mode');
+        }
+
+        /* --- PLANNER LOGIC --- */
         function addCollaborator() {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
             const role = document.getElementById('collabRole').value;
             if(!email) return;
             
             db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({
-                role: role,
-                addedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert('Toegang gegeven!');
-                document.getElementById('collabEmail').value = '';
-            });
+                role: role, addedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { alert('Toegang gegeven!'); document.getElementById('collabEmail').value = ''; });
         }
 
         function loadCollaborators() {
@@ -463,22 +504,13 @@
                     const d = doc.data();
                     const div = document.createElement('div');
                     div.className = 'collab-item';
-                    div.innerHTML = `
-                        <div>
-                            <span>${doc.id}</span>
-                            <span class="role-badge">${d.role === 'edit' ? 'Bewerken' : 'Lezen'}</span>
-                        </div>
-                        <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:2px 8px; font-size:0.7em;">X</button>`;
+                    div.innerHTML = `<span>${doc.id} (${d.role})</span> <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:2px 8px; font-size:0.7em;">X</button>`;
                     list.appendChild(div);
                 });
             });
         }
-        
-        function removeCollab(email) {
-            if(confirm('Toegang intrekken?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(email).delete();
-        }
+        function removeCollab(e) { if(confirm('Intrekken?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
 
-        /* PLANNING GENERATOR */
         function generateAutoPlanning() {
             if (userRole === 'read') return alert("Alleen lezen.");
             const vak = document.getElementById('autoVakInput').value;
@@ -508,7 +540,6 @@
             batch.commit().then(() => alert("Gepland!"));
         }
 
-        /* PLANNER RENDER */
         function initPlanner() {
             db.collection('users').doc(viewUserId).collection('planner_items')
                 .orderBy('weekStart', 'asc')
@@ -516,6 +547,9 @@
                     document.getElementById('loading-indicator').style.display = 'none';
                     const tbody = document.getElementById('planner-table-body');
                     tbody.innerHTML = '';
+                    
+                    const nextExamEl = document.getElementById('dash-next-exam');
+                    let firstExamFound = false;
 
                     const grouped = {};
                     snapshot.forEach(doc => {
@@ -525,66 +559,26 @@
                         const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
                         if(!grouped[key]) grouped[key] = [];
                         grouped[key].push(data);
+                        
+                        // Dashboard Logic: Find next exam (simple check: contains 'TOETS')
+                        if (!firstExamFound && data.thuisDoen.includes('TOETS')) {
+                            if (nextExamEl) nextExamEl.innerHTML = `<h3 style="color:var(--primary-color); margin:0;">${data.vak}</h3><p>${data.thuisDoen}</p>`;
+                            firstExamFound = true;
+                        }
                     });
 
                     const keys = Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate);
-                    
                     if(keys.length === 0) tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:#999;'>Nog geen planning.</td></tr>";
-
-                    keys.forEach(key => {
-                        const items = grouped[key];
-                        renderGroupedRow(tbody, items, userRole !== 'read'); 
-                    });
+                    keys.forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
                 }, err => {
-                    console.error(err);
-                    if(err.code === 'permission-denied') alert("Geen toegang. Controleer of je bent toegevoegd.");
+                    if(err.code === 'permission-denied') alert("Geen toegang.");
                 });
-        }
-
-        /* VAKKEN BEHEER (BULK DELETE) */
-        function loadSubjectsList() {
-             db.collection('users').doc(viewUserId).collection('planner_items').onSnapshot(snap => {
-                 const subjects = new Set();
-                 snap.forEach(doc => subjects.add(doc.data().vak));
-                 
-                 const container = document.getElementById('subjects-list');
-                 container.innerHTML = '';
-                 if(subjects.size === 0) container.innerHTML = '<p style="color:#ccc; font-size:0.8em;">Geen vakken.</p>';
-                 
-                 subjects.forEach(vak => {
-                     const div = document.createElement('div');
-                     div.className = 'subject-mgmt-item';
-                     div.innerHTML = `
-                        <span style="font-weight:500; font-size:0.9em;">${vak}</span>
-                        <button onclick="deleteSubject('${vak}')" class="btn-delete-sm">🗑️</button>
-                     `;
-                     container.appendChild(div);
-                 });
-             });
-        }
-        
-        function deleteSubject(vakName) {
-            if(!confirm(`Weet je zeker dat je ALLE taken voor ${vakName} wilt verwijderen?`)) return;
-            
-            db.collection('users').doc(viewUserId).collection('planner_items')
-              .where('vak', '==', vakName)
-              .get()
-              .then(snapshot => {
-                  const batch = db.batch();
-                  snapshot.docs.forEach(doc => {
-                      batch.delete(doc.ref);
-                  });
-                  return batch.commit();
-              })
-              .then(() => alert(`${vakName} verwijderd.`))
-              .catch(err => console.error(err));
         }
 
         function renderGroupedRow(container, items, isEditable) {
             const firstItem = items[0];
             const weekEndStr = firstItem.weekEnd.toDate().toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
             const isHoliday = items.some(i => i.isVakantie);
-
             const row = document.createElement('tr');
             if (isHoliday) row.classList.add('is-holiday');
 
@@ -603,6 +597,7 @@
 
                 statusHtml += `<div style="${border}; display:flex; justify-content:center; height:40px; align-items:center;">
                     <div class="status-container"><input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable ? 'disabled' : ''}></div>
+                    ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:5px; background:transparent; color:#ccc; padding:0; width:auto;">&times;</button>` : ''}
                 </div>`;
             });
 
@@ -620,9 +615,14 @@
             container.appendChild(row);
         }
 
-        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
+        function updateField(id, f, v) { 
+            if(userRole !== 'read') {
+                db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); 
+                if (f === 'isAfgerond' && v === true) addXP(10); // Gamification trigger
+            }
+        }
         function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
-        
+        function deleteItem(docId) { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
         /* --- GRADES LOGIC --- */
@@ -630,7 +630,7 @@
             const s = document.getElementById('gradeSubject').value;
             const g = parseFloat(document.getElementById('gradeValue').value);
             const w = parseFloat(document.getElementById('gradeWeight').value);
-            if(s && g) db.collection('users').doc(currentUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+            if(s && g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
         }
         function loadGrades() {
             db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => {
@@ -647,7 +647,7 @@
                 for(const s in subjects) {
                     const avg = (subjects[s].sum / subjects[s].wSum).toFixed(1);
                     html += `<div style="margin-bottom:10px; border-bottom:1px solid #eee;"><b>${s}: ${avg}</b>`;
-                    subjects[s].grades.forEach(g => html+=`<div style="font-size:0.8em; display:flex; justify-content:space-between;"><span>${g.grade} (x${g.weight})</span> <span style="cursor:pointer; color:red;" onclick="db.collection('users').doc('${currentUserId}').collection('grades').doc('${g.id}').delete()">x</span></div>`);
+                    subjects[s].grades.forEach(g => html+=`<div style="font-size:0.8em; display:flex; justify-content:space-between;"><span>${g.grade} (x${g.weight})</span> <span style="cursor:pointer; color:red;" onclick="db.collection('users').doc('${viewUserId}').collection('grades').doc('${g.id}').delete()">x</span></div>`);
                     html += '</div>';
                 }
                 list.innerHTML = html || 'Geen cijfers';
@@ -655,8 +655,21 @@
         }
 
         /* --- NOTES --- */
-        function saveNotes(v) { db.collection('users').doc(currentUserId).collection('data').doc('notes').set({content:v}, {merge:true}).then(() => document.getElementById('notes-status').innerText='Opgeslagen!'); }
-        function loadNotes() { db.collection('users').doc(viewUserId).collection('data').doc('notes').get().then(d => { if(d.exists) document.getElementById('global-notes').value = d.data().content||''; }); }
+        function addNote() {
+            const s = document.getElementById('noteSubject').value;
+            const d = document.getElementById('noteDate').value;
+            const c = document.getElementById('noteContent').value;
+            if(s) db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, date: d?firebase.firestore.Timestamp.fromDate(new Date(d)):null, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        }
+        function loadNotes() { 
+             db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                 const c = document.getElementById('notes-list-container'); c.innerHTML='';
+                 snap.forEach(doc => {
+                     const d = doc.data();
+                     c.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:10px; border-radius:8px;"><b>${d.subject}</b><br><small>${d.date?d.date.toDate().toLocaleDateString():''}</small><p>${d.content}</p><button onclick="db.collection('users').doc('${viewUserId}').collection('subject_notes').doc('${doc.id}').delete()" style="color:red; background:none; border:none; padding:0; font-size:0.8em;">Verwijder</button></div>`;
+                 });
+             });
+        }
 
         /* --- TIMER --- */
         function updateTimerDisplay() { 
@@ -666,7 +679,6 @@
         function startTimer() { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); }
         function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
         function resetTimer() { stopTimer(); const val=document.getElementById('timerInput').value; timeLeft=(val?val:25)*60; updateTimerDisplay(); }
-        
         function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>alert("Opgeslagen")); }
     </script>
 </body>
