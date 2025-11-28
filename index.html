@@ -3,392 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Planner</title>
+    <title>Study-Start</title>
     
-    <!-- FAVICON: Blauw Bolletje -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23007aff'/></svg>" type="image/svg+xml">
-
-    <!-- Google Fonts - Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK's -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
-            /* OFF-WHITE THEME VARIABLES */
             --off-white: #fafafa; 
             --bg-color: #f0f2f5; 
             --sidebar-bg: var(--off-white);
-            --card-bg: var(--off-white);
-            
+            --card-bg: #ffffff;
             --text-color: #333333;
             --text-muted: #666666;
-            
             --primary-color: #007aff; 
             --primary-hover: #005bb5;
-            
             --border-color: #e4e6eb;
-            --input-bg: #ffffff; 
-            
-            --table-header-bg: #f5f7f9;
-            --table-row-even: var(--off-white);
-            --table-row-odd: #f5f7f9;
-            
+            --table-header-bg: #f8f9fa;
             --success-color: #34c759;
             --holiday-bg: #fff9e6; 
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            height: 100vh;
-            overflow: hidden; 
-        }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR --- */
-        #app-sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 25px;
-            box-sizing: border-box;
-            flex-shrink: 0; 
-            z-index: 10;
-        }
+        /* SIDEBAR */
+        #app-sidebar { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; flex-shrink: 0; }
+        .sidebar-logo { font-size: 1.4em; font-weight: 800; color: var(--primary-color); margin-bottom: 40px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background-color: rgba(0, 122, 255, 0.1); color: var(--primary-color); }
 
-        .sidebar-logo {
-            font-size: 1.4em;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 40px;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-item {
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            border-radius: 10px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-        }
-        .nav-item:hover, .nav-item.active {
-            background-color: rgba(0, 122, 255, 0.08);
-            color: var(--primary-color);
-        }
-        .nav-item.active { font-weight: 600; }
-
-        /* --- MAIN CONTENT --- */
-        #main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto; 
-            position: relative;
-            background-color: var(--bg-color);
-        }
-
-        .page-section {
-            display: none; 
-            padding: 30px;
-            max-width: 1800px; 
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-            flex-grow: 1;
-        }
-        .page-section.active {
-            display: flex; 
-            flex-direction: column;
-        }
-        #page-planning.active {
-             flex-direction: row;
-             gap: 30px;
-        }
-
-        /* --- HEADER --- */
-        header {
-            background-color: rgba(250, 250, 250, 0.85); 
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: flex-end; 
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .user-name { font-weight: 600; font-size: 0.9em; color: var(--text-color); margin-right: 15px;}
-
-        /* --- LOGIN --- */
-        #login-page {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-        }
-        .login-card {
-            background-color: var(--card-bg);
-            padding: 50px;
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            border: 1px solid var(--border-color);
-        }
-
-        /* --- CARDS & UI --- */
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
+        /* CONTENT */
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: flex-end; align-items: center; position: sticky; top: 0; z-index: 100; }
         
-        h2, h3 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; color: var(--text-color); }
+        /* LAYOUTS */
+        .page-section { display: none; padding: 30px; max-width: 1800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .page-section.active { display: flex; gap: 30px; }
+        #planner-column { flex: 1; min-width: 0; } /* Fix voor table overflow */
+        #tools-column { width: 350px; flex-shrink: 0; }
 
-        input, select, textarea {
-            width: 100%;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 12px;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 0.95em;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
-        }
+        /* CARDS & UI */
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.4em; }
+        h3 { margin-top: 0; font-size: 1.1em; margin-bottom: 15px; }
+        
+        input, select, textarea { width: 100%; background-color: #fff; border: 1px solid #ddd; color: var(--text-color); padding: 10px; border-radius: 8px; font-family: inherit; box-sizing: border-box; margin-bottom: 10px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1); }
 
-        button {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            font-size: 0.95em;
-        }
-        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-        button.secondary { 
-            background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); 
-            border-radius: 8px; text-transform: none; font-weight: 500;
-        }
-        button.secondary:hover { background-color: #eaeaea; color: var(--text-color); transform: none; box-shadow: none; }
-        
-        button.delete-btn {
-            background-color: transparent;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-            width: auto;
-            padding: 5px 10px;
-            font-size: 0.8em;
-        }
-        button.delete-btn:hover {
-            background-color: #e74c3c;
-            color: white;
-        }
+        button { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { background-color: var(--primary-hover); }
+        button.secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
+        button.secondary:hover { background-color: #f5f5f5; color: var(--text-color); }
 
-        /* --- PLANNER SPECIFIC --- */
-        #planner-column { flex: 3; min-width: 60%; }
-        #tools-column { flex: 1; min-width: 300px; max-width: 380px; }
+        /* LOGIN */
+        #login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background-color: var(--bg-color); }
+        .login-card { background: white; padding: 40px; border-radius: 16px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
 
-        /* ROBUUSTE TABEL STYLING */
-        .table-container {
-            overflow-x: auto; 
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-
-        .studie-tabel {
-            width: 100%; 
-            border-collapse: collapse; 
-            min-width: 700px; 
-        }
+        /* TABLE FIXES */
+        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; }
+        .studie-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; } /* Min-width zorgt dat hij niet plet */
         
-        .studie-tabel th {
-            background-color: var(--table-header-bg); 
-            color: var(--text-muted);
-            text-transform: uppercase; 
-            font-size: 0.75em; 
-            letter-spacing: 1px; 
-            padding: 15px 20px;
-            text-align: left; 
-            border-bottom: 1px solid var(--border-color); 
-            font-weight: 700;
-            position: sticky; 
-            top: 0;
-        }
+        .studie-tabel th { background-color: var(--table-header-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75em; padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .studie-tabel td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
         
-        .studie-tabel td {
-            padding: 15px 20px; 
-            border-bottom: 1px solid var(--border-color);
-            vertical-align: top; 
-            font-size: 0.95em; 
-            color: var(--text-color);
-        }
-        
-        .studie-tabel tr:last-child td { border-bottom: none; }
-        
-        /* Kolom specifieke stijlen - STATUS AANGEPAST */
-        .col-week { width: 12%; font-weight: 700; color: var(--primary-color); border-right: 1px solid var(--border-color); }
-        .col-vak { width: 15%; font-weight: 600; color: #000; }
-        .col-thuis { width: 38%; }
+        /* AANGEPASTE KOLOM BREEDTES */
+        .col-week { width: 10%; font-weight: 700; color: var(--primary-color); }
+        .col-vak { width: 12%; font-weight: 600; }
+        .col-thuis { width: 43%; } /* Meer ruimte */
         .col-bijles { width: 25%; }
-        .col-status { width: 5%; text-align: center; } /* Smaller & centered */
+        .col-status { width: 60px; text-align: center; padding-left: 5px; padding-right: 5px;} /* Heel smal */
 
-        /* Vakantie Modus */
-        tr.is-holiday td {
-            background-color: var(--holiday-bg);
-            color: #a07400;
-        }
-        tr.is-holiday .editable-area {
-            color: #a07400;
-            font-style: italic;
-        }
+        .editable-area { width: 100%; min-height: 40px; border: 1px solid transparent; padding: 5px; border-radius: 6px; resize: none; overflow: hidden; }
+        .editable-area:hover { background-color: #f9f9f9; }
+        .editable-area:focus { border-color: var(--primary-color); background: white; }
 
-        /* Editable Area */
-        .editable-area {
-            width: 100%; 
-            min-height: 40px; 
-            background: transparent; 
-            border: 1px solid transparent;
-            color: var(--text-color); 
-            resize: none; 
-            padding: 6px; 
-            border-radius: 6px; 
-            transition: all 0.2s;
-            overflow: hidden; 
-            line-height: 1.5;
-            font-family: inherit;
-        }
-        .editable-area:hover { background-color: var(--input-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .editable-area:focus { 
-            border-color: var(--primary-color); 
-            background-color: white; 
-            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
-        }
+        /* Status Checkbox Only */
+        .status-container { display: flex; justify-content: center; align-items: center; height: 100%; }
+        .status-container input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+        
+        /* Vakantie */
+        tr.is-holiday td { background-color: var(--holiday-bg); color: #967d00; }
+        
+        /* Collaborators List */
+        .collab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
+        .collab-item span { overflow: hidden; text-overflow: ellipsis; }
 
-        /* Subject Grouping */
-        .subject-row {
-            display: flex;
-            border-bottom: 1px dashed var(--border-color); 
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            align-items: flex-start;
-        }
-        .subject-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-        
-        /* Checkbox & Status */
-        .status-container {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Centered */
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-            margin-top: 5px;
-        }
-        .status-container input[type="checkbox"] {
-            appearance: none;
-            width: 24px; height: 24px; /* Iets groter voor touch targets */
-            border: 2px solid #c7c7cc;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 0;
-            display: grid;
-            place-content: center;
-            transition: all 0.2s;
-            background-color: white;
-        }
-        .status-container input[type="checkbox"]::before {
-            content: "";
-            width: 12px; height: 12px;
-            transform: scale(0);
-            transition: 0.1s transform ease-in-out;
-            box-shadow: inset 1em 1em white;
-            transform-origin: center;
-            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-        }
-        .status-container input[type="checkbox"]:checked {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
-        }
-        .status-container input[type="checkbox"]:checked::before { transform: scale(1); }
-        
-        /* Switch Toggle */
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; vertical-align: middle; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #d1d1d6; transition: .4s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
-            background-color: white; transition: .4s; border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(16px); }
-        
-        /* --- NOTITIES SPECIFIC --- */
-        .note-card {
-            background-color: #fff;
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            position: relative;
-        }
-        .note-meta { font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; display: block;}
-        .note-subject { font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 5px;}
-        
-        /* --- CIJFERS SPECIFIC --- */
-        .grade-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .grade-avg { font-size: 1.2em; font-weight: bold; color: var(--primary-color); text-align: right; margin-top: 10px;}
-
-        @media (max-width: 1000px) {
-            body { flex-direction: column; height: auto; }
-            #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border-color); padding: 15px; }
-            #page-planning.active { flex-direction: column; }
-            #tools-column { max-width: 100%; order: -1; } 
+        @media (max-width: 1100px) {
+            body { flex-direction: column; height: auto; overflow-y: auto;}
+            #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; height: auto; }
+            .page-section.active { flex-direction: column; }
+            #tools-column { width: 100%; order: -1; }
         }
     </style>
 </head>
@@ -398,11 +106,10 @@
     <div id="login-page" style="display: none;">
         <div class="login-card">
             <h1 style="color: var(--primary-color);">Study-Start</h1>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Log in om je studieplanner te openen.</p>
-            <button onclick="signInWithGoogle()" style="background-color: white; color: #333; border: 1px solid #e0e0e0;">
-                Inloggen met Google
+            <p>Log in om je planner te openen.</p>
+            <button onclick="signInWithGoogle()" style="background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Inloggen met Google
             </button>
-            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.8em; color: var(--text-muted);">Wachten op input...</p>
         </div>
     </div>
 
@@ -411,25 +118,26 @@
         <div class="sidebar-logo">Study-Start</div>
         <div class="nav-item active" onclick="navigate('planning')">📅 Planning</div>
         <div class="nav-item" onclick="navigate('cijfers')">📊 Cijfers</div>
-        <div class="nav-item" onclick="navigate('notities')">📝 Notities</div>
-        <div class="nav-item" onclick="navigate('timer')">⏱️ Focus Timer</div>
+        <div class="nav-item" onclick="navigate('timer')">⏱️ Timer</div>
         <div class="nav-item" onclick="navigate('instellingen')">⚙️ Instellingen</div>
     </nav>
 
     <main id="main-content" style="display: none;">
         <header>
-            <span id="user-display-name" class="user-name">Gast</span>
-            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 16px; font-size: 0.8em;">Uitloggen</button>
+            <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #ffeeba;">
+                👁️ Je kijkt mee met iemand anders
+            </div>
+            <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
+            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
         </header>
 
-        <!-- PAGINA 1: PLANNING -->
+        <!-- PLANNING PAGE -->
         <div id="page-planning" class="page-section active">
+            
+            <!-- Linker Kolom: Planner -->
             <div id="planner-column">
-                <div style="margin-bottom: 20px;">
-                    <h2 style="margin:0;">Jouw Planning</h2>
-                    <p style="color: var(--text-muted); margin: 5px 0 0 0; font-size: 0.9em;">Overzicht per week</p>
-                </div>
-                <div id="loading-indicator" style="padding: 20px; text-align: center; color: var(--text-muted);">Planning laden...</div>
+                <h2>Jouw Planning</h2>
+                <div id="loading-indicator" style="color: var(--text-muted);">Laden...</div>
                 
                 <div class="table-container">
                     <table class="studie-tabel">
@@ -439,7 +147,7 @@
                                 <th class="col-vak">Vak</th>
                                 <th class="col-thuis">Thuis Doen</th>
                                 <th class="col-bijles">Bijles</th>
-                                <th class="col-status">Status</th>
+                                <th class="col-status"></th>
                             </tr>
                         </thead>
                         <tbody id="planner-table-body"></tbody>
@@ -447,398 +155,260 @@
                 </div>
             </div>
 
+            <!-- Rechter Kolom: Tools -->
             <div id="tools-column">
+                
+                <!-- DELEN MET DOCENT (Alleen zichtbaar als je eigenaar bent) -->
+                <div class="card" id="share-card" style="border: 1px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color);">🤝 Samenwerken</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted);">Voeg het e-mailadres van je docent of ouder toe. Zij kunnen dan inloggen en jouw schema live bekijken en bewerken.</p>
+                    
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
+                        <button onclick="addCollaborator()" style="width: auto;">Toevoegen</button>
+                    </div>
+
+                    <div id="collaborators-list">
+                        <!-- Lijst met emails -->
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Jouw Deel-Link (stuur dit naar de docent nadat je ze hebt toegevoegd):</p>
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                </div>
+
+                <!-- NIEUWE TAAK -->
                 <div class="card">
-                    <h3>⚡ Automatisch Inplannen</h3>
-                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch een schema tot aan je toets.</p>
-                    <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een Vak">
-                    <datalist id="vakken-list">
-                        <option value="Wiskunde A"><option value="Wiskunde B"><option value="Natuurkunde">
-                        <option value="Scheikunde"><option value="Biologie"><option value="Economie">
-                        <option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Nederlands">
-                        <option value="Engels">
-                    </datalist>
-                    <select id="autoHoofdstukInput">
-                        <option value="" disabled selected>Kies Hoofdstuk</option>
-                        <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
-                        <option value="H4">H4</option><option value="H5">H5</option><option value="H6">H6</option>
-                        <option value="H7">H7</option><option value="H8">H8</option><option value="H9">H9</option>
-                    </select>
-                    <label style="font-size: 0.8em; color: var(--text-muted);">Toetsdatum:</label>
-                    <input type="date" id="autoDatumInput">
-                    <button onclick="generateAutoPlanning()">Genereer Planning</button>
+                    <h3>+ Taak Toevoegen</h3>
+                    <input type="text" id="manualVak" placeholder="Vak (bv. Wiskunde)">
+                    <input type="date" id="manualDate">
+                    <textarea id="manualTask" placeholder="Wat moet je doen?"></textarea>
+                    <button onclick="addManualTask()">Inplannen</button>
                 </div>
+                
+                <!-- STATISTIEKEN -->
                 <div class="card">
-                    <h3>Deel je Schema</h3>
-                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: pointer;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                    <h3>Voortgang</h3>
+                    <div id="progress-container">Laden...</div>
                 </div>
             </div>
         </div>
 
-        <!-- PAGINA 2: CIJFERS -->
-        <div id="page-cijfers" class="page-section">
-            <h2>Mijn Cijfers</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div class="card" style="flex: 1; min-width: 300px;">
-                    <h3>Cijfer Toevoegen</h3>
-                    <input type="text" list="vakken-list" id="gradeSubject" placeholder="Vak">
-                    <input type="number" id="gradeValue" placeholder="Cijfer (1-10)" step="0.1">
-                    <input type="number" id="gradeWeight" placeholder="Weging (bv. 1)" value="1">
-                    <button onclick="addGrade()">Toevoegen</button>
-                </div>
-                <div class="card" style="flex: 2; min-width: 300px;">
-                    <h3>Overzicht & Gemiddelden</h3>
-                    <div id="grades-list">Loading...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGINA 3: NOTITIES -->
-        <div id="page-notities" class="page-section">
-            <h2>Notities</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div class="card" style="flex: 1; min-width: 300px; height: fit-content;">
-                    <h3>Nieuwe Notitie</h3>
-                    <input type="text" list="vakken-list" id="noteSubject" placeholder="Vak">
-                    <input type="date" id="noteDate">
-                    <textarea id="noteContent" style="min-height: 150px;" placeholder="Typ je notitie..."></textarea>
-                    <button onclick="addNote()">Opslaan</button>
-                </div>
-                <div class="card" style="flex: 2; min-width: 300px;">
-                    <h3>Mijn Notities</h3>
-                    <div id="notes-list-container">Loading...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGINA 4: FOCUS TIMER -->
-        <div id="page-timer" class="page-section" style="align-items: center; text-align: center;">
-            <h2>Focus Timer</h2>
-            <div class="card" style="max-width: 400px; width: 100%;">
-                <div class="input-group">
-                    <label style="color: var(--text-muted); font-size: 0.9em;">Tijd (minuten):</label>
-                    <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em;">
-                </div>
-                <div id="timer-display" style="font-size: 4em; font-weight: 700; margin: 20px 0; color: var(--primary-color);">25:00</div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="startTimer()">Start</button>
-                    <button onclick="stopTimer()" class="secondary">Stop</button>
-                    <button onclick="resetTimer()" class="secondary">Reset</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGINA 5: INSTELLINGEN -->
-        <div id="page-instellingen" class="page-section">
-            <h2>Instellingen</h2>
-            <div class="card">
-                <h3>Account</h3>
-                <div class="input-group">
-                    <label style="color: var(--text-muted);">Weergavenaam</label>
-                    <input type="text" id="settings-name" placeholder="Jouw naam">
-                </div>
-                <button onclick="saveSettings()" style="width: auto;">Opslaan</button>
-            </div>
-        </div>
+        <!-- ANDERE PAGINAS (Placeholder) -->
+        <div id="page-cijfers" class="page-section"><h2>Cijfers</h2><div class="card">WIP</div></div>
+        <div id="page-timer" class="page-section"><h2>Timer</h2><div class="card">WIP</div></div>
+        <div id="page-notities" class="page-section"><h2>Notities</h2><div class="card">WIP</div></div>
+        <div id="page-instellingen" class="page-section"><h2>Instellingen</h2><div class="card">WIP</div></div>
 
     </main>
 
     <script>
-        /* --- CONFIG --- */
+        /* CONFIG */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
           authDomain: "study-start-c510c.firebaseapp.com",
           projectId: "study-start-c510c",
           storageBucket: "study-start-c510c.firebasestorage.app",
           messagingSenderId: "960911379164",
-          appId: "1:960911379164:web:ad8648cfa2fe65f8620219",
-          measurementId: "G-Z4YN3HVQTR"
+          appId: "1:960911379164:web:ad8648cfa2fe65f8620219"
         };
-
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore(); 
+        const db = firebase.firestore();
 
-        let currentUserId = null;
-        let activeUserId = null;
-        let timerInterval = null;
-        let timeLeft = 25 * 60;
+        let currentUserId = null; // Wie is ingelogd?
+        let viewUserId = null;    // Naar wie kijken we? (Kan gelijk zijn aan current)
 
-        /* --- AUTHENTICATION --- */
+        /* AUTH & INIT */
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
-                const urlParams = new URLSearchParams(window.location.search);
-                activeUserId = urlParams.get('share') || currentUserId;
+                document.getElementById('user-display-name').innerText = user.email;
+                
+                // Check URL voor deel-link (?uid=...)
+                const params = new URLSearchParams(window.location.search);
+                const targetUid = params.get('uid');
 
-                document.getElementById('user-display-name').innerText = user.displayName || user.email;
+                if (targetUid && targetUid !== currentUserId) {
+                    // We proberen iemand anders te bekijken.
+                    // Security Rules bepalen of dit mag (email check).
+                    viewUserId = targetUid;
+                    document.getElementById('shared-badge').style.display = 'inline-block';
+                    document.getElementById('share-card').style.display = 'none'; // Verberg deel-opties als je gast bent
+                } else {
+                    viewUserId = currentUserId;
+                    document.getElementById('shared-badge').style.display = 'none';
+                    document.getElementById('share-card').style.display = 'block';
+                }
+
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('app-sidebar').style.display = 'flex';
                 document.getElementById('main-content').style.display = 'flex';
-                document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?share=${currentUserId}`;
 
-                loadPlanning(activeUserId);
-                
-                // Load other data only if owning user
-                if(activeUserId === currentUserId) {
-                    loadGrades();
-                    loadSubjectNotes();
-                }
+                // Zet de deel-link voor de eigenaar
+                document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
+
+                initPlanner();
+                if (currentUserId === viewUserId) loadCollaborators();
+
             } else {
                 document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('app-sidebar').style.display = 'none';
-                document.getElementById('main-content').style.display = 'none';
             }
         });
 
-        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message)); }
-        function signOutUser() { auth.signOut().then(() => window.location.reload()); }
-
-        /* --- NAVIGATION --- */
-        function navigate(pageId) {
+        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert(e.message)); }
+        function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
+        function navigate(id) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${id}`).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
         }
 
-        /* --- PLANNING LOGIC --- */
-        function generateAutoPlanning() {
-            if (activeUserId !== currentUserId) return alert("Read-only.");
-            const vak = document.getElementById('autoVakInput').value;
-            const hst = document.getElementById('autoHoofdstukInput').value;
-            const dateVal = document.getElementById('autoDatumInput').value;
-            if(!vak || !hst || !dateVal) return alert("Vul alles in.");
-            
-            const toetsDate = new Date(dateVal);
-            let curr = new Date(); curr.setDate(curr.getDate() - curr.getDay() + 1);
-            const batch = db.batch();
-            
-            while(curr <= toetsDate) {
-                 const end = new Date(curr); end.setDate(curr.getDate()+6);
-                 const id = `${vak}-${curr.getTime()}`;
-                 batch.set(db.collection('users').doc(currentUserId).collection('planner_items').doc(id), {
-                     weekStart: firebase.firestore.Timestamp.fromDate(curr),
-                     weekEnd: firebase.firestore.Timestamp.fromDate(end),
-                     weekNummer: getWeekNumber(curr),
-                     vak: vak,
-                     thuisDoen: `Oefenen ${vak} ${hst}`,
-                     bijlesDoen: `Vragen ${hst}`,
-                     isAfgerond: false, isVakantie: false,
-                     groupKey: `${curr.getFullYear()}-${getWeekNumber(curr)}`
-                 });
-                 curr.setDate(curr.getDate()+7);
-            }
-            batch.commit().then(() => alert("Gepland!"));
-        }
-
-        function loadPlanning(userId) {
-            db.collection('users').doc(userId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snap => {
-                document.getElementById('loading-indicator').style.display = 'none';
-                const tbody = document.getElementById('planner-table-body');
-                tbody.innerHTML = '';
-                
-                const grouped = {};
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    data.jsDate = data.weekStart.toDate();
-                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
-                    if(!grouped[key]) grouped[key] = [];
-                    grouped[key].push(data);
-                });
-
-                const keys = Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate);
-                if (keys.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--text-muted);">Nog geen planning.</td></tr>';
-                    return;
-                }
-                keys.forEach(key => renderGroupedRow(tbody, grouped[key], userId === currentUserId));
-            });
-        }
-
-        function renderGroupedRow(container, items, isEditable) {
-            const firstItem = items[0];
-            const weekEndStr = firstItem.weekEnd.toDate().toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
-            const isHoliday = items.some(i => i.isVakantie);
-
-            const row = document.createElement('tr');
-            if (isHoliday) row.classList.add('is-holiday');
-
-            let vakHtml = '', thuisHtml = '', bijlesHtml = '', statusHtml = '';
-
-            items.forEach((item, index) => {
-                const borderStyle = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; margin-bottom: 10px;' : '';
-
-                vakHtml += `<div style="${borderStyle} font-weight:600; padding-top:5px;">${item.vak}</div>`;
-                
-                thuisHtml += `
-                    <div style="${borderStyle}">
-                        <textarea class="editable-area" oninput="autoResize(this)" 
-                            onblur="updateField('${item.id}', 'thuisDoen', this.value)" 
-                            ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? 'VAKANTIE!' : item.thuisDoen}</textarea>
-                    </div>`;
-                
-                const bijlesClass = item.isBijlesNodig === false ? 'bijles-inactive' : 'bijles-active';
-                bijlesHtml += `
-                    <div class="bijles-toggle-wrapper ${bijlesClass}" style="${borderStyle}">
-                         <label class="switch" style="transform:scale(0.7); margin-right:5px;" title="Bijles nodig?">
-                            <input type="checkbox" ${item.isBijlesNodig !== false ? 'checked' : ''} 
-                                onchange="updateField('${item.id}', 'isBijlesNodig', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                        <textarea class="editable-area" oninput="autoResize(this)" 
-                            onblur="updateField('${item.id}', 'bijlesDoen', this.value)" 
-                            ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? '-' : item.bijlesDoen}</textarea>
-                    </div>`;
-
-                statusHtml += `
-                    <div style="${borderStyle} display:flex; align-items:center; justify-content:center; min-height:40px;">
-                         <label class="status-container">
-                            <input type="checkbox" ${item.isAfgerond ? 'checked' : ''} 
-                                onchange="updateField('${item.id}', 'isAfgerond', this.checked)">
-                        </label>
-                        ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:10px; padding:0; border:none; background:transparent; color:#999; font-size:1.2em; cursor:pointer;">&times;</button>` : ''}
-                    </div>`;
-            });
-
-            row.innerHTML = `
-                <td class="col-week" style="border-right: 1px solid var(--border-color);">
-                    WEEK ${firstItem.weekNummer}<br>
-                    <span style="font-size:0.8em; font-weight:400; color:var(--text-muted)">t/m zo ${weekEndStr}</span>
-                    <div style="margin-top:8px;">
-                         <label class="switch" title="Vakantie modus" style="transform:scale(0.8); transform-origin:left;">
-                            <input type="checkbox" ${isHoliday ? 'checked' : ''} 
-                                onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-size:0.7em; vertical-align:middle; margin-left:5px; color:var(--text-muted);">Vakantie</span>
-                    </div>
-                </td>
-                <td class="col-vak">${vakHtml}</td>
-                <td class="col-thuis">${thuisHtml}</td>
-                <td class="col-bijles">${bijlesHtml}</td>
-                <td class="col-status">${statusHtml}</td>
-            `;
-            container.appendChild(row);
-            row.querySelectorAll('textarea').forEach(autoResize);
-        }
-
-        /* --- GRADES LOGIC --- */
-        function addGrade() {
-            const subject = document.getElementById('gradeSubject').value;
-            const grade = parseFloat(document.getElementById('gradeValue').value);
-            const weight = parseFloat(document.getElementById('gradeWeight').value);
-
-            if (!subject || isNaN(grade) || isNaN(weight)) return alert("Vul alle velden correct in.");
-
-            db.collection('users').doc(currentUserId).collection('grades').add({
-                subject, grade, weight, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        /* COLLABORATION LOGIC */
+        function addCollaborator() {
+            const email = document.getElementById('collabEmail').value.toLowerCase().trim();
+            if(!email) return;
+            // Sla op in een subcollectie 'collaborators' onder de user. 
+            // De ID van het document is het emailadres (makkelijk checken in security rules).
+            db.collection('users').doc(currentUserId).collection('toegang').doc(email).set({
+                addedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                document.getElementById('gradeSubject').value = '';
-                document.getElementById('gradeValue').value = '';
+                alert('Toegang gegeven! Stuur nu de link.');
+                document.getElementById('collabEmail').value = '';
             });
         }
 
-        function loadGrades() {
-            db.collection('users').doc(currentUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => {
-                const list = document.getElementById('grades-list');
+        function loadCollaborators() {
+            db.collection('users').doc(currentUserId).collection('toegang').onSnapshot(snap => {
+                const list = document.getElementById('collaborators-list');
                 list.innerHTML = '';
-                
-                const subjects = {};
-                
                 snap.forEach(doc => {
-                    const d = doc.data();
-                    if (!subjects[d.subject]) subjects[d.subject] = { sum: 0, weightSum: 0, grades: [] };
-                    subjects[d.subject].sum += (d.grade * d.weight);
-                    subjects[d.subject].weightSum += d.weight;
-                    subjects[d.subject].grades.push({id: doc.id, ...d});
-                });
-
-                for(const subj in subjects) {
-                    const data = subjects[subj];
-                    const avg = (data.sum / data.weightSum).toFixed(1);
-                    
-                    let html = `<div style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">`;
-                    html += `<div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:5px;"><span>${subj}</span><span>Gem: <span style="color:var(--primary-color);">${avg}</span></span></div>`;
-                    
-                    data.grades.forEach(g => {
-                        html += `<div style="display:flex; justify-content:space-between; font-size:0.9em; color:var(--text-muted);">
-                            <span>${g.grade} (x${g.weight})</span>
-                            <button onclick="db.collection('users').doc('${currentUserId}').collection('grades').doc('${g.id}').delete()" style="background:none; border:none; color:#e74c3c; cursor:pointer; padding:0;">&times;</button>
-                        </div>`;
-                    });
-                    html += `</div>`;
-                    list.innerHTML += html;
-                }
-                if(snap.empty) list.innerHTML = '<p style="color:var(--text-muted)">Nog geen cijfers.</p>';
-            });
-        }
-
-        /* --- NOTES LOGIC --- */
-        function addNote() {
-            const subj = document.getElementById('noteSubject').value;
-            const date = document.getElementById('noteDate').value;
-            const content = document.getElementById('noteContent').value;
-            if(!subj || !content) return alert("Vul vak en inhoud in.");
-
-            db.collection('users').doc(currentUserId).collection('subject_notes').add({
-                subject: subj, date: date ? firebase.firestore.Timestamp.fromDate(new Date(date)) : null, content, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('noteContent').value = '';
-                alert("Notitie opgeslagen");
-            });
-        }
-
-        function loadSubjectNotes() {
-            db.collection('users').doc(currentUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => {
-                const container = document.getElementById('notes-list-container');
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const dateStr = d.date ? d.date.toDate().toLocaleDateString() : 'Geen datum';
                     const div = document.createElement('div');
-                    div.className = 'note-card';
-                    div.innerHTML = `
-                        <span class="note-meta">${dateStr}</span>
-                        <span class="note-subject">${d.subject}</span>
-                        <p style="margin:5px 0; white-space: pre-wrap;">${d.content}</p>
-                        <button onclick="db.collection('users').doc('${currentUserId}').collection('subject_notes').doc('${doc.id}').delete()" class="delete-btn">Verwijderen</button>
-                    `;
-                    container.appendChild(div);
+                    div.className = 'collab-item';
+                    div.innerHTML = `<span>${doc.id}</span> <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:2px 8px; font-size:0.7em;">X</button>`;
+                    list.appendChild(div);
                 });
-                if(snap.empty) container.innerHTML = '<p style="color:var(--text-muted)">Nog geen notities.</p>';
+            });
+        }
+        
+        function removeCollab(email) {
+            if(confirm('Toegang intrekken?')) db.collection('users').doc(currentUserId).collection('toegang').doc(email).delete();
+        }
+
+        /* PLANNER LOGIC */
+        function initPlanner() {
+            // Laad algemene taken
+            db.collection('users').doc(viewUserId).collection('algemeen')
+                .orderBy('weekKey', 'asc')
+                .onSnapshot(snapshot => {
+                    document.getElementById('loading-indicator').style.display = 'none';
+                    const tbody = document.getElementById('planner-table-body');
+                    tbody.innerHTML = '';
+
+                    // Simpele groepering op weekKey (YYYY-WW)
+                    const weeks = {};
+                    snapshot.forEach(doc => {
+                        const d = doc.data();
+                        d.id = doc.id;
+                        if(!weeks[d.weekKey]) weeks[d.weekKey] = [];
+                        weeks[d.weekKey].push(d);
+                    });
+
+                    // Sorteer weken
+                    Object.keys(weeks).sort().forEach(weekKey => {
+                        const tasks = weeks[weekKey];
+                        // Render week row
+                        const tr = document.createElement('tr');
+                        
+                        // Week info (parse weekKey 2025-48)
+                        const [yr, wk] = weekKey.split('-');
+                        
+                        // Vakantie check (gebruikt eerste taak property of aparte collectie, hier versimpeld)
+                        const isHoliday = tasks.some(t => t.isHoliday);
+
+                        if(isHoliday) tr.classList.add('is-holiday');
+
+                        // Bouw cellen
+                        let vakHtml = '', thuisHtml = '', bijlesHtml = '', statusHtml = '';
+                        
+                        tasks.forEach((t, i) => {
+                            const border = i < tasks.length-1 ? 'border-bottom:1px solid #eee; margin-bottom:5px; padding-bottom:5px;' : '';
+                            vakHtml += `<div style="${border}"><b>${t.vak}</b></div>`;
+                            
+                            thuisHtml += `<div style="${border}"><textarea class="editable-area" onblur="updateTask('${t.id}','taak',this.value)">${t.taak || ''}</textarea></div>`;
+                            
+                            bijlesHtml += `<div style="${border}"><textarea class="editable-area" onblur="updateTask('${t.id}','bijles',this.value)">${t.bijles || ''}</textarea></div>`;
+                            
+                            statusHtml += `<div style="${border}; display:flex; justify-content:center; height:40px; align-items:center;">
+                                <input type="checkbox" ${t.afgerond ? 'checked' : ''} onchange="updateTask('${t.id}','afgerond',this.checked)">
+                                <button onclick="deleteTask('${t.id}')" style="background:none; border:none; color:#ccc; font-size:16px; margin-left:5px;">&times;</button>
+                            </div>`;
+                        });
+
+                        tr.innerHTML = `
+                            <td class="col-week">Week ${wk}<br><small>${yr}</small><br>
+                            <label style="font-size:0.7em"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${tasks[0].id}', this.checked)"> Vakantie</label>
+                            </td>
+                            <td class="col-vak">${vakHtml}</td>
+                            <td class="col-thuis">${thuisHtml}</td>
+                            <td class="col-bijles">${bijlesHtml}</td>
+                            <td class="col-status">${statusHtml}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    updateStats(snapshot.size, snapshot.docs.filter(d=>d.data().afgerond).length);
+                }, err => {
+                    console.error(err);
+                    if(err.code === 'permission-denied') alert("Geen toegang! Vraag de eigenaar om je e-mail toe te voegen.");
+                });
+        }
+
+        function addManualTask() {
+            const vak = document.getElementById('manualVak').value;
+            const date = document.getElementById('manualDate').value;
+            const taak = document.getElementById('manualTask').value;
+            
+            if(!vak || !date) return alert("Vul vak en datum in");
+            
+            // Bereken weekKey
+            const d = new Date(date);
+            const onejan = new Date(d.getFullYear(), 0, 1);
+            const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+            const weekKey = `${d.getFullYear()}-${week}`;
+
+            db.collection('users').doc(viewUserId).collection('algemeen').add({
+                vak, taak, weekKey, afgerond: false, bijles: '', date: date,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('manualTask').value = '';
+                alert("Ingepland!");
             });
         }
 
-        /* --- TIMER LOGIC --- */
-        function updateTimerDisplay() { 
-            const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
-            document.getElementById('timer-display').innerText = `${m}:${s}`;
+        function updateTask(id, field, val) {
+            db.collection('users').doc(viewUserId).collection('algemeen').doc(id).update({ [field]: val });
         }
-        function startTimer() { 
-            const inputVal = document.getElementById('timerInput').value;
-            if(timeLeft === 25*60 && inputVal != 25) timeLeft = inputVal * 60; // Set custom time only if not already running/paused
-
-            if(!timerInterval) timerInterval = setInterval(() => { 
-                if(timeLeft>0){timeLeft--;updateTimerDisplay()}
-                else{stopTimer();alert("Klaar!")} 
-            }, 1000); 
+        function deleteTask(id) {
+            if(confirm("Verwijderen?")) db.collection('users').doc(viewUserId).collection('algemeen').doc(id).delete();
         }
-        function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
-        function resetTimer() { 
-            stopTimer(); 
-            const val = document.getElementById('timerInput').value;
-            timeLeft = (val ? val : 25) * 60; 
-            updateTimerDisplay(); 
+        // Simpele vakantie toggle: update de EERSTE taak van die week (voor nu)
+        function toggleHoliday(id, val) {
+             db.collection('users').doc(viewUserId).collection('algemeen').doc(id).update({ isHoliday: val });
         }
 
-        /* --- DB HELPERS --- */
-        function updateField(id, f, v) { if(activeUserId===currentUserId) db.collection('users').doc(currentUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        function toggleHoliday(ids, val) { if(activeUserId!==currentUserId)return; const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(currentUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); }
-        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
-        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>alert("Opgeslagen")); }
+        function updateStats(total, done) {
+            const p = total === 0 ? 0 : Math.round((done/total)*100);
+            document.getElementById('progress-container').innerHTML = `
+                <div style="font-size:2em; font-weight:bold; color:var(--primary-color); text-align:center;">${p}%</div>
+                <div style="background:#eee; height:10px; border-radius:5px; overflow:hidden; margin-top:5px;">
+                    <div style="width:${p}%; background:var(--primary-color); height:100%;"></div>
+                </div>
+                <div style="text-align:center; font-size:0.8em; color:#666; margin-top:5px;">${done} van ${total} taken afgerond</div>
+            `;
+        }
     </script>
 </body>
 </html>
