@@ -20,19 +20,27 @@
 
     <style>
         :root {
-            /* LIGHT THEME VARIABLES */
-            --bg-color: #f2f2f7;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-color: #1c1c1e;
-            --text-muted: #8e8e93;
-            --primary-color: #007aff; /* iOS Blauw */
+            /* OFF-WHITE THEME VARIABLES */
+            --off-white: #fafafa; /* De nieuwe basiskleur */
+            --bg-color: #f0f2f5; /* Achtergrond (iets donkerder voor contrast) */
+            --sidebar-bg: var(--off-white);
+            --card-bg: var(--off-white);
+            
+            --text-color: #333333;
+            --text-muted: #666666;
+            
+            --primary-color: #007aff; /* Modern Blauw */
             --primary-hover: #005bb5;
-            --border-color: #d1d1d6;
-            --table-header-bg: #f9f9f9;
+            
+            --border-color: #e4e6eb;
+            --input-bg: #ffffff; /* Wit in inputs voor contrast met off-white kaart */
+            
+            --table-header-bg: #f5f7f9;
+            --table-row-even: var(--off-white);
+            --table-row-odd: #f5f7f9;
+            
             --success-color: #34c759;
-            --holiday-bg: #fff8dc;
-            --input-bg: #ffffff;
+            --holiday-bg: #fff9e6; 
         }
 
         body {
@@ -97,7 +105,7 @@
         .page-section {
             display: none; 
             padding: 30px;
-            max-width: 1800px; /* Breed scherm ondersteuning */
+            max-width: 1800px; 
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
@@ -114,7 +122,7 @@
 
         /* --- HEADER --- */
         header {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(250, 250, 250, 0.85); /* Off-white semi-transparent */
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
             padding: 15px 30px;
@@ -136,17 +144,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #f2f2f7;
+            background-color: var(--bg-color);
         }
         .login-card {
-            background-color: white;
+            background-color: var(--card-bg);
             padding: 50px;
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
             text-align: center;
             max-width: 400px;
             width: 100%;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
         }
 
         /* --- CARDS & UI --- */
@@ -163,7 +171,7 @@
 
         input, select, textarea {
             width: 100%;
-            background-color: var(--input-bg);
+            background-color: var(--input-bg); /* Wit voor contrast */
             border: 1px solid var(--border-color);
             color: var(--text-color);
             padding: 12px;
@@ -197,7 +205,7 @@
             background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); 
             border-radius: 8px; text-transform: none; font-weight: 500;
         }
-        button.secondary:hover { background-color: #eee; color: var(--text-color); transform: none; box-shadow: none; }
+        button.secondary:hover { background-color: #eaeaea; color: var(--text-color); transform: none; box-shadow: none; }
 
         /* --- PLANNER SPECIFIC --- */
         #planner-column { flex: 3; min-width: 60%; }
@@ -205,17 +213,17 @@
 
         /* ROBUUSTE TABEL STYLING */
         .table-container {
-            overflow-x: auto; /* Horizontaal scrollen op mobiel */
+            overflow-x: auto; 
             border-radius: 16px;
             border: 1px solid var(--border-color);
             background-color: var(--card-bg);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
 
         .studie-tabel {
             width: 100%; 
-            border-collapse: collapse; /* Strakker dan separate */
-            min-width: 700px; /* Voorkomt in elkaar drukken */
+            border-collapse: collapse; 
+            min-width: 700px; 
         }
         
         .studie-tabel th {
@@ -228,7 +236,7 @@
             text-align: left; 
             border-bottom: 1px solid var(--border-color); 
             font-weight: 700;
-            position: sticky; /* Header blijft staan bij lange lijsten */
+            position: sticky; 
             top: 0;
         }
         
@@ -252,10 +260,10 @@
         /* Vakantie Modus */
         tr.is-holiday td {
             background-color: var(--holiday-bg);
-            color: #b58900;
+            color: #a07400;
         }
         tr.is-holiday .editable-area {
-            color: #b58900;
+            color: #a07400;
             font-style: italic;
         }
 
@@ -274,17 +282,17 @@
             line-height: 1.5;
             font-family: inherit;
         }
-        .editable-area:hover { background-color: #f2f2f7; }
+        .editable-area:hover { background-color: var(--input-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .editable-area:focus { 
             border-color: var(--primary-color); 
             background-color: white; 
             box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
         }
 
-        /* Subject Grouping (voor als er meerdere vakken in 1 week zijn) */
+        /* Subject Grouping */
         .subject-row {
             display: flex;
-            border-bottom: 1px dashed #e0e0e0; /* Subtiele scheiding */
+            border-bottom: 1px dashed var(--border-color); 
             padding-bottom: 10px;
             margin-bottom: 10px;
             align-items: flex-start;
@@ -307,13 +315,14 @@
         .status-container input[type="checkbox"] {
             appearance: none;
             width: 22px; height: 22px;
-            border: 2px solid #d1d1d6;
+            border: 2px solid #c7c7cc;
             border-radius: 6px;
             cursor: pointer;
             margin: 0;
             display: grid;
             place-content: center;
             transition: all 0.2s;
+            background-color: white;
         }
         .status-container input[type="checkbox"]::before {
             content: "";
@@ -338,12 +347,12 @@
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s; border-radius: 34px;
+            background-color: #d1d1d6; transition: .4s; border-radius: 34px;
         }
         .slider:before {
             position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
             background-color: white; transition: .4s; border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(16px); }
@@ -516,7 +525,7 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message)); }
         function signOutUser() { auth.signOut().then(() => window.location.reload()); }
 
-        /* --- NAVIGATION --- */
+        /* --- NAV --- */
         function navigate(pageId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -533,10 +542,7 @@
             if(!vak || !hst || !dateVal) return alert("Vul alles in.");
             
             const toetsDate = new Date(dateVal);
-            let curr = new Date(); 
-            // Start altijd bij de huidige week (maandag)
-            curr.setDate(curr.getDate() - curr.getDay() + 1);
-            
+            let curr = new Date(); curr.setDate(curr.getDate() - curr.getDay() + 1);
             const batch = db.batch();
             
             while(curr <= toetsDate) {
@@ -550,80 +556,59 @@
                      thuisDoen: `Oefenen ${vak} ${hst}`,
                      bijlesDoen: `Vragen ${hst}`,
                      isAfgerond: false, isVakantie: false,
-                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                     groupKey: `${curr.getFullYear()}-${getWeekNumber(curr)}`
                  });
                  curr.setDate(curr.getDate()+7);
             }
             batch.commit().then(() => alert("Gepland!"));
         }
 
-        /* --- LOADING & RENDERING (CHRONOLOGISCH & GEGROEPEERD) --- */
         function loadPlanning(userId) {
-            db.collection('users').doc(userId).collection('planner_items')
-              .orderBy('weekStart', 'asc') // Firestore sorteert al, maar we her-sorteren in JS voor zekerheid bij groeperen
-              .onSnapshot(snapshot => {
-                  document.getElementById('loading-indicator').style.display = 'none';
-                  const tbody = document.getElementById('planner-table-body');
-                  tbody.innerHTML = '';
-                  
-                  // 1. Data verzamelen
-                  let allItems = [];
-                  snapshot.forEach(doc => {
-                      const data = doc.data();
-                      data.id = doc.id;
-                      // Converteer timestamps naar Date objecten voor sortering
-                      data.jsDate = data.weekStart.toDate();
-                      allItems.push(data);
-                  });
+            db.collection('users').doc(userId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snap => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                const tbody = document.getElementById('planner-table-body');
+                tbody.innerHTML = '';
+                
+                const grouped = {};
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    // Converteer timestamp naar date voor sortering
+                    data.jsDate = data.weekStart.toDate();
+                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
+                    if(!grouped[key]) grouped[key] = [];
+                    grouped[key].push(data);
+                });
 
-                  // 2. Sorteren op datum (zekerheid)
-                  allItems.sort((a, b) => a.jsDate - b.jsDate);
+                // Sorteer keys (weken)
+                const keys = Object.keys(grouped).sort((a,b) => {
+                    return grouped[a][0].jsDate - grouped[b][0].jsDate;
+                });
 
-                  // 3. Groeperen op week
-                  const groupedByWeek = {};
-                  allItems.forEach(item => {
-                      // Unieke sleutel voor week: Jaar + Weeknummer
-                      const weekKey = `${item.jsDate.getFullYear()}-${item.weekNummer}`;
-                      if (!groupedByWeek[weekKey]) {
-                          groupedByWeek[weekKey] = {
-                              weekNummer: item.weekNummer,
-                              weekEnd: item.weekEnd.toDate(),
-                              isVakantie: item.isVakantie, // Neem aan dat als 1 item vakantie is, de hele week het is (of we checken de eerste)
-                              items: []
-                          };
-                      }
-                      groupedByWeek[weekKey].items.push(item);
-                  });
+                if (keys.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--text-muted);">Nog geen planning.</td></tr>';
+                    return;
+                }
 
-                  if (Object.keys(groupedByWeek).length === 0) {
-                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--text-muted);">Nog geen planning. Gebruik de generator rechts.</td></tr>';
-                      return;
-                  }
-
-                  // 4. Renderen
-                  for (const weekKey in groupedByWeek) {
-                      const group = groupedByWeek[weekKey];
-                      renderGroupedRow(tbody, group, userId === currentUserId);
-                  }
-              });
+                keys.forEach(key => {
+                    renderGroupedRow(tbody, grouped[key], userId === currentUserId);
+                });
+            });
         }
 
-        function renderGroupedRow(container, group, isEditable) {
-            const row = document.createElement('tr');
-            
-            // Als een item in de groep 'isVakantie' is, markeer hele rij
-            const isHoliday = group.items.some(i => i.isVakantie); 
-            if (isHoliday) row.classList.add('is-holiday');
-            
-            const deadlineStr = group.weekEnd.toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
+        function renderGroupedRow(container, items, isEditable) {
+            const firstItem = items[0];
+            const weekEndStr = firstItem.weekEnd.toDate().toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
+            const isHoliday = items.some(i => i.isVakantie);
 
-            // --- BOUW HTML ---
-            // We stapelen de vakken in de cellen met divs
+            const row = document.createElement('tr');
+            if (isHoliday) row.classList.add('is-holiday');
+
+            // HTML bouw
             let vakHtml = '', thuisHtml = '', bijlesHtml = '', statusHtml = '';
 
-            group.items.forEach((item, index) => {
-                // Voeg scheidingslijn toe behalve bij de laatste
-                const borderStyle = index < group.items.length - 1 ? 'border-bottom: 1px dashed #e0e0e0; padding-bottom: 10px; margin-bottom: 10px;' : '';
+            items.forEach((item, index) => {
+                const borderStyle = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; margin-bottom: 10px;' : '';
 
                 vakHtml += `<div style="${borderStyle} font-weight:600; padding-top:5px;">${item.vak}</div>`;
                 
@@ -633,9 +618,8 @@
                             onblur="updateField('${item.id}', 'thuisDoen', this.value)" 
                             ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? 'VAKANTIE!' : item.thuisDoen}</textarea>
                     </div>`;
-
-                // Bijles Toggle + Textarea
-                const bijlesClass = item.isBijlesNodig === false ? 'bijles-inactive' : 'bijles-active'; // Check expliciet false
+                
+                const bijlesClass = item.isBijlesNodig === false ? 'bijles-inactive' : 'bijles-active';
                 bijlesHtml += `
                     <div class="bijles-toggle-wrapper ${bijlesClass}" style="${borderStyle}">
                          <label class="switch" style="transform:scale(0.7); margin-right:5px;" title="Bijles nodig?">
@@ -643,8 +627,8 @@
                                 onchange="updateField('${item.id}', 'isBijlesNodig', this.checked)">
                             <span class="slider"></span>
                         </label>
-                        <textarea class="editable-area" oninput="autoResize(this)"
-                            onblur="updateField('${item.id}', 'bijlesDoen', this.value)"
+                        <textarea class="editable-area" oninput="autoResize(this)" 
+                            onblur="updateField('${item.id}', 'bijlesDoen', this.value)" 
                             ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? '-' : item.bijlesDoen}</textarea>
                     </div>`;
 
@@ -657,18 +641,18 @@
                                 ${item.isAfgerond ? 'Klaar' : 'Ongedaan'}
                             </span>
                         </label>
-                        ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="background:transparent; color:#ccc; padding:0; width:auto; font-size:1.2em;">&times;</button>` : ''}
+                        ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:auto; padding:4px 8px; font-size:0.7em; background:transparent; color:#ccc; width:auto;">×</button>` : ''}
                     </div>`;
             });
 
             row.innerHTML = `
                 <td class="col-week" style="border-right: 1px solid var(--border-color);">
-                    WEEK ${group.weekNummer}<br>
-                    <span style="font-size:0.8em; font-weight:400; color:var(--text-muted)">t/m zo ${deadlineStr}</span>
+                    WEEK ${firstItem.weekNummer}<br>
+                    <span style="font-size:0.8em; font-weight:400; color:var(--text-muted)">t/m zo ${weekEndStr}</span>
                     <div style="margin-top:8px;">
                          <label class="switch" title="Vakantie modus" style="transform:scale(0.8); transform-origin:left;">
                             <input type="checkbox" ${isHoliday ? 'checked' : ''} 
-                                onchange="toggleHolidayGroup('${group.items.map(i=>i.id).join(',')}', this.checked)">
+                                onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)">
                             <span class="slider"></span>
                         </label>
                         <span style="font-size:0.7em; vertical-align:middle; margin-left:5px; color:var(--text-muted);">Vakantie</span>
@@ -681,14 +665,12 @@
             `;
             
             container.appendChild(row);
-            // Trigger resize voor textareas
             row.querySelectorAll('textarea').forEach(autoResize);
         }
 
-        /* --- DB UPDATES --- */
         function updateField(id, f, v) { if(activeUserId===currentUserId) db.collection('users').doc(currentUserId).collection('planner_items').doc(id).update({[f]: v}); }
         
-        function toggleHolidayGroup(ids, val) {
+        function toggleHoliday(ids, val) {
             if(activeUserId!==currentUserId) return;
             const batch = db.batch();
             ids.split(',').forEach(id => {
@@ -697,13 +679,7 @@
             batch.commit();
         }
 
-        function deleteItem(docId) {
-            if (confirm("Dit vak uit deze week verwijderen?")) {
-                db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete();
-            }
-        }
-
-        /* --- UTILS --- */
+        function deleteItem(docId) { if (confirm("Verwijderen?")) db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete(); }
         function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
