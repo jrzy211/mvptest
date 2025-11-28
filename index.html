@@ -43,7 +43,6 @@
         /* LAYOUTS */
         .page-section { display: none; padding: 30px; max-width: 1800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .page-section.active { display: flex; gap: 30px; flex-direction: column; }
-        /* Planner specifiek: twee kolommen */
         #page-planning.active { flex-direction: row; }
         #planner-column { flex: 1; min-width: 0; } 
         #tools-column { width: 350px; flex-shrink: 0; }
@@ -92,17 +91,10 @@
         /* Collaborators List */
         .collab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
         .collab-item span { overflow: hidden; text-overflow: ellipsis; }
+        .role-badge { font-size: 0.75em; padding: 2px 6px; border-radius: 4px; background: #eee; margin-left: 5px; }
 
         /* Timer */
         #timer-display { font-size: 4em; font-weight: 700; color: var(--primary-color); text-align: center; margin: 20px 0; }
-
-        /* Switch */
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; vertical-align: middle; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(16px); }
 
         @media (max-width: 1100px) {
             body { flex-direction: column; height: auto; overflow-y: auto;}
@@ -140,6 +132,9 @@
             <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #ffeeba;">
                 👁️ Je kijkt mee met iemand anders
             </div>
+            <div id="read-only-badge" style="display: none; background: #e2e3e5; color: #383d41; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #d6d8db;">
+                🔒 Alleen Lezen
+            </div>
             <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
             <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
         </header>
@@ -168,10 +163,16 @@
                 <!-- SHARE CARD -->
                 <div class="card" id="share-card" style="border: 1px solid var(--primary-color);">
                     <h3 style="color: var(--primary-color);">🤝 Samenwerken</h3>
-                    <p style="font-size: 0.9em; color: var(--text-muted);">Voeg het e-mailadres van je docent toe:</p>
-                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <p style="font-size: 0.9em; color: var(--text-muted);">Voeg het e-mailadres van je docent toe en kies hun rechten:</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                         <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
-                        <button onclick="addCollaborator()" style="width: auto;">+</button>
+                        <div style="display: flex; gap: 5px;">
+                            <select id="collabRole" style="margin-bottom:0; flex: 1;">
+                                <option value="read">Alleen Lezen</option>
+                                <option value="edit">Bewerken</option>
+                            </select>
+                            <button onclick="addCollaborator()" style="width: auto;">Toevoegen</button>
+                        </div>
                     </div>
                     <div id="collaborators-list"></div>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
@@ -179,8 +180,8 @@
                     <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
                 </div>
 
-                <!-- AUTOMATIC PLANNER (HERSTELD) -->
-                <div class="card">
+                <!-- AUTOMATIC PLANNER -->
+                <div class="card" id="auto-planner-card">
                     <h3>⚡ Automatisch Inplannen</h3>
                     <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een Vak">
                     <datalist id="vakken-list">
@@ -207,7 +208,7 @@
             </div>
         </div>
 
-        <!-- CIJFERS PAGE (HERSTELD) -->
+        <!-- CIJFERS PAGE -->
         <div id="page-cijfers" class="page-section">
             <h2>Mijn Cijfers</h2>
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -225,7 +226,7 @@
             </div>
         </div>
 
-        <!-- TIMER PAGE (HERSTELD) -->
+        <!-- TIMER PAGE -->
         <div id="page-timer" class="page-section" style="align-items: center; text-align: center;">
             <h2>Focus Timer</h2>
             <div class="card" style="max-width: 400px; width: 100%;">
@@ -239,7 +240,7 @@
             </div>
         </div>
 
-        <!-- NOTITIES PAGE (HERSTELD) -->
+        <!-- NOTITIES PAGE -->
         <div id="page-notities" class="page-section">
             <h2>Notities</h2>
             <div class="card" style="height: 100%; display: flex; flex-direction: column;">
@@ -276,6 +277,8 @@
 
         let currentUserId = null;
         let viewUserId = null;
+        let userRole = 'owner'; // owner, edit, read
+
         let timerInterval = null;
         let timeLeft = 25 * 60;
 
@@ -285,18 +288,17 @@
                 currentUserId = user.uid;
                 document.getElementById('user-display-name').innerText = user.email;
                 
-                // Check URL voor deel-link (?uid=...)
                 const params = new URLSearchParams(window.location.search);
                 const targetUid = params.get('uid');
 
                 if (targetUid && targetUid !== currentUserId) {
                     viewUserId = targetUid;
-                    document.getElementById('shared-badge').style.display = 'inline-block';
-                    document.getElementById('share-card').style.display = 'none';
+                    // Check rechten in database
+                    checkAccess(targetUid, user.email);
                 } else {
                     viewUserId = currentUserId;
-                    document.getElementById('shared-badge').style.display = 'none';
-                    document.getElementById('share-card').style.display = 'block';
+                    userRole = 'owner';
+                    initApp();
                 }
 
                 document.getElementById('login-page').style.display = 'none';
@@ -304,17 +306,50 @@
                 document.getElementById('main-content').style.display = 'flex';
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
 
-                initPlanner();
-                if (currentUserId === viewUserId) loadCollaborators();
-                
-                // Laad WIP modules
-                loadNotes();
-                loadGrades();
-
             } else {
                 document.getElementById('login-page').style.display = 'flex';
             }
         });
+
+        function checkAccess(targetUid, email) {
+            db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get()
+            .then(doc => {
+                if (doc.exists) {
+                    userRole = doc.data().role || 'read'; // default read
+                    initApp();
+                } else {
+                    alert("Geen toegang tot dit schema.");
+                    window.location.href = window.location.pathname; // Terug naar eigen schema
+                }
+            }).catch(() => {
+                alert("Fout bij controleren toegang.");
+                window.location.href = window.location.pathname;
+            });
+        }
+
+        function initApp() {
+            // UI aanpassen op basis van rol
+            if (userRole === 'read') {
+                document.getElementById('read-only-badge').style.display = 'inline-block';
+                document.getElementById('share-card').style.display = 'none';
+                document.getElementById('auto-planner-card').style.display = 'none'; // Geen nieuwe planning maken
+            } else if (userRole === 'edit') {
+                document.getElementById('shared-badge').style.display = 'inline-block';
+                document.getElementById('share-card').style.display = 'none';
+            } else {
+                // Owner
+                document.getElementById('share-card').style.display = 'block';
+                loadCollaborators();
+            }
+
+            initPlanner();
+            
+            // Alleen laden als eigenaar, of indien gewenst ook voor docent (hier beperkt tot eigenaar voor eenvoud)
+            if(userRole === 'owner') {
+                loadNotes();
+                loadGrades();
+            }
+        }
 
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert(e.message)); }
         function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
@@ -328,8 +363,11 @@
         /* COLLABORATION LOGIC */
         function addCollaborator() {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
+            const role = document.getElementById('collabRole').value;
             if(!email) return;
+            
             db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({
+                role: role,
                 addedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 alert('Toegang gegeven!');
@@ -342,9 +380,15 @@
                 const list = document.getElementById('collaborators-list');
                 list.innerHTML = '';
                 snap.forEach(doc => {
+                    const d = doc.data();
                     const div = document.createElement('div');
                     div.className = 'collab-item';
-                    div.innerHTML = `<span>${doc.id}</span> <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:2px 8px; font-size:0.7em;">X</button>`;
+                    div.innerHTML = `
+                        <div>
+                            <span>${doc.id}</span>
+                            <span class="role-badge">${d.role === 'edit' ? 'Bewerken' : 'Lezen'}</span>
+                        </div>
+                        <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:2px 8px; font-size:0.7em;">X</button>`;
                     list.appendChild(div);
                 });
             });
@@ -356,7 +400,7 @@
 
         /* PLANNING GENERATOR */
         function generateAutoPlanning() {
-            if (viewUserId !== currentUserId) return alert("Read-only.");
+            if (userRole === 'read') return alert("Alleen lezen.");
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
             const dateVal = document.getElementById('autoDatumInput').value;
@@ -369,7 +413,7 @@
             while(curr <= toetsDate) {
                  const end = new Date(curr); end.setDate(curr.getDate()+6);
                  const id = `${vak}-${curr.getTime()}`;
-                 batch.set(db.collection('users').doc(currentUserId).collection('planner_items').doc(id), {
+                 batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
                      weekStart: firebase.firestore.Timestamp.fromDate(curr),
                      weekEnd: firebase.firestore.Timestamp.fromDate(end),
                      weekNummer: getWeekNumber(curr),
@@ -411,14 +455,14 @@
                     keys.forEach(key => {
                         const items = grouped[key];
                         items.forEach(i => { total++; if(i.isAfgerond) done++; });
-                        renderGroupedRow(tbody, items, viewUserId === currentUserId);
+                        renderGroupedRow(tbody, items, userRole !== 'read'); // Editable check
                     });
                     
                     updateStats(total, done);
 
                 }, err => {
                     console.error(err);
-                    if(err.code === 'permission-denied') alert("Geen toegang! Vraag de eigenaar om je e-mail toe te voegen.");
+                    if(err.code === 'permission-denied') alert("Geen toegang. Controleer of je bent toegevoegd.");
                 });
         }
 
@@ -439,12 +483,12 @@
                 
                 const bijlesClass = item.isBijlesNodig === false ? 'opacity:0.5; text-decoration:line-through;' : '';
                 bijlesHtml += `<div style="${border}; display:flex; gap:5px; ${bijlesClass}">
-                    <label class="switch" style="transform:scale(0.6);"><input type="checkbox" ${item.isBijlesNodig!==false?'checked':''} onchange="updateField('${item.id}', 'isBijlesNodig', this.checked)"><span class="slider"></span></label>
+                    <label class="switch" style="transform:scale(0.6);"><input type="checkbox" ${item.isBijlesNodig!==false?'checked':''} onchange="updateField('${item.id}', 'isBijlesNodig', this.checked)" ${!isEditable ? 'disabled' : ''}><span class="slider"></span></label>
                     <textarea class="editable-area" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? '-' : item.bijlesDoen}</textarea>
                 </div>`;
 
                 statusHtml += `<div style="${border}; display:flex; justify-content:center; height:40px; align-items:center;">
-                    <div class="status-container"><input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)"></div>
+                    <div class="status-container"><input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable ? 'disabled' : ''}></div>
                     ${isEditable ? `<button onclick="deleteItem('${item.id}')" style="margin-left:5px; background:transparent; color:#ccc; padding:0; width:auto;">&times;</button>` : ''}
                 </div>`;
             });
@@ -453,7 +497,7 @@
                 <td class="col-week" style="border-right: 1px solid var(--border-color);">
                     WEEK ${firstItem.weekNummer}<br>
                     <span style="font-size:0.8em; color:var(--text-muted)">t/m zo ${weekEndStr}</span>
-                    <div style="margin-top:5px;"><label style="font-size:0.7em;"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)"> Vakantie</label></div>
+                    <div style="margin-top:5px;"><label style="font-size:0.7em;"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable ? 'disabled' : ''}> Vakantie</label></div>
                 </td>
                 <td class="col-vak">${vakHtml}</td>
                 <td class="col-thuis">${thuisHtml}</td>
@@ -463,9 +507,9 @@
             container.appendChild(row);
         }
 
-        function updateField(id, f, v) { if(viewUserId===currentUserId) db.collection('users').doc(currentUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        function toggleHoliday(ids, val) { if(viewUserId!==currentUserId)return; const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(currentUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); }
-        function deleteItem(docId) { if (confirm("Item verwijderen?")) db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete(); }
+        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
+        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
         /* --- GRADES LOGIC --- */
