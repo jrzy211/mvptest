@@ -158,8 +158,8 @@
             <!-- Rechter Kolom: Tools -->
             <div id="tools-column">
                 
-                <!-- DELEN MET DOCENT (Alleen zichtbaar als je eigenaar bent) -->
-                <div class="card" id="share-card" style="border: 1px solid var(--primary-color);">
+                <!-- DELEN MET DOCENT -->
+                <div class="card" style="border: 1px solid var(--primary-color);">
                     <h3 style="color: var(--primary-color);">🤝 Samenwerken</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted);">Voeg het e-mailadres van je docent of ouder toe. Zij kunnen dan inloggen en jouw schema live bekijken en bewerken.</p>
                     
@@ -175,7 +175,7 @@
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
                     
                     <p style="font-size: 0.85em; color: var(--text-muted);">Jouw Deel-Link (stuur dit naar de docent nadat je ze hebt toegevoegd):</p>
-                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: pointer; background: #f0f8ff; border-color: #b3d7ff;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
                 </div>
 
                 <!-- NIEUWE TAAK -->
@@ -198,6 +198,7 @@
         <!-- ANDERE PAGINAS (Placeholder) -->
         <div id="page-cijfers" class="page-section"><h2>Cijfers</h2><div class="card">WIP</div></div>
         <div id="page-timer" class="page-section"><h2>Timer</h2><div class="card">WIP</div></div>
+        <div id="page-notities" class="page-section"><h2>Notities</h2><div class="card">WIP</div></div>
         <div id="page-instellingen" class="page-section"><h2>Instellingen</h2><div class="card">WIP</div></div>
 
     </main>
@@ -229,15 +230,14 @@
                 const params = new URLSearchParams(window.location.search);
                 const targetUid = params.get('uid');
 
-                // Bepaal of we een ander profiel bekijken
                 if (targetUid && targetUid !== currentUserId) {
+                    // We proberen iemand anders te bekijken.
+                    // Security Rules bepalen of dit mag (email check).
                     viewUserId = targetUid;
                     document.getElementById('shared-badge').style.display = 'inline-block';
-                    document.getElementById('share-card').style.display = 'none'; // Verberg deel-opties als je gast bent
                 } else {
                     viewUserId = currentUserId;
                     document.getElementById('shared-badge').style.display = 'none';
-                    document.getElementById('share-card').style.display = 'block';
                 }
 
                 document.getElementById('login-page').style.display = 'none';
@@ -248,13 +248,10 @@
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
 
                 initPlanner();
-                // Laad collaborators lijst alleen als je eigenaar bent
                 if (currentUserId === viewUserId) loadCollaborators();
 
             } else {
                 document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('app-sidebar').style.display = 'none';
-                document.getElementById('main-content').style.display = 'none';
             }
         });
 
@@ -268,22 +265,21 @@
         }
 
         /* COLLABORATION LOGIC */
-        // Gebruik de 'toegang' collectie zoals in de security rules
         function addCollaborator() {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
             if(!email) return;
-            
-            // Sla op in /users/{userId}/toegang/{email}
-            db.collection('users').doc(currentUserId).collection('toegang').doc(email).set({
+            // Sla op in een subcollectie 'collaborators' onder de user. 
+            // De ID van het document is het emailadres (makkelijk checken in security rules).
+            db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({
                 addedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 alert('Toegang gegeven! Stuur nu de link.');
                 document.getElementById('collabEmail').value = '';
-            }).catch(err => alert("Fout: " + err.message));
+            });
         }
 
         function loadCollaborators() {
-            db.collection('users').doc(currentUserId).collection('toegang').onSnapshot(snap => {
+            db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(snap => {
                 const list = document.getElementById('collaborators-list');
                 list.innerHTML = '';
                 snap.forEach(doc => {
@@ -296,12 +292,12 @@
         }
         
         function removeCollab(email) {
-            if(confirm('Toegang intrekken?')) db.collection('users').doc(currentUserId).collection('toegang').doc(email).delete();
+            if(confirm('Toegang intrekken?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(email).delete();
         }
 
         /* PLANNER LOGIC */
         function initPlanner() {
-            // Laad algemene taken van de 'viewUserId' (eigenaar of gedeeld)
+            // Laad algemene taken
             db.collection('users').doc(viewUserId).collection('algemeen')
                 .orderBy('weekKey', 'asc')
                 .onSnapshot(snapshot => {
@@ -317,10 +313,6 @@
                         if(!weeks[d.weekKey]) weeks[d.weekKey] = [];
                         weeks[d.weekKey].push(d);
                     });
-
-                    if(Object.keys(weeks).length === 0) {
-                        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:#999;'>Nog geen taken. Voeg er eentje toe!</td></tr>";
-                    }
 
                     // Sorteer weken
                     Object.keys(weeks).sort().forEach(weekKey => {
@@ -348,7 +340,7 @@
                             bijlesHtml += `<div style="${border}"><textarea class="editable-area" onblur="updateTask('${t.id}','bijles',this.value)">${t.bijles || ''}</textarea></div>`;
                             
                             statusHtml += `<div style="${border}; display:flex; justify-content:center; height:40px; align-items:center;">
-                                <div class="status-container"><input type="checkbox" ${t.afgerond ? 'checked' : ''} onchange="updateTask('${t.id}','afgerond',this.checked)"></div>
+                                <input type="checkbox" ${t.afgerond ? 'checked' : ''} onchange="updateTask('${t.id}','afgerond',this.checked)">
                                 <button onclick="deleteTask('${t.id}')" style="background:none; border:none; color:#ccc; font-size:16px; margin-left:5px;">&times;</button>
                             </div>`;
                         });
@@ -368,10 +360,7 @@
                     updateStats(snapshot.size, snapshot.docs.filter(d=>d.data().afgerond).length);
                 }, err => {
                     console.error(err);
-                    if(err.code === 'permission-denied') {
-                        alert("Geen toegang! Vraag de eigenaar om je e-mail (" + auth.currentUser.email + ") toe te voegen.");
-                        document.getElementById('loading-indicator').innerText = "Geen toegang tot dit schema.";
-                    }
+                    if(err.code === 'permission-denied') alert("Geen toegang! Vraag de eigenaar om je e-mail toe te voegen.");
                 });
         }
 
@@ -388,9 +377,8 @@
             const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
             const weekKey = `${d.getFullYear()}-${week}`;
 
-            // Schrijf naar de viewUserId (dus als je rechten hebt, schrijf je in het schema van de student)
             db.collection('users').doc(viewUserId).collection('algemeen').add({
-                vak, taak, weekKey, afgerond: false, bijles: '', date: date, isHoliday: false,
+                vak, taak, weekKey, afgerond: false, bijles: '', date: date,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('manualTask').value = '';
