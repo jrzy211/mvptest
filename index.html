@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start - Planner</title>
     
-    <!-- FAVICON -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FF8C00'/></svg>" type="image/svg+xml">
+    <!-- FAVICON: Blauw Bolletje -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300d2ff'/></svg>" type="image/svg+xml">
 
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,17 +20,17 @@
 
     <style>
         :root {
-            --bg-color: #111111;
-            --sidebar-bg: #1a1a1a;
-            --card-bg: #1e1e1e;
+            --bg-color: #0b0c10; /* Zeer donker, bijna zwart */
+            --sidebar-bg: #111216;
+            --card-bg: #1f2833; /* Donkergrijs met blauwe ondertoon */
             --text-color: #ffffff;
-            --text-muted: #a1a1a1;
-            --primary-color: #ff8c00;
-            --primary-hover: #e07b00;
-            --border-color: #333;
-            --table-header-bg: #2a2a2a;
+            --text-muted: #c5c6c7;
+            --primary-color: #00d2ff; /* Fel Cyaan/Lichtblauw */
+            --primary-hover: #00a8cc;
+            --border-color: #2c3e50;
+            --table-header-bg: #0f2027; /* Donkerblauw verloop start */
             --success-color: #2ecc71;
-            --holiday-bg: #2d2b20;
+            --holiday-bg: #2c3e50; /* Donkerblauw/grijs voor vakantie */
         }
 
         body {
@@ -40,7 +40,7 @@
             color: var(--text-color);
             display: flex;
             height: 100vh;
-            overflow: hidden; /* Voorkomt dubbele scrollbars */
+            overflow: hidden; 
         }
 
         /* --- SIDEBAR NAVIGATION (LINKS) --- */
@@ -52,7 +52,7 @@
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
-            flex-shrink: 0; /* Sidebar mag niet krimpen */
+            flex-shrink: 0; 
         }
 
         .sidebar-logo {
@@ -61,6 +61,7 @@
             color: var(--primary-color);
             margin-bottom: 40px;
             padding-left: 10px;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
 
         .nav-item {
@@ -74,8 +75,9 @@
             transition: all 0.2s;
         }
         .nav-item:hover, .nav-item.active {
-            background-color: #2a2a2a;
-            color: white;
+            background-color: rgba(0, 210, 255, 0.1);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
         }
 
         /* --- MAIN CONTENT AREA --- */
@@ -83,18 +85,19 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            overflow-y: auto; /* Scroll alleen in main content */
+            overflow-y: auto; 
             position: relative;
+            background: linear-gradient(135deg, #0b0c10 0%, #151b24 100%);
         }
 
         /* --- HEADER (RECHTSBOVEN) --- */
         header {
-            background-color: rgba(17, 17, 17, 0.9);
+            background-color: rgba(11, 12, 16, 0.8);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             padding: 15px 30px;
             display: flex;
-            justify-content: flex-end; /* Rechts uitlijnen */
+            justify-content: flex-end; 
             align-items: center;
             position: sticky;
             top: 0;
@@ -109,6 +112,7 @@
         .user-name {
             font-weight: 500;
             font-size: 0.9em;
+            color: var(--primary-color);
         }
 
         /* --- LOGIN PAGE --- */
@@ -120,16 +124,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); /* Blauw verloop */
         }
         .login-card {
-            background-color: var(--card-bg);
+            background-color: rgba(31, 40, 51, 0.95);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             text-align: center;
             max-width: 400px;
             width: 100%;
+            border: 1px solid var(--border-color);
         }
 
         /* --- CONTENT WRAPPER --- */
@@ -153,15 +158,21 @@
             border-radius: 16px;
             padding: 25px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        h2, h3 { margin-top: 0; font-weight: 600; letter-spacing: -0.5px; }
+        h2, h3 { 
+            margin-top: 0; 
+            font-weight: 600; 
+            letter-spacing: -0.5px; 
+            color: var(--text-color);
+        }
 
         .input-group { margin-bottom: 15px; }
         
         input, select, textarea {
             width: 100%;
-            background-color: #252525;
+            background-color: #121212;
             border: 1px solid var(--border-color);
             color: white;
             padding: 12px;
@@ -174,27 +185,41 @@
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(0, 210, 255, 0.3);
         }
 
         button {
             width: 100%;
-            background-color: var(--primary-color);
-            color: white;
+            background: linear-gradient(45deg, var(--primary-color), #008cff);
+            color: #000; /* Zwarte tekst op felblauw voor contrast */
             border: none;
             padding: 12px;
-            border-radius: 12px; /* Ronde knoppen */
-            font-weight: 600;
+            border-radius: 12px; 
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: transform 0.1s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9em;
         }
-        button:hover { background-color: var(--primary-hover); transform: scale(1.02); }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+        }
         button.secondary { 
-            background-color: transparent; 
+            background: transparent; 
             border: 1px solid var(--border-color); 
             color: var(--text-muted); 
             border-radius: 8px;
+            text-transform: none;
+            font-weight: 500;
         }
-        button.secondary:hover { background-color: #333; color: white; }
+        button.secondary:hover { 
+            background-color: rgba(255,255,255,0.05); 
+            color: white; 
+            transform: none;
+            box-shadow: none;
+        }
 
         /* --- TABEL --- */
         .studie-tabel {
@@ -204,11 +229,12 @@
             border-radius: 16px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
         }
 
         .studie-tabel th {
-            background-color: var(--table-header-bg);
-            color: var(--text-muted);
+            background: linear-gradient(to bottom, #1a2a3a, #0f2027); /* Gradient header */
+            color: var(--primary-color);
             text-transform: uppercase;
             font-size: 0.75em;
             letter-spacing: 1px;
@@ -219,17 +245,34 @@
 
         .studie-tabel td {
             padding: 15px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             vertical-align: top;
-            background-color: var(--card-bg);
             font-size: 0.95em;
+            color: var(--text-muted);
         }
         
         .studie-tabel tr:last-child td { border-bottom: none; }
 
+        /* Tabel Rijen Gradients */
+        .studie-tabel tbody tr {
+            transition: background-color 0.2s;
+        }
+        /* Even rijen */
+        .studie-tabel tbody tr:nth-child(even) {
+            background: linear-gradient(90deg, rgba(15,32,39,0.4) 0%, rgba(32,58,67,0.1) 100%);
+        }
+        /* Oneven rijen */
+        .studie-tabel tbody tr:nth-child(odd) {
+            background: linear-gradient(90deg, rgba(11,12,16,0.6) 0%, rgba(11,12,16,0.2) 100%);
+        }
+        
+        .studie-tabel tbody tr:hover {
+            background-color: rgba(0, 210, 255, 0.05);
+        }
+
         /* Kolom breedtes */
         .col-week { width: 15%; font-weight: bold; color: var(--primary-color); }
-        .col-vak { width: 10%; font-weight: 600; }
+        .col-vak { width: 10%; font-weight: 600; color: white; }
         .col-thuis { width: 35%; }
         .col-bijles { width: 25%; }
         .col-status { width: 15%; }
@@ -238,16 +281,17 @@
         .editable-area {
             width: 100%;
             min-height: 60px;
-            background: transparent;
-            border: 1px dashed transparent;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid transparent;
             color: var(--text-color);
             resize: vertical;
-            padding: 5px;
+            padding: 8px;
             border-radius: 8px;
+            transition: all 0.2s;
         }
         .editable-area:hover, .editable-area:focus {
-            border-color: #444;
-            background-color: #252525;
+            border-color: var(--primary-color);
+            background-color: rgba(0,0,0,0.4);
         }
         
         /* Bijles Toggle */
@@ -258,15 +302,16 @@
         }
         .bijles-active .editable-area { opacity: 1; }
         .bijles-inactive .editable-area { 
-            opacity: 0.5; 
+            opacity: 0.4; 
             text-decoration: line-through;
             pointer-events: none;
         }
 
         /* Vakantie Modus */
         tr.is-holiday td {
-            background-color: var(--holiday-bg);
-            color: #e6b800;
+            background: linear-gradient(90deg, rgba(44, 62, 80, 0.8) 0%, rgba(0,0,0,0.6) 100%) !important;
+            color: #ffd700; /* Goudkleur voor vakantie */
+            border-left: 4px solid #ffd700;
         }
         
         /* Switch Toggle */
@@ -305,7 +350,7 @@
             body { flex-direction: column; height: auto; }
             #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border-color); }
             #planner-content-wrapper { flex-direction: column; }
-            #tools-column { max-width: 100%; order: -1; } /* Tools boven planner op mobiel */
+            #tools-column { max-width: 100%; order: -1; } 
         }
     </style>
 </head>
@@ -314,12 +359,12 @@
     <!-- LOGIN PAGINA (OVERLAY) -->
     <div id="login-page" style="display: none;">
         <div class="login-card">
-            <h1 style="color: white;">Study-Start</h1>
-            <p style="color: #eee; margin-bottom: 30px;">Log in om je studieplanner te openen.</p>
-            <button id="google-login-button" onclick="signInWithGoogle()" style="background-color: white; color: black; border-radius: 12px;">
-                <span style="margin-right: 10px; font-weight: bold;">G</span> Inloggen met Google
+            <h1 style="color: var(--primary-color);">Study-Start</h1>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Log in om je studieplanner te openen.</p>
+            <button id="google-login-button" onclick="signInWithGoogle()" style="background-color: white; color: black; border-radius: 12px; text-transform: none; font-weight: 500;">
+                <span style="margin-right: 10px; font-weight: bold; color: #4285F4;">G</span> Inloggen met Google
             </button>
-            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.8em; color: rgba(255,255,255,0.7);">Wachten op input...</p>
+            <p id="login-status-splash" style="margin-top: 20px; font-size: 0.8em; color: var(--text-muted);">Wachten op input...</p>
         </div>
     </div>
 
@@ -337,7 +382,7 @@
         <header>
             <div class="user-info">
                 <span id="user-display-name" class="user-name">Gast</span>
-                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 16px; font-size: 0.8em;">Uitloggen</button>
+                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 16px; font-size: 0.8em; margin-left: 15px;">Uitloggen</button>
             </div>
         </header>
 
@@ -346,7 +391,7 @@
             <!-- LINKER KOLOM: TABEL (PLANNER) -->
             <div id="planner-column">
                 <div style="margin-bottom: 20px;">
-                    <h2 style="margin:0;">Jouw Planning</h2>
+                    <h2 style="margin:0; color: white;">Jouw Planning</h2>
                 </div>
 
                 <div id="loading-indicator" style="padding: 20px; text-align: center; color: var(--text-muted);">Planning laden...</div>
@@ -370,7 +415,7 @@
             <!-- RECHTER KOLOM: TOOLS & GENERATOR -->
             <div id="tools-column">
                 <div class="card">
-                    <h3>⚡ Automatisch Inplannen</h3>
+                    <h3 style="color: var(--primary-color);">⚡ Automatisch Inplannen</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch een schema tot aan je toets.</p>
                     
                     <div class="input-group">
@@ -396,15 +441,16 @@
                     </div>
 
                     <div class="input-group">
-                        <label style="font-size: 0.8em; color: var(--text-muted);">Toetsdatum:</label>
+                        <label style="font-size: 0.8em; color: var(--text-muted); display:block; margin-bottom:5px;">Toetsdatum:</label>
                         <input type="date" id="autoDatumInput">
                     </div>
 
                     <button onclick="generateAutoPlanning()">Genereer Planning</button>
+                    <p id="feedback-message" style="font-size: 0.8em; margin-top: 10px; text-align: center; color: var(--success-color);"></p>
                 </div>
 
                 <div class="card">
-                    <h3>Deel je Schema</h3>
+                    <h3 style="color: var(--primary-color);">Deel je Schema</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted);">Deel deze link met je docent:</p>
                     <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: pointer;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
                 </div>
@@ -536,8 +582,9 @@
             }
 
             batch.commit().then(() => {
-                alert(`Planning gegenereerd! ${weekCount} weken toegevoegd.`);
+                document.getElementById('feedback-message').innerText = `Planning gegenereerd! ${weekCount} weken toegevoegd.`;
                 document.getElementById('autoVakInput').value = '';
+                setTimeout(() => document.getElementById('feedback-message').innerText = '', 3000);
             }).catch(err => console.error(err));
         }
 
@@ -551,7 +598,7 @@
                   tbody.innerHTML = '';
 
                   if (snapshot.empty) {
-                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: #555;">Nog geen planning. Gebruik de generator rechts.</td></tr>';
+                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--text-muted);">Nog geen planning. Gebruik de generator rechts.</td></tr>';
                       return;
                   }
 
@@ -608,7 +655,7 @@
                         <input type="checkbox" ${data.isAfgerond ? 'checked' : ''} 
                             style="width:20px; height:20px; margin-right:10px; accent-color:var(--success-color);"
                             onchange="updateField('${data.id}', 'isAfgerond', this.checked)">
-                        <span style="color: ${data.isAfgerond ? 'var(--success-color)' : 'inherit'}; font-weight:500;">
+                        <span style="color: ${data.isAfgerond ? 'var(--success-color)' : 'var(--text-muted)'}; font-weight:500;">
                             ${data.isAfgerond ? 'Afgerond' : 'Open'}
                         </span>
                     </label>
