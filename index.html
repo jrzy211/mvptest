@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start - Dark Mode Planner</title>
+    <title>Study-Start - Planner</title>
     
     <!-- FAVICON -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FF8C00'/></svg>" type="image/svg+xml">
 
-    <!-- Google Fonts - Inter (Modern) -->
+    <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +21,7 @@
     <style>
         :root {
             --bg-color: #111111;
+            --sidebar-bg: #1a1a1a;
             --card-bg: #1e1e1e;
             --text-color: #ffffff;
             --text-muted: #a1a1a1;
@@ -29,7 +30,7 @@
             --border-color: #333;
             --table-header-bg: #2a2a2a;
             --success-color: #2ecc71;
-            --holiday-bg: #2d2b20; /* Donkergeel/bruin tintje */
+            --holiday-bg: #2d2b20;
         }
 
         body {
@@ -38,33 +39,88 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden; /* Voorkomt dubbele scrollbars */
         }
 
-        /* --- LAYOUT --- */
-        #planner-content-wrapper {
+        /* --- SIDEBAR NAVIGATION (LINKS) --- */
+        #app-sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             display: flex;
-            gap: 25px;
-            padding: 25px;
-            flex-grow: 1;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
+            flex-direction: column;
+            padding: 20px;
             box-sizing: border-box;
+            flex-shrink: 0; /* Sidebar mag niet krimpen */
         }
 
-        #main-planner-area { flex: 3; min-width: 60%; }
-        #sidebar-area { flex: 1; min-width: 320px; max-width: 400px; }
+        .sidebar-logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 40px;
+            padding-left: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Scroll alleen in main content */
+            position: relative;
+        }
+
+        /* --- HEADER (RECHTSBOVEN) --- */
+        header {
+            background-color: rgba(17, 17, 17, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end; /* Rechts uitlijnen */
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-name {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
 
         /* --- LOGIN PAGE --- */
         #login-page {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            flex-grow: 1;
-            background-color: var(--primary-color); /* Oranje achtergrond zoals gevraagd */
+            background-color: var(--primary-color);
         }
         .login-card {
             background-color: var(--card-bg);
@@ -76,20 +132,19 @@
             width: 100%;
         }
 
-        /* --- HEADER --- */
-        header {
-            background-color: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 30px;
+        /* --- CONTENT WRAPPER --- */
+        #planner-content-wrapper {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            gap: 25px;
+            padding: 25px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
-        header h1 { margin: 0; font-size: 1.2em; font-weight: 600; color: var(--primary-color); }
+
+        #planner-column { flex: 3; min-width: 60%; }
+        #tools-column { flex: 1; min-width: 300px; max-width: 380px; }
 
         /* --- CARDS & FORM --- */
         .card {
@@ -110,7 +165,7 @@
             border: 1px solid var(--border-color);
             color: white;
             padding: 12px;
-            border-radius: 12px; /* Ronde randjes */
+            border-radius: 12px;
             font-family: inherit;
             font-size: 0.95em;
             box-sizing: border-box;
@@ -127,13 +182,18 @@
             color: white;
             border: none;
             padding: 12px;
-            border-radius: 50px; /* Ronde knoppen */
+            border-radius: 12px; /* Ronde knoppen */
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.1s, background-color 0.2s;
         }
         button:hover { background-color: var(--primary-hover); transform: scale(1.02); }
-        button.secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
+        button.secondary { 
+            background-color: transparent; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-muted); 
+            border-radius: 8px;
+        }
         button.secondary:hover { background-color: #333; color: white; }
 
         /* --- TABEL --- */
@@ -189,6 +249,19 @@
             border-color: #444;
             background-color: #252525;
         }
+        
+        /* Bijles Toggle */
+        .bijles-toggle-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .bijles-active .editable-area { opacity: 1; }
+        .bijles-inactive .editable-area { 
+            opacity: 0.5; 
+            text-decoration: line-through;
+            pointer-events: none;
+        }
 
         /* Vakantie Modus */
         tr.is-holiday td {
@@ -196,13 +269,13 @@
             color: #e6b800;
         }
         
-        /* Switch Toggle voor Vakantie */
+        /* Switch Toggle */
         .switch {
             position: relative;
             display: inline-block;
             width: 34px;
             height: 20px;
-            vertical-align: middle;
+            flex-shrink: 0;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -229,41 +302,51 @@
 
         /* Responsive */
         @media (max-width: 1000px) {
+            body { flex-direction: column; height: auto; }
+            #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border-color); }
             #planner-content-wrapper { flex-direction: column; }
-            #sidebar-area { max-width: 100%; }
+            #tools-column { max-width: 100%; order: -1; } /* Tools boven planner op mobiel */
         }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN PAGINA -->
+    <!-- LOGIN PAGINA (OVERLAY) -->
     <div id="login-page" style="display: none;">
         <div class="login-card">
             <h1 style="color: white;">Study-Start</h1>
             <p style="color: #eee; margin-bottom: 30px;">Log in om je studieplanner te openen.</p>
-            <button id="google-login-button" onclick="signInWithGoogle()" style="background-color: white; color: black;">
-                <span style="margin-right: 10px;">G</span> Inloggen met Google
+            <button id="google-login-button" onclick="signInWithGoogle()" style="background-color: white; color: black; border-radius: 12px;">
+                <span style="margin-right: 10px; font-weight: bold;">G</span> Inloggen met Google
             </button>
             <p id="login-status-splash" style="margin-top: 20px; font-size: 0.8em; color: rgba(255,255,255,0.7);">Wachten op input...</p>
         </div>
     </div>
 
-    <!-- PLANNER PAGINA -->
-    <div id="planner-page" style="display: none;">
+    <!-- APP LAYOUT -->
+    <nav id="app-sidebar" style="display: none;">
+        <div class="sidebar-logo">Study-Start</div>
+        <div class="nav-item active">1. Planning</div>
+        <div class="nav-item">2. Cijfers (WIP)</div>
+        <div class="nav-item">3. Notities (WIP)</div>
+        <div class="nav-item">4. Focus Timer (WIP)</div>
+        <div class="nav-item">5. Instellingen (WIP)</div>
+    </nav>
+
+    <main id="main-content" style="display: none;">
         <header>
-            <h1>Study-Start</h1>
-            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 20px;">Uitloggen</button>
+            <div class="user-info">
+                <span id="user-display-name" class="user-name">Gast</span>
+                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 16px; font-size: 0.8em;">Uitloggen</button>
+            </div>
         </header>
 
         <div id="planner-content-wrapper">
             
-            <!-- LINKER KOLOM: TABEL -->
-            <div id="main-planner-area">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <!-- LINKER KOLOM: TABEL (PLANNER) -->
+            <div id="planner-column">
+                <div style="margin-bottom: 20px;">
                     <h2 style="margin:0;">Jouw Planning</h2>
-                    <button onclick="exportToICS()" style="width: auto; font-size: 0.9em; padding: 10px 20px;">
-                        📅 Download voor Agenda
-                    </button>
                 </div>
 
                 <div id="loading-indicator" style="padding: 20px; text-align: center; color: var(--text-muted);">Planning laden...</div>
@@ -284,8 +367,8 @@
                 </table>
             </div>
 
-            <!-- RECHTER KOLOM: TOOLS -->
-            <div id="sidebar-area">
+            <!-- RECHTER KOLOM: TOOLS & GENERATOR -->
+            <div id="tools-column">
                 <div class="card">
                     <h3>⚡ Automatisch Inplannen</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch een schema tot aan je toets.</p>
@@ -318,18 +401,17 @@
                     </div>
 
                     <button onclick="generateAutoPlanning()">Genereer Planning</button>
-                    <p id="feedback-message" style="font-size: 0.8em; margin-top: 10px; text-align: center;"></p>
                 </div>
 
                 <div class="card">
                     <h3>Deel je Schema</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted);">Deel deze link met je docent:</p>
-                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: copy;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary-color); cursor: pointer;" onclick="this.select(); document.execCommand('copy'); alert('Link gekopieerd!');">
                 </div>
             </div>
 
         </div>
-    </div>
+    </main>
 
     <script>
         /* --- CONFIG --- */
@@ -349,10 +431,13 @@
 
         let currentUserId = null;
         let activeUserId = null;
-        let planningDataCache = []; // Lokale cache voor export
 
         /* --- AUTHENTICATION --- */
         auth.onAuthStateChanged(user => {
+            const loginPage = document.getElementById('login-page');
+            const appSidebar = document.getElementById('app-sidebar');
+            const mainContent = document.getElementById('main-content');
+
             if (user) {
                 currentUserId = user.uid;
                 
@@ -361,16 +446,20 @@
                 const sharedId = urlParams.get('share');
                 activeUserId = sharedId || currentUserId;
 
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('planner-page').style.display = 'flex';
+                // UI Update
+                document.getElementById('user-display-name').innerText = user.displayName || user.email;
+                loginPage.style.display = 'none';
+                appSidebar.style.display = 'flex';
+                mainContent.style.display = 'flex';
                 
                 // Zet deel link
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?share=${currentUserId}`;
 
                 loadPlanning(activeUserId);
             } else {
-                document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('planner-page').style.display = 'none';
+                loginPage.style.display = 'flex';
+                appSidebar.style.display = 'none';
+                mainContent.style.display = 'none';
             }
         });
 
@@ -436,6 +525,7 @@
                     vak: vak,
                     thuisDoen: huiswerkText,
                     bijlesDoen: bijlesText,
+                    isBijlesNodig: true, // Default aan
                     isAfgerond: false,
                     isVakantie: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -459,18 +549,17 @@
                   document.getElementById('loading-indicator').style.display = 'none';
                   const tbody = document.getElementById('planner-table-body');
                   tbody.innerHTML = '';
-                  planningDataCache = [];
+
+                  if (snapshot.empty) {
+                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: #555;">Nog geen planning. Gebruik de generator rechts.</td></tr>';
+                      return;
+                  }
 
                   snapshot.forEach(doc => {
                       const data = doc.data();
                       data.id = doc.id;
-                      planningDataCache.push(data);
                       renderRow(tbody, data, userId === currentUserId);
                   });
-
-                  if (planningDataCache.length === 0) {
-                      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color: #555;">Nog geen planning. Gebruik de generator rechts.</td></tr>';
-                  }
               });
         }
 
@@ -493,7 +582,7 @@
                                 onchange="updateField('${data.id}', 'isVakantie', this.checked)">
                             <span class="slider"></span>
                         </label>
-                        <span style="font-size:0.7em; vertical-align:middle; margin-left:5px;">Vakantie</span>
+                        <span style="font-size:0.7em; vertical-align:middle; margin-left:5px; color:var(--text-muted);">Vakantie</span>
                     </div>
                 </td>
                 <td class="col-vak">${data.vak}</td>
@@ -503,21 +592,27 @@
                         ${!isEditable || data.isVakantie ? 'disabled' : ''}>${data.isVakantie ? '🎉 GENIETEN!' : data.thuisDoen}</textarea>
                 </td>
                 <td class="col-bijles">
-                    <textarea class="editable-area" 
-                        onblur="updateField('${data.id}', 'bijlesDoen', this.value)"
-                        ${!isEditable || data.isVakantie ? 'disabled' : ''}>${data.isVakantie ? '-' : data.bijlesDoen}</textarea>
+                    <div class="bijles-toggle-wrapper ${data.isBijlesNodig ? 'bijles-active' : 'bijles-inactive'}">
+                         <label class="switch" style="transform:scale(0.7);" title="Bijles nodig?">
+                            <input type="checkbox" ${data.isBijlesNodig ? 'checked' : ''} 
+                                onchange="updateField('${data.id}', 'isBijlesNodig', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <textarea class="editable-area" 
+                            onblur="updateField('${data.id}', 'bijlesDoen', this.value)"
+                            ${!isEditable || data.isVakantie ? 'disabled' : ''}>${data.isVakantie ? '-' : data.bijlesDoen}</textarea>
+                    </div>
                 </td>
                 <td class="col-status">
-                    <label style="display:flex; align-items:center; cursor:pointer;">
+                    <label style="display:flex; align-items:center; cursor:pointer; margin-bottom:8px;">
                         <input type="checkbox" ${data.isAfgerond ? 'checked' : ''} 
                             style="width:20px; height:20px; margin-right:10px; accent-color:var(--success-color);"
                             onchange="updateField('${data.id}', 'isAfgerond', this.checked)">
-                        <span style="color: ${data.isAfgerond ? 'var(--success-color)' : 'inherit'}">
+                        <span style="color: ${data.isAfgerond ? 'var(--success-color)' : 'inherit'}; font-weight:500;">
                             ${data.isAfgerond ? 'Afgerond' : 'Open'}
                         </span>
                     </label>
-                    <br>
-                    ${isEditable ? `<button onclick="deleteItem('${data.id}')" style="padding:5px 10px; font-size:0.7em; background:#333; margin-top:10px; width:auto;">Verwijder</button>` : ''}
+                    ${isEditable ? `<button onclick="deleteItem('${data.id}')" class="secondary" style="width:auto; font-size:0.75em; padding:5px 10px; border-radius:6px;">Verwijder</button>` : ''}
                 </td>
             `;
             container.appendChild(row);
@@ -528,6 +623,8 @@
             if (activeUserId !== currentUserId) return; // Read-only for guests
             db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).update({
                 [field]: value
+            }).then(() => {
+                // Als bijles toggle verandert, herrender de rij (simpelste methode is wachten op snapshot)
             });
         }
 
@@ -535,39 +632,6 @@
             if (confirm("Rij verwijderen?")) {
                 db.collection('users').doc(currentUserId).collection('planner_items').doc(docId).delete();
             }
-        }
-
-        // 4. EXPORT TO ICS (Bulk Export)
-        function exportToICS() {
-            if (planningDataCache.length === 0) return alert("Geen items om te exporteren.");
-
-            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStart//NL\n";
-
-            planningDataCache.forEach(item => {
-                if (item.isVakantie || item.isAfgerond) return; // Skip vakantie of afgeronde items
-
-                const startDate = item.weekStart.toDate().toISOString().replace(/-|:|\.\d+/g, "").substring(0, 15) + "Z";
-                // Zet tijd op 09:00 voor agenda
-                const eventStart = startDate.substring(0, 9) + "090000Z"; 
-                const eventEnd = startDate.substring(0, 9) + "100000Z"; 
-
-                icsContent += "BEGIN:VEVENT\n";
-                icsContent += `SUMMARY:Studie ${item.vak}\n`;
-                icsContent += `DESCRIPTION:${item.thuisDoen} / Bijles: ${item.bijlesDoen}\n`;
-                icsContent += `DTSTART:${eventStart}\n`;
-                icsContent += `DTEND:${eventEnd}\n`;
-                icsContent += "END:VEVENT\n";
-            });
-
-            icsContent += "END:VCALENDAR";
-
-            const blob = new Blob([icsContent], { type: 'text/calendar' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'studieplanning.ics';
-            a.click();
-            window.URL.revokeObjectURL(url);
         }
 
         // Helper
