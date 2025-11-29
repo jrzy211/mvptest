@@ -5,22 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start Pro</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23007aff'/></svg>" type="image/svg+xml">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FAVICON: Zorg dat 'mini lgo.png' geüpload is in je GitHub repo -->
+    <link rel="icon" href="mini lgo.png" type="image/png">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Firebase SDK's -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-    <!-- Google Gemini SDK (Via Import Map voor betrouwbaarheid) -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
 
     <style>
         :root {
@@ -36,24 +32,65 @@
             --table-header-bg: #f8f9fa;
             --success-color: #34c759;
             --holiday-bg: #fff9e6; 
-            --chat-user-bg: #007aff;
-            --chat-bot-bg: #f1f3f5;
+            --sidebar-width: 260px;
         }
 
         body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; transition: all 0.3s; }
 
-        /* SIDEBAR */
-        #app-sidebar { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; flex-shrink: 0; }
+        /* SIDEBAR (Inklapbaar) */
+        #app-sidebar { 
+            width: var(--sidebar-width); 
+            background-color: var(--sidebar-bg); 
+            border-right: 1px solid var(--border-color); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 25px; 
+            flex-shrink: 0; 
+            transition: margin-left 0.3s ease;
+            margin-left: -260px; /* Standaard ingeklapt */
+        }
+        
+        #app-sidebar.open {
+            margin-left: 0; /* Uitgeklapt */
+        }
+
         .sidebar-logo { font-size: 1.4em; font-weight: 800; color: var(--primary-color); margin-bottom: 40px; }
         .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
         .nav-item:hover, .nav-item.active { background-color: rgba(0, 122, 255, 0.1); color: var(--primary-color); }
 
         /* CONTENT */
         #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        header { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; transition: top 0.3s; }
+        
+        header { 
+            background-color: rgba(255,255,255,0.9); 
+            backdrop-filter: blur(10px); 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; /* Ruimte tussen toggle en user info */
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            background: transparent;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-toggle:hover { background-color: #eee; }
         
         /* LAYOUTS */
-        .page-section { display: none; padding: 30px; max-width: 1600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .page-section { display: none; padding: 30px; max-width: 1800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .page-section.active { display: flex; gap: 30px; flex-direction: column; }
         #page-planning.active { flex-direction: row; }
         #planner-column { flex: 1; min-width: 0; } 
@@ -76,7 +113,7 @@
         #login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; background-color: var(--bg-color); }
         .login-card { background: white; padding: 50px; border-radius: 24px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
 
-        /* TABLE */
+        /* TABLE FIXES */
         .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; }
         .studie-tabel { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
         .studie-tabel th { background-color: var(--table-header-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75em; padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -103,19 +140,14 @@
         /* TIMER */
         #timer-display { font-size: 4em; font-weight: 700; color: var(--primary-color); text-align: center; margin: 20px 0; }
 
-        /* CHATBOT */
-        #chat-container { display: flex; flex-direction: column; height: 600px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;}
-        #chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-color: #fcfcfc; }
-        .message { max-width: 75%; padding: 12px 16px; border-radius: 12px; font-size: 0.95em; line-height: 1.5; position: relative; }
-        .message.user { align-self: flex-end; background-color: var(--chat-user-bg); color: white; border-bottom-right-radius: 2px; }
-        .message.bot { align-self: flex-start; background-color: var(--chat-bot-bg); color: #333; border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 15px; background: #fff; border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; }
-        .chat-input-area input { margin-bottom: 0; border-radius: 20px; }
-        .chat-input-area button { width: auto; border-radius: 20px; padding: 10px 20px; }
-
         @media (max-width: 1100px) {
             body { flex-direction: column; height: auto; overflow-y: auto;}
-            #app-sidebar { width: 100%; flex-direction: row; overflow-x: auto; height: auto; }
+            #app-sidebar { 
+                position: fixed; 
+                top: 0; left: 0; height: 100%; z-index: 1000; 
+                margin-left: -260px; /* Hidden by default mobile */
+            }
+            #app-sidebar.open { margin-left: 0; }
             .page-section.active { flex-direction: column; }
             #tools-column { width: 100%; order: -1; }
         }
@@ -135,10 +167,9 @@
     </div>
 
     <!-- APP -->
-    <nav id="app-sidebar" style="display: none;">
+    <nav id="app-sidebar">
         <div class="sidebar-logo">Study-Start</div>
         <div class="nav-item active" onclick="navigate('planning')">📅 Planning</div>
-        <div class="nav-item" onclick="navigate('chatbot')">🤖 AI Tutor</div>
         <div class="nav-item" onclick="navigate('cijfers')">📊 Cijfers</div>
         <div class="nav-item" onclick="navigate('notities')">📝 Notities</div>
         <div class="nav-item" onclick="navigate('timer')">⏱️ Timer</div>
@@ -147,11 +178,17 @@
 
     <main id="main-content" style="display: none;">
         <header>
-            <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #ffeeba;">
-                👁️ Je kijkt mee met iemand anders
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+                <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; border: 1px solid #ffeeba;">
+                    👁️ Je kijkt mee
+                </div>
             </div>
-            <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
-            <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
+            
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-display-name" style="font-weight: 600;">Gast</span>
+                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
+            </div>
         </header>
 
         <!-- PAGE 1: PLANNING -->
@@ -207,25 +244,6 @@
             </div>
         </div>
 
-        <!-- PAGE 2: AI CHATBOT -->
-        <div id="page-chatbot" class="page-section">
-            <div style="max-width: 800px; margin: 0 auto; width: 100%;">
-                <h2>🤖 AI Tutor (Powered by Gemini)</h2>
-                <div id="chat-container">
-                    <div id="chat-messages">
-                        <div class="message bot">
-                            Hallo! Ik ben je AI Tutor. Stel je vraag!
-                            <br><small>(Zorg dat je API Key is ingesteld bij Instellingen)</small>
-                        </div>
-                    </div>
-                    <div class="chat-input-area">
-                        <input type="text" id="chatInput" placeholder="Typ je vraag..." onkeypress="if(event.key==='Enter') sendMessage()">
-                        <button onclick="sendMessage()">Verstuur</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- PAGE 3: CIJFERS -->
         <div id="page-cijfers" class="page-section">
             <div style="flex: 1;">
@@ -275,20 +293,16 @@
         <div id="page-instellingen" class="page-section">
             <h2>Instellingen</h2>
             <div class="card" style="max-width: 600px;">
-                <h3>Google Gemini API Key</h3>
-                <p style="font-size: 0.9em; color: var(--text-muted);">
-                    Plak hier je <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio Key</a>.
-                </p>
-                <input type="password" id="apiKeyInput" placeholder="AIza...">
-                <button onclick="saveApiKey()" style="width: auto;">Sleutel Opslaan</button>
+                <h3>Account</h3>
+                <p style="font-size: 0.9em; color: var(--text-muted);">Naam en instellingen.</p>
+                <input type="text" id="settings-name" placeholder="Jouw naam">
+                <button onclick="saveSettings()" style="width: auto;">Opslaan</button>
             </div>
         </div>
 
     </main>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
+    <script>
         /* CONFIG */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
@@ -328,17 +342,20 @@
                 }
 
                 document.getElementById('login-page').style.display = 'none';
-                document.getElementById('app-sidebar').style.display = 'flex';
                 document.getElementById('main-content').style.display = 'flex';
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
-
-                const savedKey = localStorage.getItem('gemini_key');
-                if(savedKey) document.getElementById('apiKeyInput').value = savedKey;
+                
+                // Init Sidebar State (Closed by default)
+                // Sidebar is hidden via CSS margin by default
 
             } else {
                 document.getElementById('login-page').style.display = 'flex';
             }
         });
+        
+        function toggleSidebar() {
+            document.getElementById('app-sidebar').classList.toggle('open');
+        }
 
         function checkAccess(targetUid, email) {
             db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get()
@@ -363,80 +380,34 @@
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
         }
 
-        window.signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-        window.signOutUser = () => auth.signOut().then(() => window.location.href = window.location.pathname);
-        window.navigate = (id) => {
+        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
+        function navigate(id) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
-        };
-
-        /* GEMINI CHATBOT (SDK FIX) */
-        window.sendMessage = async () => {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if(!msg) return;
             
-            addMessage(msg, 'user');
-            input.value = '';
-            const botMsgDiv = addMessage('Typing...', 'bot');
-            
-            let apiKey = localStorage.getItem('gemini_key');
-            if (!apiKey) {
-                botMsgDiv.innerHTML = "Geen Gemini Key. Stel in bij 'Instellingen'.";
-                return;
-            }
-            apiKey = apiKey.trim();
-
-            try {
-                const genAI = new GoogleGenerativeAI(apiKey);
-                // FIX: Gebruik 'gemini-1.5-flash' (meest stabiele free tier model)
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                
-                const prompt = `Je bent een bijlesdocent. Hier is de planning van de student: ${globalContext}. De student vraagt: ${msg}`;
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text();
-                
-                botMsgDiv.innerHTML = text.replace(/\n/g, "<br>");
-            } catch (error) {
-                console.error("Gemini API Error:", error);
-                botMsgDiv.innerHTML = "Fout: " + error.message;
-            }
-        };
-
-        function addMessage(text, type) {
-            const history = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = `message ${type}`;
-            div.innerHTML = text;
-            history.appendChild(div);
-            history.scrollTop = history.scrollHeight;
-            return div;
+            // Op mobiel: sidebar sluiten na klik
+            if(window.innerWidth <= 1000) document.getElementById('app-sidebar').classList.remove('open');
         }
-        
-        window.saveApiKey = () => {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if(key) { localStorage.setItem('gemini_key', key); alert("Key opgeslagen!"); }
-        };
 
         /* COLLAB */
-        window.addCollaborator = () => {
+        function addCollaborator() {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
             if(!email) return;
             db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({added: new Date()}).then(() => { alert('Toegang!'); document.getElementById('collabEmail').value = ''; });
-        };
+        }
         function loadCollaborators() {
             db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(snap => {
                 const list = document.getElementById('collaborators-list'); list.innerHTML='';
                 snap.forEach(doc => list.innerHTML += `<div class="collab-item"><span>${doc.id}</span> <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:0 5px; font-size:0.8em;">X</button></div>`);
             });
         }
-        window.removeCollab = (e) => { if(confirm('Zeker?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); };
+        function removeCollab(e) { if(confirm('Zeker?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
 
         /* PLANNER */
-        window.generateAutoPlanning = () => {
+        function generateAutoPlanning() {
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
             const dateVal = document.getElementById('autoDatumInput').value;
@@ -462,7 +433,7 @@
                  curr.setDate(curr.getDate()+7);
             }
             batch.commit().then(() => alert("Gepland!"));
-        };
+        }
 
         function initPlanner() {
             db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
@@ -470,7 +441,7 @@
                 const tbody = document.getElementById('planner-table-body');
                 tbody.innerHTML = '';
                 const grouped = {};
-                globalContext = ""; // Reset context voor AI
+                globalContext = ""; 
 
                 snapshot.forEach(doc => {
                     const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
@@ -509,30 +480,31 @@
             container.appendChild(row);
         }
 
-        window.updateField = (id, f, v) => { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); };
-        window.toggleHoliday = (ids, val) => { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } };
-        window.deleteItem = (docId) => { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); };
+        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
+        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
         /* EXPORT */
-        window.exportToICS = () => {
+        function exportToICS() {
              if(!globalContext) return alert("Geen planning om te exporteren.");
              let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStart//NL\n";
-             // Let op: dit vereist dat we de items cachen, voor nu een simpele alert
              alert("Export functie werkt het beste als je de pagina even ververst zodat alle data geladen is. (Functionaliteit is in deze versie vereenvoudigd)");
-        };
+        }
 
         /* GRADES & NOTES */
-        window.addGrade = () => { const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value), w=parseFloat(document.getElementById('gradeWeight').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); };
+        function addGrade() { const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value), w=parseFloat(document.getElementById('gradeWeight').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); }
         function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('grades-list'); l.innerHTML = ''; snap.forEach(d => l.innerHTML += `<div>${d.data().subject}: ${d.data().grade}</div>`); }); }
-        window.addNote = () => { const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; if(s) db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); };
+        function addNote() { const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; if(s) db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); }
         function loadNotes() { db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('notes-list-container'); l.innerHTML = ''; snap.forEach(d => l.innerHTML += `<div class="note-card"><span class="note-subject">${d.data().subject}</span><p>${d.data().content}</p></div>`); }); }
 
         /* TIMER */
         function updateTimerDisplay() { const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText = `${m}:${s}`; }
-        window.startTimer = () => { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); };
-        window.stopTimer = () => { clearInterval(timerInterval); timerInterval = null; };
-        window.resetTimer = () => { window.stopTimer(); const val=document.getElementById('timerInput').value; timeLeft=(val?val:25)*60; updateTimerDisplay(); };
+        function startTimer() { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); }
+        function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { stopTimer(); const val=document.getElementById('timerInput').value; timeLeft=(val?val:25)*60; updateTimerDisplay(); }
+        
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>alert("Opgeslagen")); }
     </script>
 </body>
 </html>
