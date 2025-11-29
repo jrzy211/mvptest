@@ -13,6 +13,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+    <!-- Google Gemini SDK (Import Map voor module support) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+
     <style>
         :root {
             --off-white: #fafafa; 
@@ -80,7 +89,7 @@
         .col-bijles { width: 25%; }
         .col-status { width: 60px; text-align: center; padding-left: 5px; padding-right: 5px;}
 
-        .editable-area { width: 100%; min-height: 40px; border: 1px solid transparent; padding: 5px; border-radius: 6px; resize: none; overflow: hidden; font-family: inherit; transition: 0.2s; }
+        .editable-area { width: 100%; min-height: 40px; border: 1px solid transparent; padding: 5px; border-radius: 6px; resize: none; overflow: hidden; }
         .editable-area:hover { background-color: #f9f9f9; }
         .editable-area:focus { border-color: var(--primary-color); background: white; box-shadow: 0 0 0 2px rgba(0,122,255,0.1); }
 
@@ -278,7 +287,9 @@
 
     </main>
 
-    <script>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
         /* CONFIG */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
@@ -353,17 +364,17 @@
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
         }
 
-        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
-        function navigate(id) {
+        window.signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        window.signOutUser = () => auth.signOut().then(() => window.location.href = window.location.pathname);
+        window.navigate = (id) => {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
-        }
+        };
 
-        /* GEMINI CHATBOT (ROBUST FETCH) */
-        async function sendMessage() {
+        /* GEMINI CHATBOT (SDK) */
+        window.sendMessage = async () => {
             const input = document.getElementById('chatInput');
             const msg = input.value.trim();
             if(!msg) return;
@@ -380,28 +391,22 @@
             apiKey = apiKey.trim();
 
             try {
-                // Direct REST API call to Gemini v1
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Je bent een bijlesdocent. Context: ${globalContext}. Vraag: ${msg}` }] }]
-                    })
-                });
+                const genAI = new GoogleGenerativeAI(apiKey);
+                // FIX: Gebruik 'gemini-pro' (werkt met free tier)
+                const model = genAI.getGenerativeModel({ model: "gemini-pro" });
                 
-                if (!response.ok) {
-                     const err = await response.json();
-                     throw new Error(err.error?.message || response.statusText);
-                }
-
-                const data = await response.json();
-                const answer = data.candidates[0].content.parts[0].text;
-                botMsgDiv.innerHTML = answer.replace(/\n/g, "<br>");
+                const prompt = `Je bent een bijlesdocent. Hier is de planning van de student: ${globalContext}. De student vraagt: ${msg}`;
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+                
+                botMsgDiv.innerHTML = text.replace(/\n/g, "<br>");
             } catch (error) {
-                console.error("Gemini API Error:", error);
+                // Fallback logging
+                console.error("Gemini Error:", error);
                 botMsgDiv.innerHTML = "Fout: " + error.message;
             }
-        }
+        };
 
         function addMessage(text, type) {
             const history = document.getElementById('chat-messages');
@@ -413,27 +418,27 @@
             return div;
         }
         
-        function saveApiKey() {
+        window.saveApiKey = () => {
             const key = document.getElementById('apiKeyInput').value.trim();
             if(key) { localStorage.setItem('gemini_key', key); alert("Key opgeslagen!"); }
-        }
+        };
 
         /* COLLAB */
-        function addCollaborator() {
+        window.addCollaborator = () => {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
             if(!email) return;
             db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({added: new Date()}).then(() => { alert('Toegang!'); document.getElementById('collabEmail').value = ''; });
-        }
+        };
         function loadCollaborators() {
             db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(snap => {
                 const list = document.getElementById('collaborators-list'); list.innerHTML='';
                 snap.forEach(doc => list.innerHTML += `<div class="collab-item"><span>${doc.id}</span> <button onclick="removeCollab('${doc.id}')" class="secondary" style="width:auto; padding:0 5px; font-size:0.8em;">X</button></div>`);
             });
         }
-        function removeCollab(e) { if(confirm('Zeker?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
+        window.removeCollab = (e) => { if(confirm('Zeker?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); };
 
         /* PLANNER */
-        function generateAutoPlanning() {
+        window.generateAutoPlanning = () => {
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
             const dateVal = document.getElementById('autoDatumInput').value;
@@ -459,7 +464,7 @@
                  curr.setDate(curr.getDate()+7);
             }
             batch.commit().then(() => alert("Gepland!"));
-        }
+        };
 
         function initPlanner() {
             db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
@@ -506,29 +511,30 @@
             container.appendChild(row);
         }
 
-        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
-        function deleteItem(docId) { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        window.updateField = (id, f, v) => { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); };
+        window.toggleHoliday = (ids, val) => { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } };
+        window.deleteItem = (docId) => { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); };
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
         /* EXPORT */
-        function exportToICS() {
+        window.exportToICS = () => {
              if(!globalContext) return alert("Geen planning om te exporteren.");
              let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStart//NL\n";
+             // Let op: dit vereist dat we de items cachen, voor nu een simpele alert
              alert("Export functie werkt het beste als je de pagina even ververst zodat alle data geladen is. (Functionaliteit is in deze versie vereenvoudigd)");
-        }
+        };
 
         /* GRADES & NOTES */
-        function addGrade() { const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value), w=parseFloat(document.getElementById('gradeWeight').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); }
+        window.addGrade = () => { const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value), w=parseFloat(document.getElementById('gradeWeight').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); };
         function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('grades-list'); l.innerHTML = ''; snap.forEach(d => l.innerHTML += `<div>${d.data().subject}: ${d.data().grade}</div>`); }); }
-        function addNote() { const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; if(s) db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); }
+        window.addNote = () => { const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; if(s) db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); };
         function loadNotes() { db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('notes-list-container'); l.innerHTML = ''; snap.forEach(d => l.innerHTML += `<div class="note-card"><span class="note-subject">${d.data().subject}</span><p>${d.data().content}</p></div>`); }); }
 
         /* TIMER */
         function updateTimerDisplay() { const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText = `${m}:${s}`; }
-        function startTimer() { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); }
-        function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
-        function resetTimer() { stopTimer(); const val=document.getElementById('timerInput').value; timeLeft=(val?val:25)*60; updateTimerDisplay(); }
+        window.startTimer = () => { if(!timerInterval) timerInterval = setInterval(() => { if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();alert("Klaar!")} }, 1000); };
+        window.stopTimer = () => { clearInterval(timerInterval); timerInterval = null; };
+        window.resetTimer = () => { window.stopTimer(); const val=document.getElementById('timerInput').value; timeLeft=(val?val:25)*60; updateTimerDisplay(); };
     </script>
 </body>
 </html>
