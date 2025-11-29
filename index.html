@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start Pro</title>
     
+    <!-- FAVICON -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23007aff'/></svg>" type="image/svg+xml">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK's -->
+    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- Google Gemini SDK (Import Map voor module support) -->
+    <!-- GOOGLE GEMINI SDK -->
     <script type="importmap">
       {
         "imports": {
@@ -40,7 +43,7 @@
             --chat-bot-bg: #f1f3f5;
         }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; transition: all 0.3s; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
 
         /* SIDEBAR */
         #app-sidebar { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; flex-shrink: 0; }
@@ -148,7 +151,7 @@
     <main id="main-content" style="display: none;">
         <header>
             <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 15px; border: 1px solid #ffeeba;">
-                👁️ Je kijkt mee met iemand anders
+                👁️ Je kijkt mee
             </div>
             <span id="user-display-name" style="font-weight: 600; margin-right: 15px;">Gast</span>
             <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 15px;">Uitloggen</button>
@@ -214,8 +217,8 @@
                 <div id="chat-container">
                     <div id="chat-messages">
                         <div class="message bot">
-                            Hallo! Ik ben je AI Tutor. Omdat OpenAI geld kost, gebruik ik nu <strong>Google Gemini</strong> (gratis). Stel je vraag!
-                            <br><small>(Zorg dat je een Gemini API Key hebt ingesteld bij 'Instellingen')</small>
+                            Hallo! Ik ben je AI Tutor. Ik gebruik <strong>Google Gemini</strong>. Stel je vraag!
+                            <br><small>(Zorg dat je API Key is ingesteld bij 'Instellingen')</small>
                         </div>
                     </div>
                     <div class="chat-input-area">
@@ -278,7 +281,6 @@
                 <h3>Google Gemini API Key</h3>
                 <p style="font-size: 0.9em; color: var(--text-muted);">
                     Plak hier je <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio Key</a>. 
-                    Dit is gratis te gebruiken.
                 </p>
                 <input type="password" id="apiKeyInput" placeholder="AIza...">
                 <button onclick="saveApiKey()" style="width: auto;">Sleutel Opslaan</button>
@@ -392,7 +394,7 @@
 
             try {
                 const genAI = new GoogleGenerativeAI(apiKey);
-                // FIX: Gebruik 'gemini-pro' (werkt met free tier)
+                // FIX: Gebruik 'gemini-pro' (werkt stabiel met SDK)
                 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
                 
                 const prompt = `Je bent een bijlesdocent. Hier is de planning van de student: ${globalContext}. De student vraagt: ${msg}`;
@@ -402,7 +404,6 @@
                 
                 botMsgDiv.innerHTML = text.replace(/\n/g, "<br>");
             } catch (error) {
-                // Fallback logging
                 console.error("Gemini Error:", error);
                 botMsgDiv.innerHTML = "Fout: " + error.message;
             }
