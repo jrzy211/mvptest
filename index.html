@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study-Start Pro</title>
     
-    <!-- FAVICON -->
+    <!-- FAVICON: Zorg dat 'mini lgo.png' geüpload is in je GitHub repo -->
     <link rel="icon" href="mini lgo.png" type="image/png">
-
+    
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,29 +33,29 @@
             --success-color: #34c759;
             --holiday-bg: #fff9e6; 
             
-            --sidebar-width-collapsed: 70px;
+            --sidebar-width-collapsed: 80px;
             --sidebar-width-expanded: 260px;
         }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; transition: all 0.3s; }
 
-        /* --- SIDEBAR (MINI MODE) --- */
+        /* --- SIDEBAR (SLIMME MODUS) --- */
         #app-sidebar { 
             width: var(--sidebar-width-collapsed); 
             background-color: var(--sidebar-bg); 
             border-right: 1px solid var(--border-color); 
             display: flex; 
             flex-direction: column; 
-            padding: 20px 10px; 
+            padding: 20px 15px; 
             flex-shrink: 0; 
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 100;
-            overflow: hidden; /* Verberg tekst bij inklappen */
+            overflow: hidden; 
         }
         
         #app-sidebar.expanded {
             width: var(--sidebar-width-expanded);
-            padding: 20px 20px;
+            padding: 20px 25px;
         }
 
         .sidebar-header {
@@ -65,13 +65,14 @@
             height: 40px;
             overflow: hidden;
             cursor: pointer; /* Klikken om te togglen */
+            white-space: nowrap;
         }
 
         .sidebar-logo-img {
             min-width: 40px;
             width: 40px;
             height: 40px;
-            background-image: url('mini lgo.png');
+            background-image: url('mini lgo.png'); /* Jouw logo */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -82,7 +83,6 @@
             font-size: 1.2em;
             font-weight: 800;
             color: var(--primary-color);
-            white-space: nowrap;
             opacity: 0;
             transition: opacity 0.2s;
         }
@@ -101,6 +101,7 @@
             overflow: hidden;
             white-space: nowrap;
             height: 24px;
+            justify-content: flex-start; /* Align left for icon consistency */
         }
         
         .nav-item:hover, .nav-item.active { 
@@ -143,12 +144,14 @@
             z-index: 50; 
         }
         
-        .menu-toggle {
-            background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-color); padding: 5px;
-            border-radius: 5px; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-            margin-right: 15px;
+        /* Sidebar Toggle Button (Mobiel / Extra) */
+        .sidebar-toggle-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: none; /* Alleen tonen op mobiel */
+            font-size: 1.5em;
         }
-        .menu-toggle:hover { background-color: #eee; }
         
         /* LAYOUTS */
         .page-section { display: none; padding: 30px; max-width: 1600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
@@ -210,11 +213,13 @@
                 position: fixed; left: -100%; width: 260px; height: 100%; 
                 background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
                 transition: left 0.3s ease; z-index: 2000; padding: 20px;
+                margin-left: 0; /* Reset margin voor mobile slide-in */
             }
-            #app-sidebar.expanded { left: 0; width: 260px; } 
+            #app-sidebar.expanded { left: 0; } /* Slide in op mobiel */
             
             .sidebar-title, .nav-text { opacity: 1; } /* Altijd zichtbaar op mobiel als menu open is */
             .sidebar-header { margin-bottom: 20px; }
+            .sidebar-toggle-btn { display: block; margin-right: 15px; } /* Hamburger zichtbaar */
             
             #page-planning.active { flex-direction: column; }
             #tools-column { width: 100%; order: -1; }
@@ -270,9 +275,10 @@
 
     <main id="main-content" style="display: none;">
         <header>
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; border: 1px solid #ffeeba;">
+            <div style="display: flex; align-items: center;">
+                <!-- Hamburger alleen zichtbaar op mobile via media query -->
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+                <div id="shared-badge" style="display: none; background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; border: 1px solid #ffeeba; margin-left: 10px;">
                     👁️ Je kijkt mee met iemand anders
                 </div>
             </div>
