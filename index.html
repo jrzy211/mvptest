@@ -41,7 +41,7 @@
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
-            font-size: 13.5px; /* Uitgezoomd */
+            font-size: 13.5px;
         }
 
         /* --- SIDEBAR --- */
@@ -50,12 +50,9 @@
             background: var(--bg-card); 
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column; 
-            padding: 20px 15px; 
-            flex-shrink: 0; 
-            transition: margin-left 0.3s ease;
-            z-index: 50;
+            padding: 20px 15px; flex-shrink: 0; 
+            transition: margin-left 0.3s ease; z-index: 50;
         }
-
         #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
 
         .sidebar-header {
@@ -84,7 +81,6 @@
             position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border); height: 55px;
         }
 
-        /* Toggle Button */
         .toggle-btn {
             background: transparent; border: none; cursor: pointer; 
             font-size: 1.4em; padding: 5px; width: 35px; height: 35px;
@@ -121,46 +117,57 @@
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
         button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-        /* --- AGENDA (Jump-in) --- */
-        .table-container { 
-            background: white; border-radius: var(--radius); 
-            border: 1px solid var(--border); overflow: hidden; 
+        /* --- NOTITIES (PREVIEW CARDS) --- */
+        .note-card { 
+            border-left: 4px solid var(--primary); cursor: pointer; transition: transform 0.2s;
+            position: relative; overflow: hidden; height: 150px;
         }
+        .note-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .note-preview-title { font-weight: 700; margin-bottom: 5px; color: var(--text-main); }
+        .note-preview-body { font-size: 0.9em; color: var(--text-muted); white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        .pdf-badge { font-size: 0.7em; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+
+        /* --- NOTITIES MODAL (DOCS STYLE) --- */
+        #note-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 800px; height: 85vh;
+            border-radius: 12px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;
+        }
+        .modal-header {
+            padding: 15px 20px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; background: #f8fafc;
+        }
+        .modal-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        #modal-note-title { 
+            font-size: 1.5em; font-weight: 700; border: none; background: transparent; 
+            width: 100%; outline: none; margin-bottom: 20px; color: var(--text-main);
+        }
+        #modal-note-content {
+            flex: 1; border: none; resize: none; outline: none; font-size: 1.1em; 
+            line-height: 1.6; color: #334155; font-family: 'Inter', sans-serif;
+        }
+        .pdf-section {
+            margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border);
+        }
+
+        /* --- AGENDA --- */
+        .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .studie-tabel th { 
-            background: #f8fafc; color: var(--text-muted); font-weight: 600; 
-            padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; 
-            border-bottom: 1px solid var(--border);
-        }
+        .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
         .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
-        .clean-input {
-            width: 100%; background: transparent; border: 1px solid transparent; 
-            padding: 6px; border-radius: 4px; resize: none; min-height: 32px;
-            font-family: inherit; color: var(--text-main); margin: 0;
-        }
+        .clean-input { width: 100%; background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 4px; resize: none; min-height: 32px; font-family: inherit; color: var(--text-main); margin: 0; }
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); }
 
-        /* --- NOTITIES (Live Edit) --- */
-        .note-card { border-left: 4px solid var(--primary); position: relative; }
-        .note-title { 
-            font-weight: 700; border: none; font-size: 1.1em; background: transparent; 
-            width: 100%; margin-bottom: 5px; color: var(--text-main); 
-        }
-        .note-body { 
-            border: none; resize: none; background: transparent; font-family: inherit; 
-            width: 100%; height: 120px; color: #374151; line-height: 1.5;
-        }
-        .note-title:focus, .note-body:focus { outline: none; background: #f8fafc; }
+        .test-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
 
-        /* --- TOETSEN LIJST --- */
-        .test-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em;
-        }
-
-        /* --- LAYOUTS --- */
         .page-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; gap: 20px; }
         .page-section.active { display: flex; flex-direction: column; animation: fade 0.2s; }
         @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -171,11 +178,7 @@
 
         #timer-display { font-size: 5em; font-weight: 700; color: var(--primary); margin: 15px 0; font-variant-numeric: tabular-nums; }
         
-        #toast {
-            visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff;
-            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 100;
-            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em; opacity: 0; transition: 0.3s;
-        }
+        #toast { visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 2500; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em; opacity: 0; transition: 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         @media (max-width: 1000px) {
@@ -190,6 +193,34 @@
 <body>
 
     <div id="toast">Melding</div>
+
+    <div id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span style="font-weight:600; color:var(--text-muted);">📝 Notitie Bewerken</span>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="saveModalNote()" style="width:auto; padding: 6px 15px;">Opslaan</button>
+                    <button onclick="closeNoteModal()" class="secondary" style="width:auto; padding: 6px 15px;">Sluiten</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="modal-note-title" placeholder="Titel van notitie...">
+                <textarea id="modal-note-content" placeholder="Begin hier met typen..."></textarea>
+                
+                <div class="pdf-section">
+                    <h3 style="margin-bottom:10px;">📎 Bijlage (PDF)</h3>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <input type="file" id="pdf-upload-input" accept="application/pdf" style="width:auto; border:none; padding:0;">
+                        <span style="font-size:0.8em; color:var(--text-muted);">Max 400KB</span>
+                    </div>
+                    <div id="current-pdf-link" style="margin-top:10px;"></div>
+                </div>
+                <div style="margin-top:20px; text-align:right;">
+                    <button onclick="deleteCurrentNote()" style="background:transparent; color:red; border:none; width:auto; font-size:0.9em;">🗑️ Notitie verwijderen</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="login-page" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--bg-body); flex-direction: column; justify-content: center; align-items: center;">
         <div class="card" style="width: 100%; max-width: 350px; text-align: center; padding: 40px;">
@@ -308,13 +339,12 @@
             <div style="display: flex; gap: 20px; align-items: flex-start;">
                 <div class="card" style="width: 280px; flex-shrink: 0; position: sticky; top: 80px;">
                     <h3>+ Nieuwe Notitie</h3>
-                    <input type="text" id="newNoteSubject" placeholder="Onderwerp">
-                    <button onclick="createNewNote()">Aanmaken</button>
+                    <button onclick="createNewNote()">Lege Notitie Aanmaken</button>
                 </div>
                 <div style="flex: 1;">
                     <h2>Notities</h2>
-                    <p style="color:var(--text-muted); font-size:0.9em; margin-bottom:15px;">Klik op de titel of tekst om te bewerken.</p>
-                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;"></div>
+                    <p style="color:var(--text-muted); font-size:0.9em; margin-bottom:15px;">Klik op een kaart om het bewerkscherm te openen.</p>
+                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
         </div>
@@ -346,7 +376,6 @@
     </main>
 
     <script>
-        /* --- CONFIG --- */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
           authDomain: "study-start-c510c.firebaseapp.com",
@@ -362,6 +391,10 @@
         let currentUserId = null, viewUserId = null, userRole = 'owner'; 
         let timerInterval = null, timeLeft = 25 * 60;
         let globalContext = ""; 
+        
+        // Modal State
+        let currentOpenNoteId = null;
+        let currentNotePdfData = null; // Base64 string
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -385,12 +418,11 @@
             }
         });
 
-        /* --- UI FUNCTIES --- */
+        /* --- UI LOGICA --- */
         function toggleSidebar() {
             const sb = document.getElementById('app-sidebar');
             const btn = document.getElementById('sidebar-btn');
             const isDesktop = window.innerWidth > 1000;
-            
             if(isDesktop) {
                 sb.classList.toggle('closed');
                 btn.innerHTML = sb.classList.contains('closed') ? "☰" : "←";
@@ -434,16 +466,14 @@
                 document.getElementById('settings-name').disabled = true;
             } else {
                 loadCollaborators();
-                loadTests(); // Laad de lijst met toetsen
+                loadTests(); 
             }
             initPlanner();
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
             
-            // Timer setup
             document.getElementById('timerInput').addEventListener('input', function() {
                 stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
             });
-            // Init sidebar icon voor desktop
             if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
         }
 
@@ -460,20 +490,16 @@
             const toetsDate = new Date(dateVal);
             let curr = new Date(); const day = curr.getDay() || 7; if (day !== 1) curr.setHours(0,0,0,0);
             
-            // Stap 1: Toets aanmaken in 'tests' collectie
             db.collection('users').doc(viewUserId).collection('tests').add({
                 subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
                 chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(docRef => {
                 const testId = docRef.id;
-                
-                // Stap 2: Planning maken gekoppeld aan testId
                 const batch = db.batch();
                 while(curr <= toetsDate) {
                      const end = new Date(curr); end.setDate(curr.getDate()+6);
                      const weekStart = new Date(curr); weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
                      const id = `${vak}-${weekStart.getTime()}`;
-                     
                      batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
                          weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
                          weekEnd: firebase.firestore.Timestamp.fromDate(end),
@@ -483,7 +509,7 @@
                          bijlesDoen: ``,
                          isAfgerond: false, isVakantie: false, 
                          groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
-                         relatedTestId: testId // DE KOPPELING
+                         relatedTestId: testId 
                      });
                      curr.setDate(curr.getDate()+7);
                 }
@@ -491,12 +517,10 @@
             });
         }
 
-        // Lijst met toetsen laden
         function loadTests() {
             db.collection('users').doc(viewUserId).collection('tests').orderBy('date', 'asc').onSnapshot(snap => {
                 const con = document.getElementById('tests-list-container'); con.innerHTML = '';
                 if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
-                
                 snap.forEach(doc => {
                     const d = doc.data();
                     const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : '?';
@@ -512,35 +536,23 @@
             });
         }
 
-        // Toets + Planning verwijderen
         function deleteTest(testId) {
-            if(!confirm("Weet je het zeker? De hele planning voor deze toets wordt ook verwijderd.")) return;
-            
-            // 1. Verwijder toets
+            if(!confirm("Weet je zeker? Planning wordt ook gewist.")) return;
             db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => {
-                // 2. Zoek alle planner items die bij deze toets horen
                 db.collection('users').doc(viewUserId).collection('planner_items').where('relatedTestId', '==', testId).get().then(snap => {
                     const batch = db.batch();
                     snap.forEach(doc => batch.delete(doc.ref));
-                    batch.commit().then(() => showToast("Toets & planning verwijderd."));
+                    batch.commit().then(() => showToast("Verwijderd."));
                 });
             });
         }
 
-        /* --- PLANNER RENDEREN --- */
         function initPlanner() {
             db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
                 document.getElementById('loading-indicator').style.display = 'none';
                 const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
-                
-                if(snapshot.empty) {
-                    document.getElementById('empty-planner').style.display = 'block';
-                    document.querySelector('.studie-tabel').style.display = 'none';
-                    return;
-                } else {
-                    document.getElementById('empty-planner').style.display = 'none';
-                    document.querySelector('.studie-tabel').style.display = 'table';
-                }
+                if(snapshot.empty) { document.getElementById('empty-planner').style.display = 'block'; document.querySelector('.studie-tabel').style.display = 'none'; return; } 
+                else { document.getElementById('empty-planner').style.display = 'none'; document.querySelector('.studie-tabel').style.display = 'table'; }
 
                 const grouped = {}; globalContext = ""; 
                 snapshot.forEach(doc => {
@@ -577,28 +589,98 @@
         function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
-        /* --- NOTITIES (GOOGLE DOCS STYLE) --- */
+        /* --- NOTITIES (MET MODAL EN PDF) --- */
         function createNewNote() {
-            const s = document.getElementById('newNoteSubject').value; if(!s) return showToast("Onderwerp?");
             db.collection('users').doc(viewUserId).collection('subject_notes').add({
-                subject: s, content: "", createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => { showToast("Aangemaakt!"); document.getElementById('newNoteSubject').value=''; });
+                subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((doc) => { 
+                showToast("Aangemaakt!"); 
+                openNoteModal(doc.id, "Nieuwe Notitie", "", null); // Direct openen
+            });
         }
+
         function loadNotes() { 
             db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
                 const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
                 snap.forEach(d => {
+                    const data = d.data();
+                    const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : '';
+                    // On click -> open Modal
                     l.innerHTML += `
-                    <div class="card note-card">
-                        <input type="text" class="note-title" value="${d.data().subject}" onblur="updateNote('${d.id}', 'subject', this.value)">
-                        <textarea class="note-body" onblur="updateNote('${d.id}', 'content', this.value)" placeholder="Typ hier...">${d.data().content}</textarea>
-                        <button onclick="deleteNote('${d.id}')" style="background:transparent; color:#ef4444; font-size:0.8em; padding:0; width:auto; margin-top:5px; border:none;">Verwijder</button>
+                    <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", ${JSON.stringify(data.content || "")}, ${data.pdfData ? '"yes"' : 'null'})'>
+                        <div class="note-preview-title">${data.subject}</div>
+                        <div class="note-preview-body">${data.content}</div>
+                        ${pdfBadge}
                     </div>`;
                 }); 
             }); 
         }
-        function updateNote(id, f, v) { db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).update({[f]:v}); }
-        function deleteNote(id) { if(confirm("Notitie wissen?")) db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).delete(); }
+
+        function openNoteModal(id, title, content, hasPdf) {
+            currentOpenNoteId = id;
+            document.getElementById('modal-note-title').value = title;
+            document.getElementById('modal-note-content').value = content;
+            document.getElementById('note-modal').style.display = 'flex';
+            
+            // PDF Logic
+            const linkContainer = document.getElementById('current-pdf-link');
+            linkContainer.innerHTML = '';
+            document.getElementById('pdf-upload-input').value = ""; // Reset
+            
+            if (hasPdf) {
+                // We moeten de PDF data ophalen (was niet in preview geladen om traagheid te voorkomen)
+                db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
+                    if(doc.exists && doc.data().pdfData) {
+                        currentNotePdfData = doc.data().pdfData;
+                        linkContainer.innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                    }
+                });
+            } else {
+                currentNotePdfData = null;
+            }
+        }
+
+        function closeNoteModal() {
+            document.getElementById('note-modal').style.display = 'none';
+            currentOpenNoteId = null;
+        }
+
+        function saveModalNote() {
+            if(!currentOpenNoteId) return;
+            const title = document.getElementById('modal-note-title').value;
+            const content = document.getElementById('modal-note-content').value;
+            const fileInput = document.getElementById('pdf-upload-input');
+            
+            const updateData = { subject: title, content: content };
+
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 400000) { // 400KB limit
+                    alert("PDF is te groot! Maximaal 400KB.");
+                    return; 
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    updateData.pdfData = e.target.result; // Base64 string
+                    pushUpdate(updateData);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                pushUpdate(updateData);
+            }
+        }
+
+        function pushUpdate(data) {
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).update(data)
+            .then(() => { showToast("Opgeslagen! ✅"); closeNoteModal(); });
+        }
+
+        function deleteCurrentNote() {
+            if(confirm("Notitie verwijderen?")) {
+                db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).delete()
+                .then(() => { closeNoteModal(); showToast("Verwijderd."); });
+            }
+        }
 
         /* --- OVERIG --- */
         function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
