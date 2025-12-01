@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -17,264 +17,180 @@
 
     <style>
         :root {
-            /* Modern Palette */
-            --primary: #4f46e5; /* Indigo */
-            --primary-light: #818cf8;
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --sidebar-bg: rgba(255, 255, 255, 0.85);
-            --border: #e5e7eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+            /* --- CONSISTENT BLAUW THEMA --- */
+            --primary: #2563eb;       /* Helder blauw */
+            --primary-hover: #1d4ed8;
+            --primary-bg: #eff6ff;    /* Heel lichtblauw voor achtergronden */
             
-            --sidebar-width: 280px;
-            --radius-l: 20px;
-            --radius-m: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --bg-body: #f8fafc;       /* Clean grijs/wit */
+            --bg-card: #ffffff;
+            --text-main: #0f172a;     /* Donkerblauw/Zwart tekst */
+            --text-muted: #64748b;    /* Grijs tekst */
+            --border: #e2e8f0;
+            
+            --sidebar-width: 250px;
+            --radius: 8px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
         * { box-sizing: border-box; }
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: 'Inter', sans-serif; 
             margin: 0; 
             background-color: var(--bg-body); 
             color: var(--text-main); 
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
-            /* Subtiele achtergrond pattern */
-            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 20px 20px;
+            /* HIER ZIT DE '80% ZOOM' TRUC: */
+            font-size: 13.5px; 
         }
 
         /* --- SIDEBAR --- */
         #app-sidebar { 
             width: var(--sidebar-width); 
-            background: var(--sidebar-bg); 
-            border-right: 1px solid rgba(255,255,255,0.5);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: var(--bg-card); 
+            border-right: 1px solid var(--border);
             display: flex; 
             flex-direction: column; 
-            padding: 30px; 
+            padding: 20px 15px; 
             flex-shrink: 0; 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 50;
         }
 
-        .sidebar-logo { 
-            font-size: 1.5em; 
-            font-weight: 800; 
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 50px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
+        /* Desktop inklap logica */
+        #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
+
+        .sidebar-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 30px; padding: 0 10px;
+            font-size: 1.1em; font-weight: 700; color: var(--primary);
         }
 
         .nav-item { 
-            padding: 14px 20px; 
-            margin-bottom: 8px; 
-            border-radius: var(--radius-m); 
+            padding: 10px 12px; 
+            margin-bottom: 4px; 
+            border-radius: var(--radius); 
             color: var(--text-muted); 
-            font-weight: 600; 
+            font-weight: 500; 
             cursor: pointer; 
-            transition: all 0.2s; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            border: 1px solid transparent;
+            transition: all 0.15s; 
+            display: flex; align-items: center; gap: 10px; 
         }
 
-        .nav-item:hover { 
-            background-color: white; 
-            color: var(--primary); 
-            box-shadow: var(--shadow);
-            transform: translateX(5px);
-        }
+        .nav-item:hover { background-color: var(--primary-bg); color: var(--primary); }
+        .nav-item.active { background-color: var(--primary-bg); color: var(--primary); font-weight: 600; }
 
-        .nav-item.active { 
-            background: var(--accent-gradient); 
-            color: white; 
-            box-shadow: var(--shadow);
-        }
-
-        /* --- CONTENT AREA --- */
+        /* --- MAIN CONTENT --- */
         #main-content { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; 
-            position: relative; 
-            scroll-behavior: smooth;
+            flex-grow: 1; display: flex; flex-direction: column; 
+            overflow-y: auto; position: relative; 
         }
         
         header { 
-            background: rgba(255, 255, 255, 0.7); 
-            backdrop-filter: blur(10px); 
-            padding: 20px 40px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky; 
-            top: 0; 
-            z-index: 40;
-            border-bottom: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);
+            padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; 
+            position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border); height: 55px;
         }
 
-        /* --- UI ELEMENTS --- */
+        /* --- MODERNE HAMBURGER ICON --- */
+        .hamburger-btn {
+            background: transparent; border: none; cursor: pointer; padding: 5px;
+            display: flex; flex-direction: column; gap: 4px; width: 32px;
+        }
+        .hamburger-line {
+            width: 100%; height: 2px; background-color: var(--text-main); border-radius: 2px; transition: 0.2s;
+        }
+        .hamburger-btn:hover .hamburger-line { background-color: var(--primary); }
+
+        /* --- UI CARDS & INPUTS --- */
         .card { 
-            background: var(--bg-card); 
-            border-radius: var(--radius-l); 
-            padding: 25px; 
-            margin-bottom: 25px; 
-            box-shadow: var(--shadow); 
+            background: var(--bg-card); border-radius: var(--radius); 
+            padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); 
             border: 1px solid var(--border);
-            transition: transform 0.2s;
         }
-        
-        .card:hover { border-color: var(--primary-light); }
 
-        h2 { font-weight: 800; color: var(--text-main); margin-top: 0; font-size: 1.8em; }
-        h3 { font-weight: 700; color: var(--text-muted); margin-top: 0; font-size: 1em; text-transform: uppercase; letter-spacing: 0.5px; }
+        h2 { font-size: 1.4em; font-weight: 700; margin: 0 0 15px 0; letter-spacing: -0.5px; }
+        h3 { font-size: 0.85em; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px 0; letter-spacing: 0.5px; }
 
         input, select, textarea { 
-            width: 100%; 
-            background: #f9fafb; 
-            border: 2px solid transparent; 
-            padding: 12px 16px; 
-            border-radius: var(--radius-m); 
-            font-family: inherit; 
-            font-size: 0.95em;
-            margin-bottom: 12px; 
-            transition: all 0.2s;
+            width: 100%; background: #fff; border: 1px solid var(--border); 
+            padding: 8px 10px; border-radius: 6px; font-family: inherit; font-size: 1em; 
+            margin-bottom: 10px; transition: 0.2s;
         }
-        
         input:focus, select:focus, textarea:focus { 
-            outline: none; 
-            background: white; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); 
         }
 
         button { 
-            width: 100%; 
-            background: var(--text-main); /* Zwart modern knopje */
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: var(--radius-m); 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            font-size: 0.95em; 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 9px; border-radius: 6px; font-weight: 600; cursor: pointer; 
+            font-size: 0.95em; transition: 0.2s; 
         }
-
-        button:hover { 
-            background: var(--primary); 
-            transform: translateY(-2px); 
-            box-shadow: var(--shadow-hover);
-        }
-
-        button.secondary { 
-            background: white; 
-            border: 2px solid var(--border); 
-            color: var(--text-muted); 
-        }
+        button:hover { background: var(--primary-hover); }
         
-        button.secondary:hover { 
-            background: #f9fafb; 
-            border-color: var(--text-muted); 
-            color: var(--text-main); 
-        }
+        button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
+        button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-        /* --- PLANNING TABLE --- */
+        /* --- JUMP-IN AGENDA (CLEAN LOOK) --- */
         .table-container { 
-            border-radius: var(--radius-l); 
-            background: white; 
-            box-shadow: var(--shadow);
-            overflow: hidden; /* Round corners fix */
-            border: 1px solid var(--border);
+            background: white; border-radius: var(--radius); 
+            border: 1px solid var(--border); overflow: hidden; 
         }
+        .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .studie-tabel th { 
+            background: #f8fafc; color: var(--text-muted); font-weight: 600; 
+            padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; 
+            border-bottom: 1px solid var(--border);
+        }
+        .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
-        .studie-tabel { width: 100%; border-collapse: collapse; min-width: 900px; }
-        .studie-tabel th { background: #f9fafb; color: var(--text-muted); font-weight: 700; padding: 18px; text-align: left; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
-        .studie-tabel td { padding: 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
-        .studie-tabel tr:last-child td { border-bottom: none; }
-        .studie-tabel tr.is-holiday td { background: #fffbeb; color: #b45309; }
-
-        .editable-area { min-height: 40px; resize: none; background: transparent; padding: 8px; border-radius: 6px; border: 1px solid transparent; }
-        .editable-area:hover { background: #f3f4f6; }
-        .editable-area:focus { background: white; border-color: var(--primary); }
-
-        /* --- TIMER PAGE --- */
-        .timer-circle {
-            width: 300px; height: 300px;
-            border-radius: 50%;
-            background: white;
-            box-shadow: var(--shadow-hover);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            border: 8px solid #f3f4f6;
+        /* De input velden die eruit zien als tekst (Jump-in) */
+        .clean-input {
+            width: 100%; background: transparent; border: 1px solid transparent; 
+            padding: 6px; border-radius: 4px; resize: none; min-height: 32px;
+            font-family: inherit; color: var(--text-main); margin: 0;
+            transition: all 0.2s;
         }
-        #timer-display { font-size: 5em; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums; line-height: 1; }
+        .clean-input:hover { background: #f8fafc; }
+        .clean-input:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-bg); }
+        .clean-input:disabled { color: #94a3b8; }
 
-        /* --- TOAST NOTIFICATION --- */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 50px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
-        }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-
-        /* --- LAYOUT UTILS --- */
-        .page-section { display: none; padding: 40px; max-width: 1600px; margin: 0 auto; width: 100%; gap: 30px; animation: fadeIn 0.3s ease; }
-        .page-section.active { display: flex; flex-direction: column; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- LAYOUTS --- */
+        .page-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; gap: 20px; }
+        .page-section.active { display: flex; flex-direction: column; animation: fade 0.2s; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         #page-planning.active { flex-direction: row; }
         #planner-column { flex: 1; }
-        #tools-column { width: 320px; flex-shrink: 0; }
+        #tools-column { width: 300px; flex-shrink: 0; }
+
+        /* --- TIMER --- */
+        #timer-display { font-size: 5em; font-weight: 700; color: var(--primary); margin: 15px 0; font-variant-numeric: tabular-nums; }
+
+        /* --- TOAST --- */
+        #toast {
+            visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 100;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         /* --- MOBILE --- */
-        .sidebar-toggle { display: none; background: transparent; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-main); }
-
-        @media (max-width: 1024px) {
-            body { flex-direction: column; }
-            #app-sidebar { 
-                position: fixed; top: 0; left: 0; height: 100%; 
-                transform: translateX(-100%); 
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            }
-            #app-sidebar.open { transform: translateX(0); }
-            .sidebar-toggle { display: block; }
+        @media (max-width: 1000px) {
             #page-planning.active { flex-direction: column; }
             #tools-column { width: 100%; order: -1; }
-            .table-container { overflow-x: auto; }
-            header { padding: 15px 20px; }
-            .page-section { padding: 20px; }
+            
+            #app-sidebar { 
+                position: fixed; height: 100%; top: 0; left: 0; 
+                margin-left: -250px; /* Standaard verborgen op mobiel */
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            #app-sidebar.open { margin-left: 0; }
+            #app-sidebar.closed { margin-left: -250px; } /* Reset override */
         }
     </style>
 </head>
@@ -283,24 +199,24 @@
     <div id="toast">Melding</div>
 
     <div id="login-page" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--bg-body); flex-direction: column; justify-content: center; align-items: center;">
-        <div class="card" style="width: 100%; max-width: 400px; text-align: center; padding: 40px;">
+        <div class="card" style="width: 100%; max-width: 350px; text-align: center; padding: 40px;">
             <div style="font-size: 3em; margin-bottom: 10px;">🚀</div>
-            <h1 style="color: var(--text-main); margin-bottom: 5px;">Study-Start Pro</h1>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">De slimste manier om je schoolwerk te plannen.</p>
+            <h1 style="color: var(--text-main); margin-bottom: 5px; font-size: 1.5em;">Study-Start Pro</h1>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Log in om te beginnen.</p>
             <button onclick="signInWithGoogle()" style="background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Inloggen met Google
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google Login
             </button>
         </div>
     </div>
 
     <nav id="app-sidebar">
-        <div class="sidebar-logo">
-            <span>📚</span> Study-Start
+        <div class="sidebar-header">
+            <span>⚡ Study-Start</span>
         </div>
         <div class="nav-item active" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
         <div class="nav-item" onclick="navigate('cijfers', this)"><span>📊</span> Cijfers</div>
         <div class="nav-item" onclick="navigate('notities', this)"><span>📝</span> Notities</div>
-        <div class="nav-item" onclick="navigate('timer', this)"><span>⏱️</span> Focus Timer</div>
+        <div class="nav-item" onclick="navigate('timer', this)"><span>⏱️</span> Timer</div>
         <div style="flex-grow: 1;"></div>
         <div class="nav-item" onclick="navigate('instellingen', this)"><span>⚙️</span> Instellingen</div>
     </nav>
@@ -308,27 +224,28 @@
     <main id="main-content" style="display: none;">
         <header>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-                <div id="page-title" style="font-weight: 800; font-size: 1.1em;">Overzicht</div>
-                <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; border: 1px solid #fcd34d;">
-                    👁️ Meekijk-modus
+                <button class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
+                    <div class="hamburger-line"></div>
+                    <div class="hamburger-line"></div>
+                    <div class="hamburger-line"></div>
+                </button>
+                <div id="page-title" style="font-weight: 700; color: var(--text-main);">Overzicht</div>
+                <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">
+                    👁️ Meekijker
                 </div>
             </div>
             
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="text-align: right;">
-                    <div id="user-display-name" style="font-weight: 700; font-size: 0.9em;">Gast</div>
-                    <div style="font-size: 0.75em; color: var(--text-muted);">Student</div>
-                </div>
-                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 8px 12px; border-radius: 8px;">Uitloggen</button>
+                <span id="user-display-name" style="font-weight: 600; font-size: 0.9em;">Gast</span>
+                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 6px 12px; font-size: 0.85em;">Uitloggen</button>
             </div>
         </header>
 
         <div id="page-planning" class="page-section active">
             <div id="planner-column">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2>Jouw Planning</h2>
-                    <button onclick="exportToICS()" class="secondary" style="width: auto;">📤 Export</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin:0;">Agenda</h2>
+                    <button onclick="exportToICS()" class="secondary" style="width: auto;">Export</button>
                 </div>
                 <div id="loading-indicator" style="color: var(--text-muted); text-align: center; padding: 40px;">Laden...</div>
                 
@@ -336,123 +253,100 @@
                     <table class="studie-tabel">
                         <thead>
                             <tr>
-                                <th style="width: 10%;">Week</th>
+                                <th style="width: 8%;">Week</th>
                                 <th style="width: 15%;">Vak</th>
-                                <th style="width: 35%;">Thuis Doen</th>
-                                <th style="width: 25%;">Bijles</th>
-                                <th style="width: 50px;"></th>
+                                <th style="width: 40%;">Thuis Doen</th>
+                                <th style="width: 30%;">Bijles / Extra</th>
+                                <th style="width: 40px; text-align:center;">✓</th>
                             </tr>
                         </thead>
                         <tbody id="planner-table-body"></tbody>
                     </table>
                 </div>
-                <div id="empty-planner" style="display:none; text-align: center; padding: 50px;">
-                    <div style="font-size: 3em; opacity: 0.5;">📭</div>
-                    <p style="color: var(--text-muted);">Nog niets gepland. Gebruik de tool hiernaast.</p>
+                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">
+                    Je agenda is leeg.
                 </div>
             </div>
 
             <div id="tools-column">
-                <div class="card" id="auto-planner-card" style="background: linear-gradient(to bottom right, #ffffff, #f0f9ff); border: 1px solid #bae6fd;">
-                    <h3 style="color: #0284c7;">⚡ Snel Inplannen</h3>
-                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 15px;">Genereer automatisch huiswerk tot aan je toets.</p>
-                    
-                    <input type="text" list="vakken-list" id="autoVakInput" placeholder="Kies een vak...">
+                <div class="card" id="auto-planner-card" style="background: var(--primary-bg); border-color: #bfdbfe;">
+                    <h3 style="color: var(--primary);">⚡ Snel Inplannen</h3>
+                    <input type="text" list="vakken-list" id="autoVakInput" placeholder="Vak (bv. Wiskunde)">
                     <datalist id="vakken-list">
-                        <option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis"><option value="Aardrijkskunde"><option value="Natuurkunde"><option value="Scheikunde"><option value="Economie">
+                        <option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis">
                     </datalist>
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <select id="autoHoofdstukInput" style="flex:1;">
-                            <option value="" disabled selected>H...</option>
-                            <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
-                            <option value="H4">H4</option><option value="H5">H5</option><option value="H6">H6</option>
-                        </select>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="autoHoofdstukInput" placeholder="H..." style="flex:1;">
                         <input type="date" id="autoDatumInput" style="flex:2;">
                     </div>
-                    <button onclick="generateAutoPlanning()" style="background: #0284c7;">Genereer Planning</button>
+                    <button onclick="generateAutoPlanning()">Inplannen</button>
                 </div>
 
                 <div class="card" id="share-card">
-                    <h3>🤝 Samenwerken</h3>
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <h3>🤝 Delen</h3>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
                         <button onclick="addCollaborator()" style="width: auto;">+</button>
                     </div>
-                    <div id="collaborators-list" style="font-size: 0.9em;"></div>
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                        <label style="font-size: 0.75em; font-weight: 700; color: var(--text-muted);">DEELBARE LINK</label>
-                        <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--primary); cursor: copy; background: #e0e7ff; border: 1px solid #c7d2fe; margin-top: 5px;" onclick="copyLink()">
-                    </div>
+                    <div id="collaborators-list"></div>
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--text-muted); cursor: copy; background: #f1f5f9; border: 1px solid var(--border); margin-top: 10px;" onclick="copyLink()">
                 </div>
             </div>
         </div>
 
         <div id="page-cijfers" class="page-section">
-            <div style="max-width: 800px; margin: 0 auto; width: 100%;">
-                <h2>Mijn Cijfers</h2>
+            <div style="max-width: 700px; margin: 0 auto; width: 100%;">
+                <h2>Cijfers</h2>
                 <div class="card">
-                    <h3>Nieuw Cijfer</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="gradeSubject" placeholder="Vak" style="flex: 2; min-width: 150px; margin-bottom: 0;">
-                        <input type="number" id="gradeValue" placeholder="Cijfer" step="0.1" style="flex: 1; min-width: 80px; margin-bottom: 0;">
-                        <input type="number" id="gradeWeight" placeholder="Weging (1x)" value="1" style="flex: 1; min-width: 80px; margin-bottom: 0;">
-                        <button onclick="addGrade()" style="flex: 1; min-width: 100px;">Toevoegen</button>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="gradeSubject" placeholder="Vak" style="flex: 2; margin:0;">
+                        <input type="number" id="gradeValue" placeholder="Cijfer" step="0.1" style="flex: 1; margin:0;">
+                        <button onclick="addGrade()" style="flex: 1;">Opslaan</button>
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Resultaten</h3>
-                    <div id="grades-list" style="display: grid; gap: 10px;">Laden...</div>
+                    <div id="grades-list" style="display: grid; gap: 10px;"></div>
                 </div>
             </div>
         </div>
 
         <div id="page-notities" class="page-section">
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <div style="width: 100%; max-width: 350px;">
-                    <div class="card" style="position: sticky; top: 100px;">
-                        <h3>📝 Nieuwe Notitie</h3>
-                        <input type="text" id="noteSubject" placeholder="Onderwerp / Vak">
-                        <textarea id="noteContent" style="height: 150px;" placeholder="Typ hier je aantekeningen..."></textarea>
-                        <button onclick="addNote()">Opslaan</button>
-                    </div>
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div class="card" style="width: 280px; flex-shrink: 0; position: sticky; top: 80px;">
+                    <h3>Nieuwe Notitie</h3>
+                    <input type="text" id="noteSubject" placeholder="Onderwerp">
+                    <textarea id="noteContent" style="height: 120px;" placeholder="Typen..."></textarea>
+                    <button onclick="addNote()">Toevoegen</button>
                 </div>
-                <div style="flex: 1; min-width: 300px;">
-                    <h2>Opgeslagen Notities</h2>
-                    <div id="notes-list-container" style="display: grid; gap: 15px;">Laden...</div>
+                <div style="flex: 1;">
+                    <h2>Notities</h2>
+                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
         </div>
 
         <div id="page-timer" class="page-section" style="justify-content: center; align-items: center; min-height: 80vh;">
-            <div style="text-align: center; max-width: 500px; width: 100%;">
-                <h2 style="margin-bottom: 30px;">Deep Focus</h2>
+            <div class="card" style="text-align: center; max-width: 400px; width: 100%; padding: 40px;">
+                <h2 style="margin-bottom: 5px;">Focus Timer</h2>
+                <div id="timer-display">25:00</div>
                 
-                <div class="timer-circle">
-                    <div id="timer-display">25:00</div>
-                    <div style="font-size: 0.9em; color: var(--text-muted); margin-top: 10px;">minuten</div>
-                </div>
-
-                <div class="card" style="max-width: 300px; margin: 0 auto;">
-                    <label style="font-size: 0.8em; font-weight: 700; color: var(--text-muted);">INSTELLEN (MINUTEN)</label>
-                    <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em; font-weight: bold; margin: 10px 0;">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button onclick="startTimer()" id="btn-start" style="background: var(--success);">Start</button>
-                        <button onclick="stopTimer()" class="secondary">Pauze</button>
-                    </div>
+                <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em; width: 80px; margin: 0 auto 20px;">
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="startTimer()" id="btn-start" style="width: 100px;">Start</button>
+                    <button onclick="stopTimer()" class="secondary">Pauze</button>
+                    <button onclick="resetTimer()" class="secondary" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;">Reset</button>
                 </div>
             </div>
         </div>
 
         <div id="page-instellingen" class="page-section">
-            <div style="max-width: 600px; margin: 0 auto; width: 100%;">
+            <div style="max-width: 500px; margin: 0 auto; width: 100%;">
                 <h2>Instellingen</h2>
                 <div class="card">
-                    <h3>Profiel</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9em;">Hoe wil je dat wij je noemen?</p>
-                    <input type="text" id="settings-name" placeholder="Jouw naam">
-                    <button onclick="saveSettings()" style="width: auto;">Profiel Opslaan</button>
+                    <h3>Profielnaam</h3>
+                    <input type="text" id="settings-name" placeholder="Naam">
+                    <button onclick="saveSettings()">Opslaan</button>
                 </div>
             </div>
         </div>
@@ -460,7 +354,7 @@
     </main>
 
     <script>
-        /* --- CONFIGURATIE --- */
+        /* --- FIREBASE CONFIG (EXACT HETZELFDE ALS JOUW WERKENDE VERSIE) --- */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
           authDomain: "study-start-c510c.firebaseapp.com",
@@ -481,7 +375,7 @@
         let timeLeft = 25 * 60;
         let globalContext = ""; 
 
-        /* --- AUTHENTICATIE --- */
+        /* --- AUTH --- */
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
@@ -508,9 +402,16 @@
             }
         });
 
-        /* --- UX FUNCTIES --- */
+        /* --- UI LOGICA --- */
         function toggleSidebar() {
-            document.getElementById('app-sidebar').classList.toggle('open');
+            const sb = document.getElementById('app-sidebar');
+            // Desktop: toggle class 'closed' (standaard open)
+            if(window.innerWidth > 1000) {
+                sb.classList.toggle('closed');
+            } else {
+                // Mobiel: toggle class 'open' (standaard dicht)
+                sb.classList.toggle('open');
+            }
         }
 
         function showToast(message) {
@@ -521,31 +422,26 @@
         }
 
         function navigate(id, element) {
-            // Switch tabs
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
             
-            // Update Sidebar
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
 
-            // Update Header Title
-            const titles = {'planning': 'Planning', 'cijfers': 'Cijfers', 'notities': 'Notities', 'timer': 'Timer', 'instellingen': 'Instellingen'};
+            const titles = {'planning': 'Agenda', 'cijfers': 'Cijfers', 'notities': 'Notities', 'timer': 'Timer', 'instellingen': 'Instellingen'};
             document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
             
-            // Close mobile menu
-            if(window.innerWidth <= 1024) document.getElementById('app-sidebar').classList.remove('open');
+            if(window.innerWidth <= 1000) document.getElementById('app-sidebar').classList.remove('open');
         }
 
         function copyLink() {
             const copyText = document.getElementById("shareLinkInput");
             copyText.select();
-            copyText.setSelectionRange(0, 99999); 
             document.execCommand("copy");
-            showToast("Link gekopieerd naar klembord! 📋");
+            showToast("Link gekopieerd! 📋");
         }
 
-        /* --- INIT LOGICA --- */
+        /* --- INIT APP --- */
         function checkAccess(targetUid, email) {
             db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get()
             .then(doc => {
@@ -553,7 +449,7 @@
                     userRole = 'edit'; 
                     initApp();
                 } else {
-                    alert("Geen toegang tot deze planning.");
+                    alert("Geen toegang.");
                     window.location.href = window.location.pathname;
                 }
             });
@@ -571,7 +467,6 @@
             initPlanner();
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
             
-            // Timer Event Listener (Directe update fix)
             const tInput = document.getElementById('timerInput');
             tInput.addEventListener('input', function() {
                 stopTimer();
@@ -588,60 +483,55 @@
         /* --- COLLAB --- */
         function addCollaborator() {
             const email = document.getElementById('collabEmail').value.toLowerCase().trim();
-            if(!email) return showToast("Vul een geldig e-mailadres in");
+            if(!email) return showToast("Vul e-mail in");
             db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({added: new Date()})
-            .then(() => { showToast('Docent/Ouder toegevoegd! ✅'); document.getElementById('collabEmail').value = ''; });
+            .then(() => { showToast('Toegevoegd! ✅'); document.getElementById('collabEmail').value = ''; });
         }
-
         function loadCollaborators() {
             db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(snap => {
                 const list = document.getElementById('collaborators-list'); list.innerHTML='';
                 snap.forEach(doc => {
-                    list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
-                        <span>👤 ${doc.id}</span> 
-                        <button onclick="removeCollab('${doc.id}')" style="width:auto; padding:4px 8px; font-size:0.7em; background:#fee2e2; color:#b91c1c;">Verwijder</button>
+                    list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;">
+                        <span>${doc.id}</span> <span onclick="removeCollab('${doc.id}')" style="cursor:pointer; color:red;">&times;</span>
                     </div>`;
                 });
             });
         }
-        function removeCollab(e) { if(confirm('Toegang intrekken?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
+        function removeCollab(e) { if(confirm('Verwijderen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
 
-        /* --- PLANNER CORE --- */
+        /* --- PLANNER LOGICA --- */
         function generateAutoPlanning() {
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
             const dateVal = document.getElementById('autoDatumInput').value;
-            if(!vak || !hst || !dateVal) return showToast("Vul alle velden in! ⚠️");
+            if(!vak || !dateVal) return showToast("Vul vak en datum in");
             
             const toetsDate = new Date(dateVal);
             let curr = new Date(); 
-            // Start op volgende maandag als vandaag weekend is, anders huidige week
             const day = curr.getDay() || 7; 
             if (day !== 1) curr.setHours(0,0,0,0); 
             
             const batch = db.batch();
             
             while(curr <= toetsDate) {
-                 const end = new Date(curr); end.setDate(curr.getDate()+6); // Week eindigt 6 dagen later
-                 // Zorg dat curr op maandag staat voor de weekStart
+                 const end = new Date(curr); end.setDate(curr.getDate()+6);
                  const weekStart = new Date(curr); 
                  weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
 
                  const id = `${vak}-${weekStart.getTime()}`;
-                 
                  batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
                      weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
                      weekEnd: firebase.firestore.Timestamp.fromDate(end),
                      weekNummer: getWeekNumber(weekStart),
                      vak: vak,
                      thuisDoen: `Oefenen ${vak} ${hst}`,
-                     bijlesDoen: `Vragen voorbereiden ${hst}`,
+                     bijlesDoen: ``,
                      isAfgerond: false, isVakantie: false, isBijlesNodig: true,
                      groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`
                  });
                  curr.setDate(curr.getDate()+7);
             }
-            batch.commit().then(() => { showToast("Planning gegenereerd! 📅"); document.getElementById('autoVakInput').value=''; });
+            batch.commit().then(() => { showToast("Gepland! 📅"); document.getElementById('autoVakInput').value=''; });
         }
 
         function initPlanner() {
@@ -661,15 +551,12 @@
 
                 const grouped = {};
                 globalContext = ""; 
-
                 snapshot.forEach(doc => {
                     const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
                     const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
                     if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
-                    
                     globalContext += `W${data.weekNummer}: ${data.vak}. `;
                 });
-                
                 const keys = Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate);
                 keys.forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
             });
@@ -677,127 +564,6 @@
 
         function renderGroupedRow(container, items, isEditable) {
             const first = items[0];
-            const weekEndStr = first.weekEnd.toDate().toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
             const isHoliday = items.some(i => i.isVakantie);
             const row = document.createElement('tr');
-            if (isHoliday) row.classList.add('is-holiday');
-
-            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
-
-            items.forEach((item, index) => {
-                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 10px;' : '';
-                vakHtml += `<div style="${border} font-weight:700; color:var(--primary); padding-top:8px;">${item.vak}</div>`;
-                
-                thuisHtml += `<div style="${border}">
-                    <textarea class="editable-area" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''} style="width:100%;">${isHoliday ? '🌴 LEKKER VRIJ!' : item.thuisDoen}</textarea>
-                </div>`;
-                
-                const bijlesStyle = item.isBijlesNodig === false ? 'opacity:0.4;' : '';
-                bijlesHtml += `<div style="${border}; display:flex; align-items:center; gap:8px; ${bijlesStyle}">
-                    <input type="checkbox" title="Bijles nodig?" ${item.isBijlesNodig!==false?'checked':''} onchange="updateField('${item.id}', 'isBijlesNodig', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:16px; height:16px; margin:0;">
-                    <textarea class="editable-area" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''} style="width:100%; font-size:0.9em;">${isHoliday ? '-' : item.bijlesDoen}</textarea>
-                </div>`;
-                
-                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:100%; min-height:45px;">
-                    <input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:20px; height:20px; cursor:pointer; accent-color: var(--success);">
-                    ${isEditable ? `<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>` : ''}
-                </div>`;
-            });
-
-            row.innerHTML = `
-                <td style="border-right: 1px solid var(--border); vertical-align:top;">
-                    <div style="font-weight:800; font-size:1.2em; color:var(--text-main);">W${first.weekNummer}</div>
-                    <div style="font-size:0.75em; color:var(--text-muted); margin-bottom:5px;">t/m ${weekEndStr}</div>
-                    <label style="font-size:0.7em; cursor:pointer; display:flex; align-items:center; gap:4px; color:var(--text-muted);">
-                        <input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:auto; margin:0;"> Vakantie
-                    </label>
-                </td>
-                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>
-            `;
-            container.appendChild(row);
-        }
-
-        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
-        function deleteItem(docId) { if (userRole !== 'read' && confirm("Item verwijderen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
-        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
-
-        /* --- EXPORT --- */
-        function exportToICS() {
-             if(!globalContext) return showToast("Geen planning gevonden.");
-             alert("Kopieer deze tekst naar een .ics bestand (vereenvoudigde versie):\n\nBEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStart//NL\n" + globalContext);
-        }
-
-        /* --- CIJFERS & NOTITIES --- */
-        function addGrade() { 
-            const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value), w=parseFloat(document.getElementById('gradeWeight').value); 
-            if(s&&g) {
-                db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, weight:w, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
-                .then(() => { showToast("Cijfer toegevoegd! 🎉"); document.getElementById('gradeValue').value=''; });
-            }
-        }
-        function loadGrades() { 
-            db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => { 
-                const l = document.getElementById('grades-list'); l.innerHTML = ''; 
-                if(snap.empty) l.innerHTML = '<div style="color:var(--text-muted); font-style:italic;">Nog geen cijfers.</div>';
-                snap.forEach(d => {
-                    const val = d.data().grade;
-                    const color = val >= 5.5 ? 'var(--success)' : 'var(--danger)';
-                    l.innerHTML += `<div style="background:white; padding:15px; border-radius:8px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600;">${d.data().subject}</span>
-                        <span style="font-weight:800; font-size:1.2em; color:${color};">${val}</span>
-                    </div>`; 
-                }); 
-            }); 
-        }
-
-        function addNote() { 
-            const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; 
-            if(s) {
-                db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
-                .then(() => { showToast("Notitie opgeslagen! 💾"); document.getElementById('noteContent').value=''; });
-            }
-        }
-        function loadNotes() { 
-            db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
-                const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
-                if(snap.empty) l.innerHTML = '<div style="color:var(--text-muted);">Nog geen notities gemaakt.</div>';
-                snap.forEach(d => l.innerHTML += `
-                    <div class="card" style="margin-bottom:0;">
-                        <div style="font-weight:700; color:var(--primary); margin-bottom:5px;">${d.data().subject}</div>
-                        <div style="white-space: pre-wrap; color:var(--text-main); line-height:1.5;">${d.data().content}</div>
-                    </div>`); 
-            }); 
-        }
-
-        /* --- TIMER --- */
-        function updateTimerDisplay() { 
-            const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
-            const s = (timeLeft%60).toString().padStart(2,'0'); 
-            document.getElementById('timer-display').innerText = `${m}:${s}`; 
-            document.title = `${m}:${s} - Focus`;
-        }
-        function startTimer() { 
-            if(!timerInterval) {
-                document.getElementById('btn-start').innerText = "Bezig...";
-                document.getElementById('btn-start').style.opacity = "0.7";
-                timerInterval = setInterval(() => { 
-                    if(timeLeft>0){timeLeft--;updateTimerDisplay()} else {stopTimer(); showToast("Tijd is om! ⏰"); var audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); audio.play();} 
-                }, 1000); 
-            }
-        }
-        function stopTimer() { 
-            clearInterval(timerInterval); 
-            timerInterval = null; 
-            document.getElementById('btn-start').innerText = "Start";
-            document.getElementById('btn-start').style.opacity = "1";
-            document.title = "Study-Start Pro";
-        }
-
-        function saveSettings() { 
-            const n=document.getElementById('settings-name').value; 
-            if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{ showToast("Profiel bijgewerkt!"); document.getElementById('user-display-name').innerText=n; }); 
-        }
-    </script>
-</body>
-</html>
+            if (isHoliday
