@@ -32,9 +32,8 @@
             --success-text: #166534;
             --holiday-bg: #fffbeb;
             --holiday-text: #b45309;
-            --test-bg: #fef2f2;
-            --test-text: #991b1b;
-            --test-border: #fca5a5;
+            --holiday-btn-bg: #fef3c7;
+            --holiday-btn-text: #92400e;
         }
 
         * { box-sizing: border-box; }
@@ -146,30 +145,29 @@
         .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
         .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        .studie-tabel td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .studie-tabel td { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
         .clean-input { width: 100%; background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 4px; resize: none; min-height: 32px; font-family: inherit; color: var(--text-main); margin: 0; }
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); }
 
-        /* DATUMS ONDER WEEK */
-        .week-dates { font-size: 0.75em; color: var(--text-muted); font-weight: 400; display: block; margin-top: 4px; }
-
-        /* VAKANTIE KNOP & STYLING */
+        /* VAKANTIE & DATUM STYLING */
+        .week-dates { font-size: 0.75em; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        
         .holiday-btn {
-            display: inline-block; font-size: 0.75em; padding: 4px 8px; border-radius: 6px;
-            cursor: pointer; background: #e2e8f0; color: #64748b; font-weight: 600; margin-top: 8px;
-            transition: 0.2s; text-align: center; border: 1px solid transparent;
+            display: block; font-size: 0.7em; padding: 4px; border-radius: 4px;
+            cursor: pointer; background: #e2e8f0; color: #64748b; text-align: center;
+            border: 1px solid transparent; width: 100%; transition: 0.2s;
         }
         .holiday-btn:hover { background: #cbd5e1; }
-        .holiday-btn.active { background: #fcd34d; color: #78350f; border-color: #fbbf24; }
+        
+        .holiday-btn.active { 
+            background: var(--holiday-btn-bg); color: var(--holiday-btn-text); 
+            border-color: #fbbf24; font-weight: 700;
+        }
 
         .is-holiday td { background-color: var(--holiday-bg); }
         .is-holiday .clean-input { color: var(--holiday-text); font-weight: 600; }
-
-        /* TOETS STYLING */
-        .is-test-week td { background-color: var(--test-bg); border-bottom: 2px solid var(--test-border); }
-        .is-test-week .clean-input { color: var(--test-text); font-weight: 700; }
 
         /* DONE STATUS STYLING */
         .row-done .clean-input { text-decoration: line-through; color: var(--success-text); opacity: 0.7; }
@@ -422,4 +420,390 @@
           projectId: "study-start-c510c",
           storageBucket: "study-start-c510c.firebasestorage.app",
           messagingSenderId: "960911379164",
-          appId: "1:960911379164:web:ad8648cfa
+          appId: "1:960911379164:web:ad8648cfa2fe65f8620219"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserId = null, viewUserId = null, userRole = 'owner'; 
+        let timerInterval = null, timeLeft = 25 * 60;
+        let globalContext = ""; 
+        let currentOpenNoteId = null;
+        let currentNotePdfData = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUserId = user.uid;
+                document.getElementById('user-display-name').innerText = user.displayName || user.email.split('@')[0];
+                document.getElementById('settings-name').value = user.displayName || "";
+                
+                const params = new URLSearchParams(window.location.search);
+                const targetUid = params.get('uid');
+
+                if (targetUid && targetUid !== currentUserId) {
+                    viewUserId = targetUid; checkAccess(targetUid, user.email);
+                } else {
+                    viewUserId = currentUserId; userRole = 'owner'; initApp();
+                }
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+                document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
+            } else {
+                document.getElementById('login-page').style.display = 'flex';
+            }
+        });
+
+        /* --- UI LOGICA --- */
+        function toggleSidebar() {
+            const sb = document.getElementById('app-sidebar');
+            const btn = document.getElementById('sidebar-btn');
+            const isDesktop = window.innerWidth > 1000;
+            if(isDesktop) {
+                sb.classList.toggle('closed');
+                btn.innerHTML = sb.classList.contains('closed') ? "☰" : "←";
+            } else {
+                sb.classList.toggle('open');
+                btn.innerHTML = sb.classList.contains('open') ? "←" : "☰";
+            }
+        }
+
+        function navigate(id, element) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${id}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            if(window.innerWidth <= 1000) {
+                document.getElementById('app-sidebar').classList.remove('open');
+                document.getElementById('sidebar-btn').innerHTML = "☰";
+            }
+        }
+
+        function showToast(message) {
+            const x = document.getElementById("toast");
+            x.innerText = message; x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        /* --- INIT --- */
+        function checkAccess(targetUid, email) {
+            db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get().then(doc => {
+                if (doc.exists) { userRole = 'edit'; initApp(); } 
+                else { alert("Geen toegang."); window.location.href = window.location.pathname; }
+            });
+        }
+        function initApp() {
+            if (userRole !== 'owner') {
+                document.getElementById('shared-badge').style.display = 'inline-block';
+                document.getElementById('share-card').style.display = 'none';
+                document.getElementById('auto-planner-card').style.display = 'none';
+                document.getElementById('tests-card').style.display = 'none';
+                document.getElementById('settings-name').disabled = true;
+            } else {
+                loadCollaborators();
+                loadTests(); 
+            }
+            initPlanner();
+            if(userRole === 'owner') { loadNotes(); loadGrades(); }
+            
+            document.getElementById('timerInput').addEventListener('input', function() {
+                stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
+            });
+            if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
+        }
+
+        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function signOutUser() { auth.signOut().then(() => location.reload()); }
+
+        /* --- PLANNING & TOETSEN --- */
+        function generateAutoPlanning() {
+            const vak = document.getElementById('autoVakInput').value;
+            const hst = document.getElementById('autoHoofdstukInput').value;
+            const startVal = document.getElementById('autoStartDate').value;
+            const endVal = document.getElementById('autoDatumInput').value;
+            const totalPars = parseInt(document.getElementById('autoParagraphs').value) || 0;
+            
+            if(!vak || !endVal) return showToast("Vul vak en toetsdatum in");
+            
+            const startDate = startVal ? new Date(startVal) : new Date();
+            const toetsDate = new Date(endVal);
+            
+            if(startDate > toetsDate) return showToast("Startdatum moet voor toetsdatum liggen!");
+
+            let curr = new Date(startDate); 
+            const day = curr.getDay() || 7; 
+            if (day !== 1) curr.setHours(0,0,0,0);
+            
+            // Bereken aantal weken
+            let tempDate = new Date(curr);
+            let weeksCount = 0;
+            while(tempDate <= toetsDate) { weeksCount++; tempDate.setDate(tempDate.getDate()+7); }
+            
+            let parsPerWeek = totalPars > 0 ? totalPars / weeksCount : 0;
+            let currentPar = 1;
+
+            db.collection('users').doc(viewUserId).collection('tests').add({
+                subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
+                chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(docRef => {
+                const testId = docRef.id;
+                const batch = db.batch();
+                
+                while(curr <= toetsDate) {
+                     const weekStart = new Date(curr); 
+                     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
+                     const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
+                     const id = `${vak}-${weekStart.getTime()}`;
+                     
+                     // Bepaal huiswerk tekst
+                     let homeworkText = `Oefenen ${vak} ${hst}`;
+                     if(totalPars > 0) {
+                         let parStart = Math.floor(currentPar);
+                         let parEnd = Math.floor(currentPar + parsPerWeek - 0.1); 
+                         if (parEnd > totalPars) parEnd = totalPars;
+                         if (parStart > totalPars) parStart = totalPars;
+                         
+                         if(parStart <= parEnd) {
+                             homeworkText = `Leren ${vak} ${hst} §${parStart} t/m §${parEnd}`;
+                         } else {
+                             homeworkText = `Herhalen ${vak} ${hst}`;
+                         }
+                         currentPar += parsPerWeek;
+                     }
+
+                     batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
+                         weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
+                         weekEnd: firebase.firestore.Timestamp.fromDate(end),
+                         weekNummer: getWeekNumber(weekStart),
+                         vak: vak,
+                         thuisDoen: homeworkText,
+                         bijlesDoen: ``,
+                         isAfgerond: false, isVakantie: false, 
+                         groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
+                         relatedTestId: testId 
+                     });
+                     curr.setDate(curr.getDate() + 7);
+                }
+                batch.commit().then(() => { showToast("Ingepland! 📅"); document.getElementById('autoVakInput').value=''; });
+            });
+        }
+
+        function loadTests() {
+            db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
+                const con = document.getElementById('tests-list-container'); con.innerHTML = '';
+                if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
+                
+                let tests = [];
+                snap.forEach(doc => tests.push({id: doc.id, ...doc.data()}));
+                tests.sort((a,b) => (a.date && b.date) ? a.date.seconds - b.date.seconds : 0);
+
+                tests.forEach(d => {
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : 'Datum onbekend';
+                    con.innerHTML += `
+                    <div class="test-item">
+                        <div>
+                            <div style="font-weight:600; color:var(--primary);">${d.subject || 'Geen vak'}</div>
+                            <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter || ''} • ${dateStr}</div>
+                        </div>
+                        <button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;" title="Verwijder toets en planning">❌</button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteTest(testId) {
+            if(!confirm("Weet je zeker? Planning wordt ook gewist.")) return;
+            db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => {
+                db.collection('users').doc(viewUserId).collection('planner_items').where('relatedTestId', '==', testId).get().then(snap => {
+                    const batch = db.batch();
+                    snap.forEach(doc => batch.delete(doc.ref));
+                    batch.commit().then(() => showToast("Verwijderd."));
+                });
+            });
+        }
+
+        function initPlanner() {
+            db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
+                if(snapshot.empty) { document.getElementById('empty-planner').style.display = 'block'; document.querySelector('.studie-tabel').style.display = 'none'; return; } 
+                else { document.getElementById('empty-planner').style.display = 'none'; document.querySelector('.studie-tabel').style.display = 'table'; }
+
+                const grouped = {}; globalContext = ""; 
+                snapshot.forEach(doc => {
+                    const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
+                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
+                    if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
+                    globalContext += `W${data.weekNummer}: ${data.vak}. `;
+                });
+                Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate).forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
+            });
+        }
+
+        function renderGroupedRow(container, items, isEditable) {
+            const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
+            const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
+            
+            const allDone = items.every(i => i.isAfgerond);
+            if(allDone) row.classList.add('row-done');
+
+            // Datum berekening
+            const sDate = first.weekStart.toDate();
+            const eDate = first.weekEnd.toDate();
+            const dateStr = `${sDate.getDate()} ${sDate.toLocaleString('nl-NL',{month:'short'})} - ${eDate.getDate()} ${eDate.toLocaleString('nl-NL',{month:'short'})}`;
+
+            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
+
+            items.forEach((item, index) => {
+                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
+                const doneClass = item.isAfgerond ? 'item-done' : '';
+                
+                vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
+                thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
+                bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;" title="${item.isAfgerond ? 'Gedaan' : 'Nog doen'}">
+                    <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
+                    ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}
+                </div>`;
+            });
+
+            row.innerHTML = `
+                <td style="border-right:1px solid var(--border); vertical-align:top;">
+                    <div style="font-weight:700;">W${first.weekNummer}</div>
+                    <span class="week-dates">${dateStr}</span>
+                    <div class="holiday-btn ${isHoliday ? 'active' : ''}" onclick="toggleHoliday('${items.map(i=>i.id).join(',')}', ${!isHoliday})">${isHoliday ? 'VAKANTIE!' : 'Zet op Vakantie'}</div>
+                </td>
+                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
+            container.appendChild(row);
+        }
+
+        function updateField(id, f, v) { if(userRole!=='read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
+        function toggleHoliday(ids, val) { if(userRole!=='read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+
+        function printAgenda() {
+            document.body.classList.add('print-mode-agenda');
+            window.print();
+            document.body.classList.remove('print-mode-agenda');
+        }
+
+        /* --- NOTITIES --- */
+        function createNewNote() {
+            db.collection('users').doc(viewUserId).collection('subject_notes').add({
+                subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((doc) => { 
+                showToast("Aangemaakt!"); 
+                openNoteModal(doc.id, "Nieuwe Notitie", "", null); 
+            });
+        }
+
+        function loadNotes() { 
+            db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
+                snap.forEach(d => {
+                    const data = d.data();
+                    const div = document.createElement("div"); div.innerHTML = data.content || "";
+                    const textPreview = div.textContent || div.innerText || "";
+                    const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : '';
+                    
+                    l.innerHTML += `
+                    <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'>
+                        <div class="note-preview-title">${data.subject}</div>
+                        <div class="note-preview-body">${textPreview}</div>
+                        ${pdfBadge}
+                    </div>`;
+                }); 
+            }); 
+        }
+
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('modal-note-content').focus();
+        }
+
+        function printNote() {
+            document.body.classList.add('print-mode-note');
+            window.print();
+            document.body.classList.remove('print-mode-note');
+        }
+
+        function openNoteModal(id, title, content, hasPdf) {
+            currentOpenNoteId = id;
+            document.getElementById('modal-note-title').value = title;
+            
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
+                if(doc.exists) {
+                    document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
+                    if(doc.data().pdfData) {
+                        currentNotePdfData = doc.data().pdfData;
+                        document.getElementById('current-pdf-link').innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                    } else {
+                        document.getElementById('current-pdf-link').innerHTML = "";
+                    }
+                }
+            });
+            document.getElementById('note-modal').style.display = 'flex';
+            document.getElementById('pdf-upload-input').value = ""; 
+        }
+
+        function closeNoteModal() {
+            document.getElementById('note-modal').style.display = 'none';
+            currentOpenNoteId = null;
+        }
+
+        function saveModalNote() {
+            if(!currentOpenNoteId) return;
+            const title = document.getElementById('modal-note-title').value;
+            const content = document.getElementById('modal-note-content').innerHTML; 
+            const fileInput = document.getElementById('pdf-upload-input');
+            
+            const updateData = { subject: title, content: content };
+
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 400000) { 
+                    alert("PDF is te groot! Maximaal 400KB."); return; 
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    updateData.pdfData = e.target.result; 
+                    pushUpdate(updateData);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                pushUpdate(updateData);
+            }
+        }
+
+        function pushUpdate(data) {
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).update(data)
+            .then(() => { showToast("Opgeslagen! ✅"); closeNoteModal(); });
+        }
+
+        function deleteCurrentNote() {
+            if(confirm("Notitie verwijderen?")) {
+                db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).delete()
+                .then(() => { closeNoteModal(); showToast("Verwijderd."); });
+            }
+        }
+
+        /* --- OVERIG --- */
+        function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
+        function loadCollaborators() { db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(s=>{ const l=document.getElementById('collaborators-list'); l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.id}</span><span onclick="removeCollab('${d.id}')" style="cursor:pointer; color:red;">&times;</span></div>`); }); }
+        function removeCollab(id) { if(confirm('Wissen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(id).delete(); }
+        function copyLink() { const t=document.getElementById("shareLinkInput"); t.select(); document.execCommand("copy"); showToast("Gekopieerd!"); }
+
+        function addGrade() { const s=document.getElementById('gradeSubject').value,g=parseFloat(document.getElementById('gradeValue').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s,grade:g,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{showToast("Cijfer opgeslagen");document.getElementById('gradeValue').value='';}); }
+        function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt','desc').onSnapshot(s=>{ const l=document.getElementById('grades-list');l.innerHTML=''; s.forEach(d=>{ const c=d.data().grade>=5.5?'#16a34a':'#dc2626'; l.innerHTML+=`<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${c};">${d.data().grade}</span></div>`; }); }); }
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{showToast("Opgeslagen!");}); }
+
+        /* --- TIMER --- */
+        function updateTimerDisplay() { const m=Math.floor(timeLeft/60).toString().padStart(2,'0'), s=(timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText=`${m}:${s}`; document.title=`${m}:${s} - Focus`; }
+        function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
+        function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
+        function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
+    </script>
+</body>
+</html>
