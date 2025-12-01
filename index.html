@@ -21,13 +21,11 @@
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --primary-bg: #eff6ff;
-            
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
-            
             --sidebar-width: 250px;
             --radius: 8px;
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
@@ -43,7 +41,7 @@
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
-            font-size: 13.5px; /* 80% Zoom Gevoel */
+            font-size: 13.5px; /* Uitgezoomd */
         }
 
         /* --- SIDEBAR --- */
@@ -51,15 +49,13 @@
             width: var(--sidebar-width); 
             background: var(--bg-card); 
             border-right: 1px solid var(--border);
-            display: flex; 
-            flex-direction: column; 
+            display: flex; flex-direction: column; 
             padding: 20px 15px; 
             flex-shrink: 0; 
             transition: margin-left 0.3s ease;
             z-index: 50;
         }
 
-        /* Desktop: Closed class zorgt voor inklappen */
         #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
 
         .sidebar-header {
@@ -69,16 +65,10 @@
         }
 
         .nav-item { 
-            padding: 10px 12px; 
-            margin-bottom: 4px; 
-            border-radius: var(--radius); 
-            color: var(--text-muted); 
-            font-weight: 500; 
-            cursor: pointer; 
-            transition: all 0.15s; 
-            display: flex; align-items: center; gap: 10px; 
+            padding: 10px 12px; margin-bottom: 4px; border-radius: var(--radius); 
+            color: var(--text-muted); font-weight: 500; cursor: pointer; 
+            transition: all 0.15s; display: flex; align-items: center; gap: 10px; 
         }
-
         .nav-item:hover { background-color: var(--primary-bg); color: var(--primary); }
         .nav-item.active { background-color: var(--primary-bg); color: var(--primary); font-weight: 600; }
 
@@ -97,10 +87,11 @@
         /* Toggle Button */
         .toggle-btn {
             background: transparent; border: none; cursor: pointer; 
-            font-size: 1.4em; padding: 5px 10px; border-radius: 6px;
-            color: var(--text-main); transition: 0.2s; width: 40px; text-align: center;
+            font-size: 1.4em; padding: 5px; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; color: var(--text-main); transition: 0.2s;
         }
-        .toggle-btn:hover { background: var(--border); }
+        .toggle-btn:hover { background: var(--border); color: var(--primary); }
 
         /* --- UI ELEMENTS --- */
         .card { 
@@ -127,24 +118,8 @@
             font-size: 0.95em; transition: 0.2s; 
         }
         button:hover { background: var(--primary-hover); }
-        
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
         button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
-
-        /* --- NOTITIES (Live Edit Style) --- */
-        .note-card {
-            border-left: 4px solid var(--primary);
-            position: relative;
-        }
-        .note-title-input {
-            font-weight: 700; border: none; padding: 5px 0; font-size: 1.1em; background: transparent; margin-bottom: 5px; color: var(--text-main);
-        }
-        .note-body-input {
-            border: none; resize: none; background: transparent; font-family: inherit; height: 100px; padding: 5px 0; color: #4b5563;
-        }
-        .note-title-input:focus, .note-body-input:focus {
-            outline: none; background: #f8fafc;
-        }
 
         /* --- AGENDA (Jump-in) --- */
         .table-container { 
@@ -159,7 +134,6 @@
         }
         .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
-        /* Clean Input = ziet eruit als tekst */
         .clean-input {
             width: 100%; background: transparent; border: 1px solid transparent; 
             padding: 6px; border-radius: 4px; resize: none; min-height: 32px;
@@ -167,6 +141,18 @@
         }
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); }
+
+        /* --- NOTITIES (Live Edit) --- */
+        .note-card { border-left: 4px solid var(--primary); position: relative; }
+        .note-title { 
+            font-weight: 700; border: none; font-size: 1.1em; background: transparent; 
+            width: 100%; margin-bottom: 5px; color: var(--text-main); 
+        }
+        .note-body { 
+            border: none; resize: none; background: transparent; font-family: inherit; 
+            width: 100%; height: 120px; color: #374151; line-height: 1.5;
+        }
+        .note-title:focus, .note-body:focus { outline: none; background: #f8fafc; }
 
         /* --- TOETSEN LIJST --- */
         .test-item {
@@ -230,7 +216,7 @@
     <main id="main-content" style="display: none;">
         <header>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="toggle-btn" id="sidebar-icon" onclick="toggleSidebar()">☰</button>
+                <button class="toggle-btn" id="sidebar-btn" onclick="toggleSidebar()">☰</button>
                 <div id="page-title" style="font-weight: 700; color: var(--text-main);">Overzicht</div>
                 <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">
                     👁️ Meekijker
@@ -327,7 +313,7 @@
                 </div>
                 <div style="flex: 1;">
                     <h2>Notities</h2>
-                    <p style="color:var(--text-muted); font-size:0.9em; margin-bottom:15px;">Klik op een notitie om te bewerken (automatisch opslaan).</p>
+                    <p style="color:var(--text-muted); font-size:0.9em; margin-bottom:15px;">Klik op de titel of tekst om te bewerken.</p>
                     <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
@@ -402,15 +388,15 @@
         /* --- UI FUNCTIES --- */
         function toggleSidebar() {
             const sb = document.getElementById('app-sidebar');
-            const icon = document.getElementById('sidebar-icon');
+            const btn = document.getElementById('sidebar-btn');
             const isDesktop = window.innerWidth > 1000;
             
             if(isDesktop) {
                 sb.classList.toggle('closed');
-                icon.innerText = sb.classList.contains('closed') ? "☰" : "←";
+                btn.innerHTML = sb.classList.contains('closed') ? "☰" : "←";
             } else {
                 sb.classList.toggle('open');
-                icon.innerText = sb.classList.contains('open') ? "←" : "☰";
+                btn.innerHTML = sb.classList.contains('open') ? "←" : "☰";
             }
         }
 
@@ -422,7 +408,7 @@
             document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
             if(window.innerWidth <= 1000) {
                 document.getElementById('app-sidebar').classList.remove('open');
-                document.getElementById('sidebar-icon').innerText = "☰";
+                document.getElementById('sidebar-btn').innerHTML = "☰";
             }
         }
 
@@ -445,9 +431,10 @@
                 document.getElementById('share-card').style.display = 'none';
                 document.getElementById('auto-planner-card').style.display = 'none';
                 document.getElementById('tests-card').style.display = 'none';
+                document.getElementById('settings-name').disabled = true;
             } else {
                 loadCollaborators();
-                loadTests(); 
+                loadTests(); // Laad de lijst met toetsen
             }
             initPlanner();
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
@@ -456,8 +443,8 @@
             document.getElementById('timerInput').addEventListener('input', function() {
                 stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
             });
-            // Init sidebar icon
-            if(window.innerWidth > 1000) document.getElementById('sidebar-icon').innerText = "←";
+            // Init sidebar icon voor desktop
+            if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
         }
 
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
@@ -473,14 +460,14 @@
             const toetsDate = new Date(dateVal);
             let curr = new Date(); const day = curr.getDay() || 7; if (day !== 1) curr.setHours(0,0,0,0);
             
-            // 1. Toets maken
+            // Stap 1: Toets aanmaken in 'tests' collectie
             db.collection('users').doc(viewUserId).collection('tests').add({
                 subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
                 chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(docRef => {
                 const testId = docRef.id;
                 
-                // 2. Planning items koppelen
+                // Stap 2: Planning maken gekoppeld aan testId
                 const batch = db.batch();
                 while(curr <= toetsDate) {
                      const end = new Date(curr); end.setDate(curr.getDate()+6);
@@ -493,4 +480,142 @@
                          weekNummer: getWeekNumber(weekStart),
                          vak: vak,
                          thuisDoen: `Oefenen ${vak} ${hst}`,
-                         bijlesDoen:
+                         bijlesDoen: ``,
+                         isAfgerond: false, isVakantie: false, 
+                         groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
+                         relatedTestId: testId // DE KOPPELING
+                     });
+                     curr.setDate(curr.getDate()+7);
+                }
+                batch.commit().then(() => { showToast("Ingepland! 📅"); document.getElementById('autoVakInput').value=''; });
+            });
+        }
+
+        // Lijst met toetsen laden
+        function loadTests() {
+            db.collection('users').doc(viewUserId).collection('tests').orderBy('date', 'asc').onSnapshot(snap => {
+                const con = document.getElementById('tests-list-container'); con.innerHTML = '';
+                if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : '?';
+                    con.innerHTML += `
+                    <div class="test-item">
+                        <div>
+                            <div style="font-weight:600; color:var(--primary);">${d.subject}</div>
+                            <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter} • ${dateStr}</div>
+                        </div>
+                        <button onclick="deleteTest('${doc.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer; padding:0 5px;" title="Verwijder toets en planning">❌</button>
+                    </div>`;
+                });
+            });
+        }
+
+        // Toets + Planning verwijderen
+        function deleteTest(testId) {
+            if(!confirm("Weet je het zeker? De hele planning voor deze toets wordt ook verwijderd.")) return;
+            
+            // 1. Verwijder toets
+            db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => {
+                // 2. Zoek alle planner items die bij deze toets horen
+                db.collection('users').doc(viewUserId).collection('planner_items').where('relatedTestId', '==', testId).get().then(snap => {
+                    const batch = db.batch();
+                    snap.forEach(doc => batch.delete(doc.ref));
+                    batch.commit().then(() => showToast("Toets & planning verwijderd."));
+                });
+            });
+        }
+
+        /* --- PLANNER RENDEREN --- */
+        function initPlanner() {
+            db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
+                
+                if(snapshot.empty) {
+                    document.getElementById('empty-planner').style.display = 'block';
+                    document.querySelector('.studie-tabel').style.display = 'none';
+                    return;
+                } else {
+                    document.getElementById('empty-planner').style.display = 'none';
+                    document.querySelector('.studie-tabel').style.display = 'table';
+                }
+
+                const grouped = {}; globalContext = ""; 
+                snapshot.forEach(doc => {
+                    const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
+                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
+                    if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
+                    globalContext += `W${data.weekNummer}: ${data.vak}. `;
+                });
+                Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate).forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
+            });
+        }
+
+        function renderGroupedRow(container, items, isEditable) {
+            const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
+            const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
+            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
+
+            items.forEach((item, index) => {
+                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
+                vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
+                thuisHtml += `<div style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
+                bijlesHtml += `<div style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;"><input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px;">${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3;">&times;</span>`:''}</div>`;
+            });
+
+            row.innerHTML = `
+                <td style="border-right:1px solid var(--border); vertical-align:top;"><div style="font-weight:700;">W${first.weekNummer}</div><label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable?'disabled':''} style="width:auto;"> Vakantie</label></td>
+                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
+            container.appendChild(row);
+        }
+
+        function updateField(id, f, v) { if(userRole!=='read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
+        function toggleHoliday(ids, val) { if(userRole!=='read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+
+        /* --- NOTITIES (GOOGLE DOCS STYLE) --- */
+        function createNewNote() {
+            const s = document.getElementById('newNoteSubject').value; if(!s) return showToast("Onderwerp?");
+            db.collection('users').doc(viewUserId).collection('subject_notes').add({
+                subject: s, content: "", createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { showToast("Aangemaakt!"); document.getElementById('newNoteSubject').value=''; });
+        }
+        function loadNotes() { 
+            db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
+                snap.forEach(d => {
+                    l.innerHTML += `
+                    <div class="card note-card">
+                        <input type="text" class="note-title" value="${d.data().subject}" onblur="updateNote('${d.id}', 'subject', this.value)">
+                        <textarea class="note-body" onblur="updateNote('${d.id}', 'content', this.value)" placeholder="Typ hier...">${d.data().content}</textarea>
+                        <button onclick="deleteNote('${d.id}')" style="background:transparent; color:#ef4444; font-size:0.8em; padding:0; width:auto; margin-top:5px; border:none;">Verwijder</button>
+                    </div>`;
+                }); 
+            }); 
+        }
+        function updateNote(id, f, v) { db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).update({[f]:v}); }
+        function deleteNote(id) { if(confirm("Notitie wissen?")) db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).delete(); }
+
+        /* --- OVERIG --- */
+        function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
+        function loadCollaborators() { db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(s=>{ const l=document.getElementById('collaborators-list'); l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.id}</span><span onclick="removeCollab('${d.id}')" style="cursor:pointer; color:red;">&times;</span></div>`); }); }
+        function removeCollab(id) { if(confirm('Wissen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(id).delete(); }
+        function copyLink() { const t=document.getElementById("shareLinkInput"); t.select(); document.execCommand("copy"); showToast("Gekopieerd!"); }
+        function exportToICS() { alert("Kopieer data: " + globalContext); }
+
+        function addGrade() { const s=document.getElementById('gradeSubject').value,g=parseFloat(document.getElementById('gradeValue').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s,grade:g,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{showToast("Cijfer opgeslagen");document.getElementById('gradeValue').value='';}); }
+        function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt','desc').onSnapshot(s=>{ const l=document.getElementById('grades-list');l.innerHTML=''; s.forEach(d=>{ const c=d.data().grade>=5.5?'#16a34a':'#dc2626'; l.innerHTML+=`<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${c};">${d.data().grade}</span></div>`; }); }); }
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{showToast("Opgeslagen!");}); }
+
+        /* --- TIMER --- */
+        function updateTimerDisplay() { const m=Math.floor(timeLeft/60).toString().padStart(2,'0'), s=(timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText=`${m}:${s}`; document.title=`${m}:${s} - Focus`; }
+        function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
+        function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
+        function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
+    </script>
+</body>
+</html>
