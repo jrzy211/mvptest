@@ -17,7 +17,6 @@
 
     <style>
         :root {
-            /* --- BLAUW THEMA --- */
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --primary-bg: #eff6ff;
@@ -46,11 +45,9 @@
 
         /* --- SIDEBAR --- */
         #app-sidebar { 
-            width: var(--sidebar-width); 
-            background: var(--bg-card); 
-            border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; 
-            padding: 20px 15px; flex-shrink: 0; 
+            width: var(--sidebar-width); background: var(--bg-card); 
+            border-right: 1px solid var(--border); display: flex; 
+            flex-direction: column; padding: 20px 15px; flex-shrink: 0; 
             transition: margin-left 0.3s ease; z-index: 50;
         }
         #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
@@ -70,10 +67,7 @@
         .nav-item.active { background-color: var(--primary-bg); color: var(--primary); font-weight: 600; }
 
         /* --- CONTENT --- */
-        #main-content { 
-            flex-grow: 1; display: flex; flex-direction: column; 
-            overflow-y: auto; position: relative; 
-        }
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
         
         header { 
             background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
@@ -104,9 +98,7 @@
             padding: 8px 10px; border-radius: 6px; font-family: inherit; font-size: 1em; 
             margin-bottom: 10px; transition: 0.2s;
         }
-        input:focus, select:focus, textarea:focus { 
-            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); 
-        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
 
         button { 
             width: 100%; background: var(--primary); color: white; border: none; 
@@ -117,46 +109,68 @@
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
         button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-        /* --- NOTITIES (PREVIEW CARDS) --- */
+        /* --- NOTITIES (EDITOR & MODAL) --- */
         .note-card { 
             border-left: 4px solid var(--primary); cursor: pointer; transition: transform 0.2s;
-            position: relative; overflow: hidden; height: 150px;
+            position: relative; overflow: hidden; height: 160px;
         }
         .note-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .note-preview-title { font-weight: 700; margin-bottom: 5px; color: var(--text-main); }
         .note-preview-body { font-size: 0.9em; color: var(--text-muted); white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
         .pdf-badge { font-size: 0.7em; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
 
-        /* --- NOTITIES MODAL (DOCS STYLE) --- */
+        /* Modal Overlay */
         #note-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000;
             justify-content: center; align-items: center;
         }
         .modal-content {
-            background: white; width: 90%; max-width: 800px; height: 85vh;
+            background: white; width: 90%; max-width: 900px; height: 90vh;
             border-radius: 12px; display: flex; flex-direction: column;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;
         }
         .modal-header {
-            padding: 15px 20px; border-bottom: 1px solid var(--border);
+            padding: 10px 20px; border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center; background: #f8fafc;
         }
-        .modal-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        /* Toolbar voor editor */
+        .editor-toolbar {
+            padding: 8px 20px; border-bottom: 1px solid var(--border); background: white;
+            display: flex; gap: 8px; align-items: center;
+        }
+        .tool-btn {
+            background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main);
+            width: auto; padding: 4px 10px; font-size: 0.9em; border-radius: 4px;
+        }
+        .tool-btn:hover { background: #e2e8f0; }
+
+        /* Het "papier" */
+        .modal-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; background: #fdfdfd; }
         
         #modal-note-title { 
-            font-size: 1.5em; font-weight: 700; border: none; background: transparent; 
-            width: 100%; outline: none; margin-bottom: 20px; color: var(--text-main);
+            font-size: 1.8em; font-weight: 800; border: none; background: transparent; 
+            width: 100%; outline: none; margin-bottom: 15px; color: var(--text-main);
         }
         #modal-note-content {
-            flex: 1; border: none; resize: none; outline: none; font-size: 1.1em; 
-            line-height: 1.6; color: #334155; font-family: 'Inter', sans-serif;
+            flex: 1; outline: none; font-size: 1.1em; line-height: 1.6; color: #334155; 
+            min-height: 300px; white-space: pre-wrap; /* Behoud enters */
         }
-        .pdf-section {
-            margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border);
+        
+        .pdf-section { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
+
+        /* PRINT STIJL */
+        @media print {
+            body * { visibility: hidden; }
+            #note-modal, #note-modal * { visibility: visible; }
+            #note-modal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; }
+            .modal-content { box-shadow: none; border: none; height: auto; width: 100%; max-width: 100%; }
+            .modal-header, .editor-toolbar, .pdf-section, .modal-footer-btns { display: none !important; }
+            #modal-note-content { color: black; }
         }
 
-        /* --- AGENDA --- */
+        /* --- AGENDA & TABLES --- */
         .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
         .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
@@ -177,7 +191,6 @@
         #tools-column { width: 300px; flex-shrink: 0; }
 
         #timer-display { font-size: 5em; font-weight: 700; color: var(--primary); margin: 15px 0; font-variant-numeric: tabular-nums; }
-        
         #toast { visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 2500; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em; opacity: 0; transition: 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
@@ -197,15 +210,30 @@
     <div id="note-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <span style="font-weight:600; color:var(--text-muted);">📝 Notitie Bewerken</span>
-                <div style="display:flex; gap:10px;">
+                <span style="font-weight:600; color:var(--text-muted);">Notitie Bewerken</span>
+                <div class="modal-footer-btns" style="display:flex; gap:10px;">
                     <button onclick="saveModalNote()" style="width:auto; padding: 6px 15px;">Opslaan</button>
                     <button onclick="closeNoteModal()" class="secondary" style="width:auto; padding: 6px 15px;">Sluiten</button>
                 </div>
             </div>
+            <div class="editor-toolbar">
+                <button class="tool-btn" onclick="execCmd('bold')" title="Dikgedrukt"><b>B</b></button>
+                <button class="tool-btn" onclick="execCmd('italic')" title="Schuingedrukt"><i>I</i></button>
+                <button class="tool-btn" onclick="execCmd('underline')" title="Onderstreept"><u>U</u></button>
+                <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
+                <select onchange="execCmd('fontSize', this.value)" style="width:auto; margin:0; padding:4px;">
+                    <option value="3">Normaal</option>
+                    <option value="1">Klein</option>
+                    <option value="5">Groot</option>
+                    <option value="7">Enorm</option>
+                </select>
+                <div style="flex:1;"></div>
+                <button class="tool-btn" onclick="printNote()" title="Opslaan als PDF of Printen">🖨️ Print / PDF</button>
+            </div>
+
             <div class="modal-body">
-                <input type="text" id="modal-note-title" placeholder="Titel van notitie...">
-                <textarea id="modal-note-content" placeholder="Begin hier met typen..."></textarea>
+                <input type="text" id="modal-note-title" placeholder="Titel...">
+                <div id="modal-note-content" contenteditable="true" placeholder="Typ hier..."></div>
                 
                 <div class="pdf-section">
                     <h3 style="margin-bottom:10px;">📎 Bijlage (PDF)</h3>
@@ -215,8 +243,8 @@
                     </div>
                     <div id="current-pdf-link" style="margin-top:10px;"></div>
                 </div>
-                <div style="margin-top:20px; text-align:right;">
-                    <button onclick="deleteCurrentNote()" style="background:transparent; color:red; border:none; width:auto; font-size:0.9em;">🗑️ Notitie verwijderen</button>
+                <div class="modal-footer-btns" style="margin-top:20px; text-align:right;">
+                    <button onclick="deleteCurrentNote()" style="background:transparent; color:red; border:none; width:auto; font-size:0.9em;">🗑️ Verwijder</button>
                 </div>
             </div>
         </div>
@@ -233,9 +261,7 @@
     </div>
 
     <nav id="app-sidebar">
-        <div class="sidebar-header">
-            <span>⚡ Study-Start</span>
-        </div>
+        <div class="sidebar-header"><span>⚡ Study-Start</span></div>
         <div class="nav-item active" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
         <div class="nav-item" onclick="navigate('cijfers', this)"><span>📊</span> Cijfers</div>
         <div class="nav-item" onclick="navigate('notities', this)"><span>📝</span> Notities</div>
@@ -249,11 +275,8 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="toggle-btn" id="sidebar-btn" onclick="toggleSidebar()">☰</button>
                 <div id="page-title" style="font-weight: 700; color: var(--text-main);">Overzicht</div>
-                <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">
-                    👁️ Meekijker
-                </div>
+                <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">👁️ Meekijker</div>
             </div>
-            
             <div style="display: flex; align-items: center; gap: 15px;">
                 <span id="user-display-name" style="font-weight: 600; font-size: 0.9em;">Gast</span>
                 <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 6px 12px; font-size: 0.85em;">Uitloggen</button>
@@ -267,7 +290,6 @@
                     <button onclick="exportToICS()" class="secondary" style="width: auto;">Export</button>
                 </div>
                 <div id="loading-indicator" style="color: var(--text-muted); text-align: center; padding: 40px;">Laden...</div>
-                
                 <div class="table-container">
                     <table class="studie-tabel">
                         <thead>
@@ -282,18 +304,14 @@
                         <tbody id="planner-table-body"></tbody>
                     </table>
                 </div>
-                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">
-                    Leeg. Plan een toets in hiernaast 👉
-                </div>
+                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">Leeg. Plan een toets in hiernaast 👉</div>
             </div>
 
             <div id="tools-column">
                 <div class="card" id="auto-planner-card" style="background: var(--primary-bg); border-color: #bfdbfe;">
                     <h3 style="color: var(--primary);">⚡ Snel Inplannen</h3>
                     <input type="text" list="vakken-list" id="autoVakInput" placeholder="Vak (bv. Wiskunde)">
-                    <datalist id="vakken-list">
-                        <option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis">
-                    </datalist>
+                    <datalist id="vakken-list"><option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis"></datalist>
                     <div style="display: flex; gap: 5px;">
                         <input type="text" id="autoHoofdstukInput" placeholder="H..." style="flex:1;">
                         <input type="date" id="autoDatumInput" style="flex:2;">
@@ -391,10 +409,8 @@
         let currentUserId = null, viewUserId = null, userRole = 'owner'; 
         let timerInterval = null, timeLeft = 25 * 60;
         let globalContext = ""; 
-        
-        // Modal State
         let currentOpenNoteId = null;
-        let currentNotePdfData = null; // Base64 string
+        let currentNotePdfData = null;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -480,7 +496,7 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        /* --- PLANNEN MET TOETSEN --- */
+        /* --- PLANNING & TOETSEN --- */
         function generateAutoPlanning() {
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
@@ -518,19 +534,27 @@
         }
 
         function loadTests() {
-            db.collection('users').doc(viewUserId).collection('tests').orderBy('date', 'asc').onSnapshot(snap => {
+            // Check alle documenten in de 'tests' collectie
+            db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
                 const con = document.getElementById('tests-list-container'); con.innerHTML = '';
                 if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : '?';
+                
+                // Converteer naar array om te sorteren
+                let tests = [];
+                snap.forEach(doc => tests.push({id: doc.id, ...doc.data()}));
+                
+                // Sorteer handmatig om zeker te zijn (ook als datum ontbreekt)
+                tests.sort((a,b) => (a.date && b.date) ? a.date.seconds - b.date.seconds : 0);
+
+                tests.forEach(d => {
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : 'Datum onbekend';
                     con.innerHTML += `
                     <div class="test-item">
                         <div>
-                            <div style="font-weight:600; color:var(--primary);">${d.subject}</div>
-                            <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter} • ${dateStr}</div>
+                            <div style="font-weight:600; color:var(--primary);">${d.subject || 'Geen vak'}</div>
+                            <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter || ''} • ${dateStr}</div>
                         </div>
-                        <button onclick="deleteTest('${doc.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer; padding:0 5px;" title="Verwijder toets en planning">❌</button>
+                        <button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;" title="Verwijder toets en planning">❌</button>
                     </div>`;
                 });
             });
@@ -589,13 +613,13 @@
         function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
-        /* --- NOTITIES (MET MODAL EN PDF) --- */
+        /* --- NOTITIES (MODAL & PDF & EDITOR) --- */
         function createNewNote() {
             db.collection('users').doc(viewUserId).collection('subject_notes').add({
                 subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then((doc) => { 
                 showToast("Aangemaakt!"); 
-                openNoteModal(doc.id, "Nieuwe Notitie", "", null); // Direct openen
+                openNoteModal(doc.id, "Nieuwe Notitie", "", null); 
             });
         }
 
@@ -604,40 +628,48 @@
                 const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
                 snap.forEach(d => {
                     const data = d.data();
+                    // Strip HTML tags for preview
+                    const div = document.createElement("div"); div.innerHTML = data.content || "";
+                    const textPreview = div.textContent || div.innerText || "";
                     const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : '';
-                    // On click -> open Modal
+                    
                     l.innerHTML += `
-                    <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", ${JSON.stringify(data.content || "")}, ${data.pdfData ? '"yes"' : 'null'})'>
+                    <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'>
                         <div class="note-preview-title">${data.subject}</div>
-                        <div class="note-preview-body">${data.content}</div>
+                        <div class="note-preview-body">${textPreview}</div>
                         ${pdfBadge}
                     </div>`;
                 }); 
             }); 
         }
 
+        // Simpele functie voor opmaak
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('modal-note-content').focus();
+        }
+
+        function printNote() {
+            window.print();
+        }
+
         function openNoteModal(id, title, content, hasPdf) {
             currentOpenNoteId = id;
             document.getElementById('modal-note-title').value = title;
-            document.getElementById('modal-note-content').value = content;
-            document.getElementById('note-modal').style.display = 'flex';
-            
-            // PDF Logic
-            const linkContainer = document.getElementById('current-pdf-link');
-            linkContainer.innerHTML = '';
-            document.getElementById('pdf-upload-input').value = ""; // Reset
-            
-            if (hasPdf) {
-                // We moeten de PDF data ophalen (was niet in preview geladen om traagheid te voorkomen)
-                db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
-                    if(doc.exists && doc.data().pdfData) {
+            // Haal de echte content op (inclusief HTML) want de preview had dat niet
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
+                if(doc.exists) {
+                    document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
+                    if(doc.data().pdfData) {
                         currentNotePdfData = doc.data().pdfData;
-                        linkContainer.innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                        document.getElementById('current-pdf-link').innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                    } else {
+                        document.getElementById('current-pdf-link').innerHTML = "";
                     }
-                });
-            } else {
-                currentNotePdfData = null;
-            }
+                }
+            });
+            document.getElementById('note-modal').style.display = 'flex';
+            document.getElementById('pdf-upload-input').value = ""; 
         }
 
         function closeNoteModal() {
@@ -648,20 +680,19 @@
         function saveModalNote() {
             if(!currentOpenNoteId) return;
             const title = document.getElementById('modal-note-title').value;
-            const content = document.getElementById('modal-note-content').value;
+            const content = document.getElementById('modal-note-content').innerHTML; // HTML voor rich text
             const fileInput = document.getElementById('pdf-upload-input');
             
             const updateData = { subject: title, content: content };
 
             if(fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                if(file.size > 400000) { // 400KB limit
-                    alert("PDF is te groot! Maximaal 400KB.");
-                    return; 
+                if(file.size > 400000) { 
+                    alert("PDF is te groot! Maximaal 400KB."); return; 
                 }
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    updateData.pdfData = e.target.result; // Base64 string
+                    updateData.pdfData = e.target.result; 
                     pushUpdate(updateData);
                 };
                 reader.readAsDataURL(file);
