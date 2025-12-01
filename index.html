@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -32,8 +32,6 @@
             --success-text: #166534;
             --holiday-bg: #fffbeb;
             --holiday-text: #b45309;
-            --holiday-btn-bg: #fef3c7;
-            --holiday-btn-text: #92400e;
         }
 
         * { box-sizing: border-box; }
@@ -53,8 +51,10 @@
 
         .sidebar-header {
             display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 0 10px;
-            font-size: 1.1em; font-weight: 700; color: var(--primary);
+            font-size: 1.2em; font-weight: 800; color: var(--primary); cursor: pointer;
+            transition: 0.2s;
         }
+        .sidebar-header:hover { opacity: 0.8; }
 
         .nav-item { 
             padding: 10px 12px; margin-bottom: 4px; border-radius: var(--radius); 
@@ -79,6 +79,59 @@
             border-radius: 6px; color: var(--text-main); transition: 0.2s;
         }
         .toggle-btn:hover { background: var(--border); color: var(--primary); }
+
+        /* --- HOME SCREEN --- */
+        #page-home {
+            /* ZORG DAT JE HIER JE AFBEELDING NAAM INVULT */
+            background-image: url('background.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        /* Overlay om tekst leesbaar te maken op de foto */
+        .home-overlay {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .home-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .home-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            padding: 15px 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 50px; /* Lange ronde knoppen */
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .home-btn span { font-size: 1.4em; }
 
         /* --- UI ELEMENTS --- */
         .card { 
@@ -160,11 +213,7 @@
             border: 1px solid transparent; width: 100%; transition: 0.2s;
         }
         .holiday-btn:hover { background: #cbd5e1; }
-        
-        .holiday-btn.active { 
-            background: var(--holiday-btn-bg); color: var(--holiday-btn-text); 
-            border-color: #fbbf24; font-weight: 700;
-        }
+        .holiday-btn.active { background: #fcd34d; color: #78350f; border-color: #fbbf24; font-weight: 700; }
 
         .is-holiday td { background-color: var(--holiday-bg); }
         .is-holiday .clean-input { color: var(--holiday-text); font-weight: 600; }
@@ -192,7 +241,7 @@
         /* --- PRINT STYLES --- */
         @media print {
             body, html { height: auto; overflow: visible; background: white; }
-            #app-sidebar, header, #tools-column, .toggle-btn, #toast { display: none !important; }
+            #app-sidebar, header, #tools-column, .toggle-btn, #toast, #page-home { display: none !important; }
             
             body.print-mode-note #main-content { display: none; }
             body.print-mode-note #note-modal { position: static; display: block; background: white; width: 100%; height: auto; }
@@ -272,8 +321,10 @@
     </div>
 
     <nav id="app-sidebar">
-        <div class="sidebar-header"><span>⚡ Study-Start</span></div>
-        <div class="nav-item active" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
+        <div class="sidebar-header" onclick="navigate('home')">
+            <span>⚡ Study-Start</span>
+        </div>
+        <div class="nav-item" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
         <div class="nav-item" onclick="navigate('cijfers', this)"><span>📊</span> Cijfers</div>
         <div class="nav-item" onclick="navigate('notities', this)"><span>📝</span> Notities</div>
         <div class="nav-item" onclick="navigate('timer', this)"><span>⏱️</span> Timer</div>
@@ -285,7 +336,7 @@
         <header>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="toggle-btn" id="sidebar-btn" onclick="toggleSidebar()">☰</button>
-                <div id="page-title" style="font-weight: 700; color: var(--text-main);">Overzicht</div>
+                <div id="page-title" style="font-weight: 700; color: var(--text-main);">Home</div>
                 <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">👁️ Meekijker</div>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -294,7 +345,21 @@
             </div>
         </header>
 
-        <div id="page-planning" class="page-section active">
+        <div id="page-home" class="page-section active">
+            <div class="home-overlay">
+                <h1 style="margin:0 0 10px 0; font-size:2em; color:var(--text-main);">Welkom!</h1>
+                <p style="color:var(--text-muted);">Waar wil je mee aan de slag?</p>
+                
+                <div class="home-menu">
+                    <button class="home-btn" onclick="navigate('planning')"><span>📅</span> Planning Openen</button>
+                    <button class="home-btn" onclick="navigate('notities')"><span>📝</span> Mijn Notities</button>
+                    <button class="home-btn" onclick="navigate('cijfers')"><span>📊</span> Cijfers Bekijken</button>
+                    <button class="home-btn" onclick="navigate('timer')"><span>⏱️</span> Focus Timer</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-planning" class="page-section">
             <div id="planner-column">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2 style="margin:0;">Agenda</h2>
@@ -471,9 +536,13 @@
         function navigate(id, element) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
+            
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
-            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            
+            const titles = {'home':'Home', 'planning':'Agenda', 'cijfers':'Cijfers', 'notities':'Notities', 'timer':'Timer', 'instellingen':'Instellingen'};
+            document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
+            
             if(window.innerWidth <= 1000) {
                 document.getElementById('app-sidebar').classList.remove('open');
                 document.getElementById('sidebar-btn').innerHTML = "☰";
@@ -511,6 +580,9 @@
                 stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
             });
             if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
+            
+            // Start on home
+            navigate('home');
         }
 
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
