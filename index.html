@@ -101,7 +101,7 @@
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
         button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-        /* --- NOTITIES --- */
+        /* --- NOTITIES (EDITOR & MODAL) --- */
         .note-card { 
             border-left: 4px solid var(--primary); cursor: pointer; transition: transform 0.2s;
             position: relative; overflow: hidden; height: 160px;
@@ -111,7 +111,6 @@
         .note-preview-body { font-size: 0.9em; color: var(--text-muted); white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
         .pdf-badge { font-size: 0.7em; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
 
-        /* Modal Overlay */
         #note-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000;
@@ -143,7 +142,7 @@
         .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
         .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        .studie-tabel td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
         .clean-input { width: 100%; background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 4px; resize: none; min-height: 32px; font-family: inherit; color: var(--text-main); margin: 0; }
         .clean-input:hover { background: #f8fafc; }
@@ -698,3 +697,98 @@
                     <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'>
                         <div class="note-preview-title">${data.subject}</div>
                         <div class="note-preview-body">${textPreview}</div>
+                        ${pdfBadge}
+                    </div>`;
+                }); 
+            }); 
+        }
+
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('modal-note-content').focus();
+        }
+
+        function printNote() {
+            document.body.classList.add('print-mode-note');
+            window.print();
+            document.body.classList.remove('print-mode-note');
+        }
+
+        function openNoteModal(id, title, content, hasPdf) {
+            currentOpenNoteId = id;
+            document.getElementById('modal-note-title').value = title;
+            
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
+                if(doc.exists) {
+                    document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
+                    if(doc.data().pdfData) {
+                        currentNotePdfData = doc.data().pdfData;
+                        document.getElementById('current-pdf-link').innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                    } else {
+                        document.getElementById('current-pdf-link').innerHTML = "";
+                    }
+                }
+            });
+            document.getElementById('note-modal').style.display = 'flex';
+            document.getElementById('pdf-upload-input').value = ""; 
+        }
+
+        function closeNoteModal() {
+            document.getElementById('note-modal').style.display = 'none';
+            currentOpenNoteId = null;
+        }
+
+        function saveModalNote() {
+            if(!currentOpenNoteId) return;
+            const title = document.getElementById('modal-note-title').value;
+            const content = document.getElementById('modal-note-content').innerHTML; 
+            const fileInput = document.getElementById('pdf-upload-input');
+            
+            const updateData = { subject: title, content: content };
+
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 400000) { 
+                    alert("PDF is te groot! Maximaal 400KB."); return; 
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    updateData.pdfData = e.target.result; 
+                    pushUpdate(updateData);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                pushUpdate(updateData);
+            }
+        }
+
+        function pushUpdate(data) {
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).update(data)
+            .then(() => { showToast("Opgeslagen! ✅"); closeNoteModal(); });
+        }
+
+        function deleteCurrentNote() {
+            if(confirm("Notitie verwijderen?")) {
+                db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).delete()
+                .then(() => { closeNoteModal(); showToast("Verwijderd."); });
+            }
+        }
+
+        /* --- OVERIG --- */
+        function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
+        function loadCollaborators() { db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(s=>{ const l=document.getElementById('collaborators-list'); l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.id}</span><span onclick="removeCollab('${d.id}')" style="cursor:pointer; color:red;">&times;</span></div>`); }); }
+        function removeCollab(id) { if(confirm('Wissen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(id).delete(); }
+        function copyLink() { const t=document.getElementById("shareLinkInput"); t.select(); document.execCommand("copy"); showToast("Gekopieerd!"); }
+
+        function addGrade() { const s=document.getElementById('gradeSubject').value,g=parseFloat(document.getElementById('gradeValue').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s,grade:g,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{showToast("Cijfer opgeslagen");document.getElementById('gradeValue').value='';}); }
+        function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt','desc').onSnapshot(s=>{ const l=document.getElementById('grades-list');l.innerHTML=''; s.forEach(d=>{ const c=d.data().grade>=5.5?'#16a34a':'#dc2626'; l.innerHTML+=`<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${c};">${d.data().grade}</span></div>`; }); }); }
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{showToast("Opgeslagen!");}); }
+
+        /* --- TIMER --- */
+        function updateTimerDisplay() { const m=Math.floor(timeLeft/60).toString().padStart(2,'0'), s=(timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText=`${m}:${s}`; document.title=`${m}:${s} - Focus`; }
+        function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
+        function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
+        function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
+    </script>
+</body>
+</html>
