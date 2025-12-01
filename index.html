@@ -93,7 +93,7 @@
             font-size: 4em; font-weight: 800; color: var(--primary); margin-bottom: 40px;
             text-shadow: 0 10px 20px rgba(255,255,255,0.8);
         }
-        .home-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; } /* Nu 5 knoppen */
+        .home-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
         .home-btn {
             background: rgba(255, 255, 255, 0.95); border: 1px solid var(--border); padding: 15px 20px;
             border-radius: 50px; font-size: 1em; font-weight: 600; color: var(--text-main);
@@ -105,15 +105,28 @@
             border-color: var(--primary); color: var(--primary); background: white;
         }
 
+        /* --- OEFENEN NAVIGATIE --- */
+        .breadcrumb { font-size: 0.9em; color: var(--text-muted); margin-bottom: 20px; display: flex; gap: 5px; align-items: center; }
+        .breadcrumb span { cursor: pointer; }
+        .breadcrumb span:hover { color: var(--primary); text-decoration: underline; }
+        .breadcrumb .active { color: var(--text-main); font-weight: 600; cursor: default; text-decoration: none; }
+        
+        .nav-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .nav-card {
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .nav-card-title { font-weight: 600; font-size: 1.1em; }
+        .nav-card-icon { font-size: 1.5em; }
+
         /* --- QUIZ STYLES --- */
-        .quiz-intro { padding: 20px; background: #fff; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
         .quiz-question-card {
             background: white; padding: 20px; margin-bottom: 15px; border-radius: var(--radius);
             border: 1px solid var(--border); border-left: 4px solid var(--primary);
         }
         .quiz-question-card.correct { border-left-color: var(--success-text); background-color: var(--success-bg); }
         .quiz-question-card.wrong { border-left-color: var(--error-text); background-color: var(--error-bg); }
-        
         .quiz-feedback { font-size: 0.9em; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1); color: var(--text-muted); display: none; }
         .show-feedback .quiz-feedback { display: block; }
         .score-display { font-size: 3em; font-weight: 800; color: var(--primary); text-align: center; margin: 20px 0; }
@@ -122,10 +135,8 @@
         .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         h2 { font-size: 1.4em; font-weight: 700; margin: 0 0 15px 0; }
         h3 { font-size: 0.85em; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px 0; }
-
         input, select, textarea { width: 100%; background: #fff; border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; font-family: inherit; font-size: 1em; margin-bottom: 10px; transition: 0.2s; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
-
         button { width: 100%; background: var(--primary); color: white; border: none; padding: 9px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95em; transition: 0.2s; }
         button:hover { background: var(--primary-hover); }
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
@@ -181,7 +192,7 @@
         @media print {
             body, html { height: auto; overflow: visible; background: white; }
             #app-sidebar, header, #tools-column, .toggle-btn, #toast, #page-home { display: none !important; }
-            /* Print overrides here... */
+            
             body.print-mode-note #main-content { display: none; }
             body.print-mode-note #note-modal { position: static; display: block; background: white; width: 100%; height: auto; }
             body.print-mode-note .modal-content { box-shadow: none; border: none; width: 100%; max-width: 100%; height: auto; border-radius: 0; }
@@ -223,9 +234,9 @@
                 </div>
             </div>
             <div class="editor-toolbar">
-                <button class="tool-btn" onclick="execCmd('bold')" title="Dikgedrukt"><b>B</b></button>
-                <button class="tool-btn" onclick="execCmd('italic')" title="Schuingedrukt"><i>I</i></button>
-                <button class="tool-btn" onclick="execCmd('underline')" title="Onderstreept"><u>U</u></button>
+                <button class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
+                <button class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
+                <button class="tool-btn" onclick="execCmd('underline')"><u>U</u></button>
                 <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
                 <select onchange="execCmd('fontSize', this.value)" style="width:auto; margin:0; padding:4px;">
                     <option value="3">Normaal</option>
@@ -344,39 +355,67 @@
         </div>
 
         <div id="page-oefenen" class="page-section">
-            <div style="max-width: 800px; margin: 0 auto; width: 100%;">
-                <h2>Oefentoets: Inklemmen</h2>
-                
-                <div id="quiz-start-screen">
-                    <div class="card" style="border-left: 4px solid var(--primary);">
-                        <h3>Uitleg: Wat is Inklemmen?</h3>
-                        <p style="color: var(--text-muted); line-height: 1.6;">
-                            Inklemmen is een methode om een vergelijking op te lossen door te "gokken en verbeteren". 
-                            Je zoekt de waarde die het dichtst bij het antwoord ligt.<br><br>
-                            <b>Stappenplan:</b><br>
-                            1. Maak een schatting.<br>
-                            2. Vul je schatting in de formule in.<br>
-                            3. Zit je te laag? Probeer hoger. Zit je te hoog? Probeer lager.<br>
-                            4. Kies de waarde die het <b>dichtst</b> bij de uitkomst ligt.
-                        </p>
-                        <button onclick="startQuiz()" style="margin-top: 10px;">Start Oefentoets (20 Vragen)</button>
+            <div style="max-width: 900px; margin: 0 auto; width: 100%;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <h2>Oefenen</h2>
+                    <div id="practice-breadcrumbs" class="breadcrumb">
+                        <span onclick="resetPracticeNav()">Vakken</span>
                     </div>
                 </div>
 
-                <div id="quiz-container" style="display: none;">
-                    <div id="quiz-questions-list"></div>
-                    <button onclick="submitQuiz()" style="margin-top: 20px;">Toets Inleveren</button>
+                <div id="level-subjects" class="nav-grid active">
+                    <div class="nav-card" onclick="selectSubject('Wiskunde')">
+                        <div class="nav-card-icon">📐</div>
+                        <div class="nav-card-title">Wiskunde</div>
+                    </div>
+                    </div>
+
+                <div id="level-topics" class="nav-grid" style="display: none;">
+                    <div class="nav-card" onclick="selectTopic('Vergelijkingen & Grafieken')">
+                        <div class="nav-card-icon">📈</div>
+                        <div class="nav-card-title">Vergelijkingen & Grafieken</div>
+                    </div>
                 </div>
 
-                <div id="quiz-results" style="display: none;">
-                    <div class="card" style="text-align: center;">
-                        <h3>Je Resultaat</h3>
-                        <div class="score-display" id="quiz-score">?</div>
-                        <p id="quiz-message"></p>
-                        <button onclick="startQuiz()">Nog een keer oefenen</button>
+                <div id="level-skills" class="nav-grid" style="display: none;">
+                    <div class="nav-card" onclick="selectSkill('Inklemmen')">
+                        <div class="nav-card-icon">🎯</div>
+                        <div class="nav-card-title">Inklemmen</div>
                     </div>
-                    <h3>Antwoorden & Uitleg</h3>
-                    <div id="quiz-review-list"></div>
+                </div>
+
+                <div id="practice-interface" style="display: none;">
+                    <div id="quiz-start-screen">
+                        <div class="card" style="border-left: 4px solid var(--primary);">
+                            <h3>Uitleg: Wat is Inklemmen?</h3>
+                            <p style="color: var(--text-muted); line-height: 1.6;">
+                                Inklemmen is een methode om een vergelijking op te lossen door te "gokken en verbeteren". 
+                                Je zoekt de waarde die het dichtst bij het antwoord ligt.<br><br>
+                                <b>Stappenplan:</b><br>
+                                1. Maak een schatting.<br>
+                                2. Vul je schatting in de formule in.<br>
+                                3. Zit je te laag? Probeer hoger. Zit je te hoog? Probeer lager.<br>
+                                4. Kies de waarde die het <b>dichtst</b> bij de uitkomst ligt.
+                            </p>
+                            <button onclick="startQuiz()" style="margin-top: 10px;">Start Oefentoets (20 Vragen)</button>
+                        </div>
+                    </div>
+
+                    <div id="quiz-container" style="display: none;">
+                        <div id="quiz-questions-list"></div>
+                        <button onclick="submitQuiz()" style="margin-top: 20px;">Toets Inleveren</button>
+                    </div>
+
+                    <div id="quiz-results" style="display: none;">
+                        <div class="card" style="text-align: center;">
+                            <h3>Je Resultaat</h3>
+                            <div class="score-display" id="quiz-score">?</div>
+                            <p id="quiz-message"></p>
+                            <button onclick="startQuiz()">Nog een keer oefenen</button>
+                        </div>
+                        <h3>Antwoorden & Uitleg</h3>
+                        <div id="quiz-review-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -477,6 +516,7 @@
             }
         });
 
+        /* --- NAVIGATION --- */
         function toggleSidebar() {
             const sb = document.getElementById('app-sidebar');
             const btn = document.getElementById('sidebar-btn');
@@ -498,6 +538,7 @@
             const target = document.getElementById(`page-${id}`);
             target.classList.add('active');
             if(id === 'home') target.style.display = 'flex';
+            if(id === 'oefenen') resetPracticeNav();
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
@@ -517,6 +558,131 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
+        /* --- PRACTICE NAVIGATION LOGIC --- */
+        function resetPracticeNav() {
+            document.getElementById('level-subjects').style.display = 'grid';
+            document.getElementById('level-topics').style.display = 'none';
+            document.getElementById('level-skills').style.display = 'none';
+            document.getElementById('practice-interface').style.display = 'none';
+            updateBreadcrumbs([]);
+        }
+
+        function selectSubject(subject) {
+            document.getElementById('level-subjects').style.display = 'none';
+            document.getElementById('level-topics').style.display = 'grid';
+            updateBreadcrumbs([subject]);
+        }
+
+        function selectTopic(topic) {
+            document.getElementById('level-topics').style.display = 'none';
+            document.getElementById('level-skills').style.display = 'grid';
+            updateBreadcrumbs(['Wiskunde', topic]); // Hardcoded subject for now logic-wise
+        }
+
+        function selectSkill(skill) {
+            document.getElementById('level-skills').style.display = 'none';
+            document.getElementById('practice-interface').style.display = 'block';
+            updateBreadcrumbs(['Wiskunde', 'Vergelijkingen', skill]);
+            
+            // Reset quiz UI
+            document.getElementById('quiz-start-screen').style.display = 'block';
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'none';
+        }
+
+        function updateBreadcrumbs(path) {
+            const bc = document.getElementById('practice-breadcrumbs');
+            let html = `<span onclick="resetPracticeNav()">Vakken</span>`;
+            path.forEach((step, i) => {
+                html += ` > <span class="${i === path.length - 1 ? 'active' : ''}">${step}</span>`;
+            });
+            bc.innerHTML = html;
+        }
+
+        /* --- QUIZ LOGIC --- */
+        const questionBank = [
+            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29 (6,76 is dichterbij)"}, {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25 (12,25 ligt 0,25 van 12)"},
+            {q:"x² = 20", a:4.5, h:"4,5²=20,25"}, {q:"x² = 32", a:5.7, h:"5,6²=31,36, 5,7²=32,49"}, {q:"x² = 45", a:6.7, h:"6,7²=44,89 (verschil 0,11)"},
+            {q:"x² = 60", a:7.7, h:"7,7²=59,29"}, {q:"x² = 75", a:8.7, h:"8,7²=75,69"}, {q:"x² = 95", a:9.7, h:"9,7²=94,09"},
+            {q:"x² = 110", a:10.5, h:"10,5²=110,25"}, {q:"x² = 130", a:11.4, h:"11,4²=129,96"},
+            {q:"2x² = 15", a:2.7, h:"x²=7,5. 2,7²=7,29"}, {q:"3x² = 50", a:4.1, h:"x²=16,67. 4,1²=16,81"}, {q:"0,5x² = 8", a:4.0, h:"x²=16. Wortel is 4"},
+            {q:"4x² = 90", a:4.7, h:"x²=22,5. 4,7²=22,09"}, {q:"5x² = 120", a:4.9, h:"x²=24. 4,9²=24,01"}, {q:"0,2x² = 10", a:7.1, h:"x²=50. 7,1²=50,41"},
+            {q:"1,5x² = 30", a:4.5, h:"x²=20. 4,5²=20,25"}, {q:"2,5x² = 45", a:4.2, h:"x²=18. 4,2²=17,64"}, {q:"6x² = 200", a:5.8, h:"x²=33,3. 5,8²=33,64"},
+            {q:"10x² = 350", a:5.9, h:"x²=35. 5,9²=34,81"}, {q:"x² + 5 = 28", a:4.8, h:"x²=23. 4,8²=23,04"}, {q:"x² - 4 = 15", a:4.4, h:"x²=19. 4,4²=19,36"},
+            {q:"2x² + 3 = 30", a:3.7, h:"2x²=27 -> x²=13,5. 3,7²=13,69"}, {q:"3x² - 10 = 55", a:4.7, h:"3x²=65 -> x²=21,7"}, {q:"0,5x² + 12 = 34", a:6.6, h:"0,5x²=22 -> x²=44"},
+            {q:"x² + 2x = 15", a:3.0, h:"3²+2*3 = 9+6=15"}, {q:"x² + 3x = 25", a:3.7, h:"3,7²+3*3,7 = 24,79"}, {q:"x² - x = 20", a:5.0, h:"5²-5=20"},
+            {q:"2x² + x = 40", a:4.2, h:"2*4,2² + 4,2 = 39,48"}, {q:"5x² - 2x = 10", a:1.6, h:"5*1,6² - 3,2 = 12,8 - 3,2 = 9,6"},
+            {q:"x³ = 30", a:3.1, h:"3,1³=29,79"}, {q:"x³ = 70", a:4.1, h:"4,1³=68,9"}, {q:"x³ = 100", a:4.6, h:"4,6³=97,3"}, {q:"x³ = 200", a:5.8, h:"5,8³=195,1"},
+            {q:"2x³ = 50", a:2.9, h:"x³=25. 2,9³=24,4"}, {q:"x³ + 5 = 40", a:3.3, h:"x³=35. 3,3³=35,9"}, {q:"√x = 5,2", a:27.0, h:"5,2²=27,04"},
+            {q:"√x + 3 = 8,5", a:30.3, h:"√x=5,5 -> 5,5²=30,25"}, {q:"3√x = 20", a:44.4, h:"√x=6,67 -> 6,67²=44,48"}, {q:"x³ - x = 50", a:3.8, h:"3,8³-3,8=51,0"},
+            {q:"h = 3t² (h=50)", a:4.1, h:"3t²=50 -> t²=16,7"}, {q:"A = x² + 4x (A=60)", a:6.0, h:"36+24=60"}, {q:"W = 0,5n³ (W=100)", a:5.8, h:"0,5n³=100 -> n³=200"},
+            {q:"x² = 2x + 8", a:4.0, h:"16 = 8+8"}, {q:"3x² = 50 - x", a:3.9, h:"3*3,9²=45,6. 50-3,9=46,1"}, {q:"R = 0,8v² (R=45)", a:7.5, h:"0,8v²=45 -> v²=56,25"},
+            {q:"V = z³ (V=85)", a:4.4, h:"4,4³=85,1"}, {q:"y = 2x² - 5 (y=30)", a:4.2, h:"2x²=35 -> x²=17,5"}, {q:"y = x² + 10x (y=55)", a:4.0, h:"16+40=56 (Dichterbij dan 3,9)"},
+            {q:"y = 0,1x³ + 5 (y=20)", a:5.3, h:"0,1x³=15 -> x³=150"}
+        ];
+        let currentQuizQuestions = [];
+
+        function startQuiz() {
+            document.getElementById('quiz-start-screen').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            
+            currentQuizQuestions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 20);
+            const list = document.getElementById('quiz-questions-list');
+            list.innerHTML = '';
+            
+            currentQuizQuestions.forEach((item, index) => {
+                list.innerHTML += `
+                <div class="quiz-question-card" id="q-card-${index}">
+                    <div style="font-weight:600; margin-bottom:10px;">Vraag ${index+1}: Los op voor x (1 decimaal)</div>
+                    <div style="font-size:1.2em; margin-bottom:10px; font-family:monospace;">${item.q}</div>
+                    <input type="number" step="0.1" class="quiz-input" id="q-input-${index}" placeholder="Jouw antwoord...">
+                    <div class="quiz-feedback" id="q-feedback-${index}"></div>
+                </div>`;
+            });
+            window.scrollTo(0,0);
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            currentQuizQuestions.forEach((item, index) => {
+                const input = document.getElementById(`q-input-${index}`);
+                const card = document.getElementById(`q-card-${index}`);
+                const feedback = document.getElementById(`q-feedback-${index}`);
+                
+                let val = input.value.replace(',', '.');
+                let numVal = parseFloat(val);
+                
+                if (Math.abs(numVal - item.a) < 0.05) {
+                    score++;
+                    card.classList.add('correct');
+                    feedback.innerHTML = `✅ Correct! ${item.h}`;
+                } else {
+                    card.classList.add('wrong');
+                    feedback.innerHTML = `❌ Fout. Het goede antwoord is <b>${item.a.toString().replace('.',',')}</b>.<br>Uitleg: ${item.h}`;
+                }
+                card.classList.add('show-feedback');
+                input.disabled = true;
+            });
+
+            const grade = (score / 20 * 9) + 1;
+            const roundedGrade = Math.round(grade * 10) / 10;
+            
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            document.getElementById('quiz-score').innerText = roundedGrade;
+            document.getElementById('quiz-message').innerText = `Je had ${score} van de 20 goed.`;
+            document.getElementById('quiz-review-list').innerHTML = document.getElementById('quiz-questions-list').innerHTML;
+
+            if(currentUserId) {
+                db.collection('users').doc(currentUserId).collection('quiz_results').add({
+                    score: score, grade: roundedGrade, date: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+            window.scrollTo(0,0);
+        }
+
+        /* --- INIT --- */
         function checkAccess(targetUid, email) {
             db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get().then(doc => {
                 if (doc.exists) { userRole = 'edit'; initApp(); } 
@@ -549,99 +715,7 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        /* --- QUIZ SYSTEM --- */
-        const questionBank = [
-            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29 (6,76 is dichterbij)"}, {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25 (12,25 ligt 0,25 van 12)"},
-            {q:"x² = 20", a:4.5, h:"4,5²=20,25"}, {q:"x² = 32", a:5.7, h:"5,6²=31,36, 5,7²=32,49"}, {q:"x² = 45", a:6.7, h:"6,7²=44,89 (verschil 0,11)"},
-            {q:"x² = 60", a:7.7, h:"7,7²=59,29"}, {q:"x² = 75", a:8.7, h:"8,7²=75,69"}, {q:"x² = 95", a:9.7, h:"9,7²=94,09"},
-            {q:"x² = 110", a:10.5, h:"10,5²=110,25"}, {q:"x² = 130", a:11.4, h:"11,4²=129,96"},
-            {q:"2x² = 15", a:2.7, h:"x²=7,5. 2,7²=7,29"}, {q:"3x² = 50", a:4.1, h:"x²=16,67. 4,1²=16,81"}, {q:"0,5x² = 8", a:4.0, h:"x²=16. Wortel is 4"},
-            {q:"4x² = 90", a:4.7, h:"x²=22,5. 4,7²=22,09"}, {q:"5x² = 120", a:4.9, h:"x²=24. 4,9²=24,01"}, {q:"0,2x² = 10", a:7.1, h:"x²=50. 7,1²=50,41"},
-            {q:"1,5x² = 30", a:4.5, h:"x²=20. 4,5²=20,25"}, {q:"2,5x² = 45", a:4.2, h:"x²=18. 4,2²=17,64"}, {q:"6x² = 200", a:5.8, h:"x²=33,3. 5,8²=33,64"},
-            {q:"10x² = 350", a:5.9, h:"x²=35. 5,9²=34,81"}, {q:"x² + 5 = 28", a:4.8, h:"x²=23. 4,8²=23,04"}, {q:"x² - 4 = 15", a:4.4, h:"x²=19. 4,4²=19,36"},
-            {q:"2x² + 3 = 30", a:3.7, h:"2x²=27 -> x²=13,5. 3,7²=13,69"}, {q:"3x² - 10 = 55", a:4.7, h:"3x²=65 -> x²=21,7"}, {q:"0,5x² + 12 = 34", a:6.6, h:"0,5x²=22 -> x²=44"},
-            {q:"x² + 2x = 15", a:3.0, h:"3²+2*3 = 9+6=15"}, {q:"x² + 3x = 25", a:3.7, h:"3,7²+3*3,7 = 24,79"}, {q:"x² - x = 20", a:5.0, h:"5²-5=20"},
-            {q:"2x² + x = 40", a:4.2, h:"2*4,2² + 4,2 = 39,48"}, {q:"5x² - 2x = 10", a:1.6, h:"5*1,6² - 3,2 = 12,8 - 3,2 = 9,6"},
-            {q:"x³ = 30", a:3.1, h:"3,1³=29,79"}, {q:"x³ = 70", a:4.1, h:"4,1³=68,9"}, {q:"x³ = 100", a:4.6, h:"4,6³=97,3"}, {q:"x³ = 200", a:5.8, h:"5,8³=195,1"},
-            {q:"2x³ = 50", a:2.9, h:"x³=25. 2,9³=24,4"}, {q:"x³ + 5 = 40", a:3.3, h:"x³=35. 3,3³=35,9"}, {q:"√x = 5,2", a:27.0, h:"5,2²=27,04"},
-            {q:"√x + 3 = 8,5", a:30.3, h:"√x=5,5 -> 5,5²=30,25"}, {q:"3√x = 20", a:44.4, h:"√x=6,67 -> 6,67²=44,48"}, {q:"x³ - x = 50", a:3.8, h:"3,8³-3,8=51,0"},
-            {q:"h = 3t² (h=50)", a:4.1, h:"3t²=50 -> t²=16,7"}, {q:"A = x² + 4x (A=60)", a:6.0, h:"36+24=60"}, {q:"W = 0,5n³ (W=100)", a:5.8, h:"0,5n³=100 -> n³=200"},
-            {q:"x² = 2x + 8", a:4.0, h:"16 = 8+8"}, {q:"3x² = 50 - x", a:3.9, h:"3*3,9²=45,6. 50-3,9=46,1"}, {q:"R = 0,8v² (R=45)", a:7.5, h:"0,8v²=45 -> v²=56,25"},
-            {q:"V = z³ (V=85)", a:4.4, h:"4,4³=85,1"}, {q:"y = 2x² - 5 (y=30)", a:4.2, h:"2x²=35 -> x²=17,5"}, {q:"y = x² + 10x (y=55)", a:4.0, h:"16+40=56 (Dichterbij dan 3,9)"},
-            {q:"y = 0,1x³ + 5 (y=20)", a:5.3, h:"0,1x³=15 -> x³=150"}
-        ];
-
-        let currentQuizQuestions = [];
-
-        function startQuiz() {
-            document.getElementById('quiz-start-screen').style.display = 'none';
-            document.getElementById('quiz-results').style.display = 'none';
-            document.getElementById('quiz-container').style.display = 'block';
-            
-            // Pick 20 random
-            currentQuizQuestions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 20);
-            
-            const list = document.getElementById('quiz-questions-list');
-            list.innerHTML = '';
-            
-            currentQuizQuestions.forEach((item, index) => {
-                list.innerHTML += `
-                <div class="quiz-question-card" id="q-card-${index}">
-                    <div style="font-weight:600; margin-bottom:10px;">Vraag ${index+1}: Los op voor x (1 decimaal)</div>
-                    <div style="font-size:1.2em; margin-bottom:10px; font-family:monospace;">${item.q}</div>
-                    <input type="number" step="0.1" class="quiz-input" id="q-input-${index}" placeholder="Jouw antwoord...">
-                    <div class="quiz-feedback" id="q-feedback-${index}"></div>
-                </div>`;
-            });
-            window.scrollTo(0,0);
-        }
-
-        function submitQuiz() {
-            let score = 0;
-            currentQuizQuestions.forEach((item, index) => {
-                const input = document.getElementById(`q-input-${index}`);
-                const card = document.getElementById(`q-card-${index}`);
-                const feedback = document.getElementById(`q-feedback-${index}`);
-                
-                // Handle decimal comma/dot
-                let val = input.value.replace(',', '.');
-                let numVal = parseFloat(val);
-                
-                // Check answer (allow small margin for float errors, though exact match is requested)
-                if (Math.abs(numVal - item.a) < 0.05) {
-                    score++;
-                    card.classList.add('correct');
-                    feedback.innerHTML = `✅ Correct! ${item.h}`;
-                } else {
-                    card.classList.add('wrong');
-                    feedback.innerHTML = `❌ Fout. Het goede antwoord is <b>${item.a.toString().replace('.',',')}</b>.<br>Uitleg: ${item.h}`;
-                }
-                card.classList.add('show-feedback');
-                input.disabled = true;
-            });
-
-            // Calculate grade (1-10)
-            const grade = (score / 20 * 9) + 1;
-            const roundedGrade = Math.round(grade * 10) / 10;
-            
-            document.getElementById('quiz-container').style.display = 'none';
-            document.getElementById('quiz-results').style.display = 'block';
-            document.getElementById('quiz-score').innerText = roundedGrade;
-            document.getElementById('quiz-message').innerText = `Je had ${score} van de 20 goed.`;
-            
-            // Copy review list
-            document.getElementById('quiz-review-list').innerHTML = document.getElementById('quiz-questions-list').innerHTML;
-
-            // Save to DB
-            if(currentUserId) {
-                db.collection('users').doc(currentUserId).collection('quiz_results').add({
-                    score: score, grade: roundedGrade, date: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            window.scrollTo(0,0);
-        }
-
-        /* --- MANUAL PLANNER --- */
+        /* --- PLANNING (HANDMATIG) --- */
         function addManualItem() {
             const vak = document.getElementById('manualVak').value;
             const taak = document.getElementById('manualTask').value;
@@ -675,7 +749,6 @@
             });
         }
 
-        /* --- TOETSEN --- */
         function loadTests() {
             db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
                 const con = document.getElementById('tests-list-container'); con.innerHTML = '';
@@ -716,6 +789,7 @@
         function renderGroupedRow(container, items, isEditable) {
             const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
             const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
+            
             const allDone = items.every(i => i.isAfgerond);
             if(allDone) row.classList.add('row-done');
 
@@ -732,7 +806,7 @@
                 vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
                 thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
                 bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
-                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;" title="${item.isAfgerond ? 'Gedaan' : 'Nog doen'}">
                     <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
                     ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}
                 </div>`;
@@ -802,6 +876,7 @@
         function openNoteModal(id, title, content, hasPdf) {
             currentOpenNoteId = id;
             document.getElementById('modal-note-title').value = title;
+            
             db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
                 if(doc.exists) {
                     document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
@@ -827,11 +902,14 @@
             const title = document.getElementById('modal-note-title').value;
             const content = document.getElementById('modal-note-content').innerHTML; 
             const fileInput = document.getElementById('pdf-upload-input');
+            
             const updateData = { subject: title, content: content };
 
             if(fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                if(file.size > 400000) { alert("PDF is te groot! Maximaal 400KB."); return; }
+                if(file.size > 400000) { 
+                    alert("PDF is te groot! Maximaal 400KB."); return; 
+                }
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     updateData.pdfData = e.target.result; 
