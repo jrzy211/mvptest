@@ -17,15 +17,15 @@
 
     <style>
         :root {
-            /* --- CONSISTENT BLAUW THEMA --- */
-            --primary: #2563eb;       /* Helder blauw */
+            /* --- THEMA --- */
+            --primary: #2563eb;
             --primary-hover: #1d4ed8;
-            --primary-bg: #eff6ff;    /* Heel lichtblauw voor achtergronden */
+            --primary-bg: #eff6ff;
             
-            --bg-body: #f8fafc;       /* Clean grijs/wit */
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --text-main: #0f172a;     /* Donkerblauw/Zwart tekst */
-            --text-muted: #64748b;    /* Grijs tekst */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
             --border: #e2e8f0;
             
             --sidebar-width: 250px;
@@ -43,8 +43,7 @@
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
-            /* HIER ZIT DE '80% ZOOM' TRUC: */
-            font-size: 13.5px; 
+            font-size: 13.5px; /* Uitgezoomd effect */
         }
 
         /* --- SIDEBAR --- */
@@ -60,7 +59,6 @@
             z-index: 50;
         }
 
-        /* Desktop inklap logica */
         #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
 
         .sidebar-header {
@@ -95,17 +93,15 @@
             position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border); height: 55px;
         }
 
-        /* --- MODERNE HAMBURGER ICON --- */
-        .hamburger-btn {
+        /* --- DYNAMISCHE HAMBURGER/ARROW --- */
+        .toggle-btn {
             background: transparent; border: none; cursor: pointer; padding: 5px;
-            display: flex; flex-direction: column; gap: 4px; width: 32px;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5em; color: var(--text-main); transition: 0.2s;
         }
-        .hamburger-line {
-            width: 100%; height: 2px; background-color: var(--text-main); border-radius: 2px; transition: 0.2s;
-        }
-        .hamburger-btn:hover .hamburger-line { background-color: var(--primary); }
+        .toggle-btn:hover { color: var(--primary); background: var(--primary-bg); border-radius: 6px; }
 
-        /* --- UI CARDS & INPUTS --- */
+        /* --- UI Elements --- */
         .card { 
             background: var(--bg-card); border-radius: var(--radius); 
             padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); 
@@ -134,7 +130,24 @@
         button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
         button.secondary:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-        /* --- JUMP-IN AGENDA (CLEAN LOOK) --- */
+        /* --- NOTITIES (Google Doc Style) --- */
+        .note-card {
+            background: #fffbe6; /* Post-it geel-achtig wit */
+            border: 1px solid #fef3c7;
+        }
+        .note-input-title {
+            font-weight: 700; border: none; background: transparent; font-size: 1.1em;
+            margin-bottom: 5px; padding: 0; color: var(--text-main);
+        }
+        .note-input-title:focus { box-shadow: none; border-bottom: 1px solid var(--primary); border-radius: 0; }
+        
+        .note-textarea {
+            width: 100%; height: 150px; resize: none; border: none; background: transparent;
+            font-family: inherit; line-height: 1.5; color: #4b5563; padding: 0;
+        }
+        .note-textarea:focus { outline: none; box-shadow: none; }
+
+        /* --- AGENDA (Clean) --- */
         .table-container { 
             background: white; border-radius: var(--radius); 
             border: 1px solid var(--border); overflow: hidden; 
@@ -147,16 +160,20 @@
         }
         .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
-        /* De input velden die eruit zien als tekst (Jump-in) */
         .clean-input {
             width: 100%; background: transparent; border: 1px solid transparent; 
             padding: 6px; border-radius: 4px; resize: none; min-height: 32px;
-            font-family: inherit; color: var(--text-main); margin: 0;
-            transition: all 0.2s;
+            font-family: inherit; color: var(--text-main); margin: 0; transition: all 0.2s;
         }
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-bg); }
-        .clean-input:disabled { color: #94a3b8; }
+
+        /* --- TOETSEN LIJST --- */
+        .test-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em;
+        }
+        .test-item:last-child { border-bottom: none; }
 
         /* --- LAYOUTS --- */
         .page-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; gap: 20px; }
@@ -179,18 +196,15 @@
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
-        /* --- MOBILE --- */
         @media (max-width: 1000px) {
             #page-planning.active { flex-direction: column; }
             #tools-column { width: 100%; order: -1; }
-            
             #app-sidebar { 
                 position: fixed; height: 100%; top: 0; left: 0; 
-                margin-left: -250px; /* Standaard verborgen op mobiel */
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                margin-left: -250px; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             }
             #app-sidebar.open { margin-left: 0; }
-            #app-sidebar.closed { margin-left: -250px; } /* Reset override */
+            #app-sidebar.closed { margin-left: -250px; }
         }
     </style>
 </head>
@@ -202,8 +216,7 @@
         <div class="card" style="width: 100%; max-width: 350px; text-align: center; padding: 40px;">
             <div style="font-size: 3em; margin-bottom: 10px;">🚀</div>
             <h1 style="color: var(--text-main); margin-bottom: 5px; font-size: 1.5em;">Study-Start Pro</h1>
-            <p style="color: var(--text-muted); margin-bottom: 25px;">Log in om te beginnen.</p>
-            <button onclick="signInWithGoogle()" style="background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <button onclick="signInWithGoogle()" style="width: 100%; background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px;">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google Login
             </button>
         </div>
@@ -224,11 +237,8 @@
     <main id="main-content" style="display: none;">
         <header>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
-                    <div class="hamburger-line"></div>
-                    <div class="hamburger-line"></div>
-                    <div class="hamburger-line"></div>
-                </button>
+                <button class="toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Menu">☰</button>
+                
                 <div id="page-title" style="font-weight: 700; color: var(--text-main);">Overzicht</div>
                 <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">
                     👁️ Meekijker
@@ -264,7 +274,7 @@
                     </table>
                 </div>
                 <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">
-                    Je agenda is leeg.
+                    Nog leeg. Plan een toets in hiernaast 👉
                 </div>
             </div>
 
@@ -280,6 +290,12 @@
                         <input type="date" id="autoDatumInput" style="flex:2;">
                     </div>
                     <button onclick="generateAutoPlanning()">Inplannen</button>
+                </div>
+
+                <div class="card" id="tests-card">
+                    <h3>📌 Mijn Toetsen</h3>
+                    <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 10px;">Verwijder een toets om de planning te wissen.</p>
+                    <div id="tests-list-container">Laden...</div>
                 </div>
 
                 <div class="card" id="share-card">
@@ -313,14 +329,14 @@
         <div id="page-notities" class="page-section">
             <div style="display: flex; gap: 20px; align-items: flex-start;">
                 <div class="card" style="width: 280px; flex-shrink: 0; position: sticky; top: 80px;">
-                    <h3>Nieuwe Notitie</h3>
-                    <input type="text" id="noteSubject" placeholder="Onderwerp">
-                    <textarea id="noteContent" style="height: 120px;" placeholder="Typen..."></textarea>
-                    <button onclick="addNote()">Toevoegen</button>
+                    <h3>+ Nieuwe Notitie</h3>
+                    <input type="text" id="newNoteSubject" placeholder="Onderwerp">
+                    <button onclick="createNewNote()">Aanmaken</button>
                 </div>
                 <div style="flex: 1;">
                     <h2>Notities</h2>
-                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
+                    <p style="color:var(--text-muted); font-size:0.9em;">Klik op de tekst om aan te passen. Wijzigingen worden automatisch opgeslagen.</p>
+                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
         </div>
@@ -354,7 +370,6 @@
     </main>
 
     <script>
-        /* --- FIREBASE CONFIG (EXACT HETZELFDE ALS JOUW WERKENDE VERSIE) --- */
         const firebaseConfig = {
           apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
           authDomain: "study-start-c510c.firebaseapp.com",
@@ -367,15 +382,10 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        /* --- STATE VARIABLES --- */
-        let currentUserId = null;
-        let viewUserId = null;
-        let userRole = 'owner'; 
-        let timerInterval = null;
-        let timeLeft = 25 * 60;
+        let currentUserId = null, viewUserId = null, userRole = 'owner'; 
+        let timerInterval = null, timeLeft = 25 * 60;
         let globalContext = ""; 
 
-        /* --- AUTH --- */
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
@@ -386,14 +396,10 @@
                 const targetUid = params.get('uid');
 
                 if (targetUid && targetUid !== currentUserId) {
-                    viewUserId = targetUid;
-                    checkAccess(targetUid, user.email);
+                    viewUserId = targetUid; checkAccess(targetUid, user.email);
                 } else {
-                    viewUserId = currentUserId;
-                    userRole = 'owner';
-                    initApp();
+                    viewUserId = currentUserId; userRole = 'owner'; initApp();
                 }
-
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-content').style.display = 'flex';
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
@@ -402,123 +408,110 @@
             }
         });
 
-        /* --- UI LOGICA --- */
+        /* --- SIDEBAR & UX --- */
         function toggleSidebar() {
             const sb = document.getElementById('app-sidebar');
-            // Desktop: toggle class 'closed' (standaard open)
+            const btn = document.getElementById('sidebar-toggle-btn');
+            
+            // Check desktop or mobile logic
             if(window.innerWidth > 1000) {
                 sb.classList.toggle('closed');
+                // Als closed class aanwezig is (dicht) -> hamburger. Anders -> pijl.
+                if(sb.classList.contains('closed')) {
+                    btn.innerHTML = "☰";
+                } else {
+                    btn.innerHTML = "←";
+                }
             } else {
-                // Mobiel: toggle class 'open' (standaard dicht)
                 sb.classList.toggle('open');
+                 if(sb.classList.contains('open')) {
+                    btn.innerHTML = "←";
+                } else {
+                    btn.innerHTML = "☰";
+                }
             }
         }
 
         function showToast(message) {
             const x = document.getElementById("toast");
-            x.innerText = message;
-            x.className = "show";
+            x.innerText = message; x.className = "show";
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
         function navigate(id, element) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${id}`).classList.add('active');
-            
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
-
-            const titles = {'planning': 'Agenda', 'cijfers': 'Cijfers', 'notities': 'Notities', 'timer': 'Timer', 'instellingen': 'Instellingen'};
-            document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
-            
-            if(window.innerWidth <= 1000) document.getElementById('app-sidebar').classList.remove('open');
+            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            if(window.innerWidth <= 1000) {
+                document.getElementById('app-sidebar').classList.remove('open');
+                document.getElementById('sidebar-toggle-btn').innerHTML = "☰";
+            }
         }
-
         function copyLink() {
-            const copyText = document.getElementById("shareLinkInput");
-            copyText.select();
-            document.execCommand("copy");
-            showToast("Link gekopieerd! 📋");
+            const t = document.getElementById("shareLinkInput");
+            t.select(); document.execCommand("copy"); showToast("Link gekopieerd!");
         }
 
-        /* --- INIT APP --- */
+        /* --- INIT --- */
         function checkAccess(targetUid, email) {
-            db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get()
-            .then(doc => {
-                if (doc.exists) {
-                    userRole = 'edit'; 
-                    initApp();
-                } else {
-                    alert("Geen toegang.");
-                    window.location.href = window.location.pathname;
-                }
+            db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get().then(doc => {
+                if (doc.exists) { userRole = 'edit'; initApp(); } 
+                else { alert("Geen toegang."); window.location.href = window.location.pathname; }
             });
         }
-
         function initApp() {
             if (userRole !== 'owner') {
                 document.getElementById('shared-badge').style.display = 'inline-block';
                 document.getElementById('share-card').style.display = 'none';
                 document.getElementById('auto-planner-card').style.display = 'none';
                 document.getElementById('settings-name').disabled = true;
+                // Verberg testen wissen voor meekijker
+                document.getElementById('tests-card').style.display = 'none';
             } else {
                 loadCollaborators();
+                loadTests(); // Laad de lijst met toetsen
             }
             initPlanner();
             if(userRole === 'owner') { loadNotes(); loadGrades(); }
             
-            const tInput = document.getElementById('timerInput');
-            tInput.addEventListener('input', function() {
-                stopTimer();
-                let val = parseInt(this.value);
-                if(!val || val < 1) val = 1;
-                timeLeft = val * 60;
-                updateTimerDisplay();
+            document.getElementById('timerInput').addEventListener('input', function() {
+                stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
             });
+            // Zet initieel icoon goed
+             if(window.innerWidth > 1000) document.getElementById('sidebar-toggle-btn').innerHTML = "←";
         }
-
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function signOutUser() { auth.signOut().then(() => window.location.href = window.location.pathname); }
+        function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        /* --- COLLAB --- */
-        function addCollaborator() {
-            const email = document.getElementById('collabEmail').value.toLowerCase().trim();
-            if(!email) return showToast("Vul e-mail in");
-            db.collection('users').doc(currentUserId).collection('collaborators').doc(email).set({added: new Date()})
-            .then(() => { showToast('Toegevoegd! ✅'); document.getElementById('collabEmail').value = ''; });
-        }
-        function loadCollaborators() {
-            db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(snap => {
-                const list = document.getElementById('collaborators-list'); list.innerHTML='';
-                snap.forEach(doc => {
-                    list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;">
-                        <span>${doc.id}</span> <span onclick="removeCollab('${doc.id}')" style="cursor:pointer; color:red;">&times;</span>
-                    </div>`;
-                });
-            });
-        }
-        function removeCollab(e) { if(confirm('Verwijderen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(e).delete(); }
-
-        /* --- PLANNER LOGICA --- */
-        function generateAutoPlanning() {
+        /* --- PLANNING & TOETSEN LOGICA --- */
+        async function generateAutoPlanning() {
             const vak = document.getElementById('autoVakInput').value;
             const hst = document.getElementById('autoHoofdstukInput').value;
             const dateVal = document.getElementById('autoDatumInput').value;
             if(!vak || !dateVal) return showToast("Vul vak en datum in");
             
             const toetsDate = new Date(dateVal);
-            let curr = new Date(); 
-            const day = curr.getDay() || 7; 
-            if (day !== 1) curr.setHours(0,0,0,0); 
+            let curr = new Date(); const day = curr.getDay() || 7; if (day !== 1) curr.setHours(0,0,0,0);
             
+            // 1. Maak eerst de toets aan in de database om een ID te krijgen
+            let testId = null;
+            if(userRole !== 'read') {
+                 const testRef = await db.collection('users').doc(viewUserId).collection('tests').add({
+                     subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
+                     chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                 });
+                 testId = testRef.id;
+            }
+
+            // 2. Plan items in met referentie naar testId
             const batch = db.batch();
-            
             while(curr <= toetsDate) {
                  const end = new Date(curr); end.setDate(curr.getDate()+6);
-                 const weekStart = new Date(curr); 
-                 weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
-
+                 const weekStart = new Date(curr); weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
                  const id = `${vak}-${weekStart.getTime()}`;
+                 
                  batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
                      weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
                      weekEnd: firebase.firestore.Timestamp.fromDate(end),
@@ -526,19 +519,60 @@
                      vak: vak,
                      thuisDoen: `Oefenen ${vak} ${hst}`,
                      bijlesDoen: ``,
-                     isAfgerond: false, isVakantie: false, isBijlesNodig: true,
-                     groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`
+                     isAfgerond: false, isVakantie: false, 
+                     groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
+                     relatedTestId: testId // KOPPELING
                  });
                  curr.setDate(curr.getDate()+7);
             }
             batch.commit().then(() => { showToast("Gepland! 📅"); document.getElementById('autoVakInput').value=''; });
         }
 
+        // Lijst met toetsen laden
+        function loadTests() {
+            db.collection('users').doc(viewUserId).collection('tests').orderBy('date', 'asc').onSnapshot(snap => {
+                const con = document.getElementById('tests-list-container'); con.innerHTML = '';
+                if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.date.toDate().toLocaleDateString('nl-NL');
+                    con.innerHTML += `
+                    <div class="test-item">
+                        <div>
+                            <div style="font-weight:600; color:var(--primary);">${d.subject}</div>
+                            <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter} • ${dateStr}</div>
+                        </div>
+                        <button onclick="deleteTest('${doc.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;" title="Verwijder toets en planning">&times;</button>
+                    </div>`;
+                });
+            });
+        }
+
+        // Toets verwijderen + CASCADING DELETE van planner items
+        async function deleteTest(testId) {
+            if(!confirm("Weet je het zeker? Hiermee verwijder je ook de planning voor deze toets.")) return;
+            
+            // 1. Verwijder toets document
+            await db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete();
+            
+            // 2. Zoek alle planner items die bij deze toets horen
+            const snapshot = await db.collection('users').doc(viewUserId).collection('planner_items')
+                                     .where('relatedTestId', '==', testId).get();
+            
+            // 3. Batch delete
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            showToast("Toets en planning verwijderd.");
+        }
+
         function initPlanner() {
             db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
                 document.getElementById('loading-indicator').style.display = 'none';
-                const tbody = document.getElementById('planner-table-body');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
                 
                 if(snapshot.empty) {
                     document.getElementById('empty-planner').style.display = 'block';
@@ -549,135 +583,55 @@
                     document.querySelector('.studie-tabel').style.display = 'table';
                 }
 
-                const grouped = {};
-                globalContext = ""; 
+                const grouped = {}; globalContext = ""; 
                 snapshot.forEach(doc => {
                     const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
                     const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
                     if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
                     globalContext += `W${data.weekNummer}: ${data.vak}. `;
                 });
-                const keys = Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate);
-                keys.forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
+                Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate).forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
             });
         }
 
         function renderGroupedRow(container, items, isEditable) {
-            const first = items[0];
-            const isHoliday = items.some(i => i.isVakantie);
-            const row = document.createElement('tr');
-            if (isHoliday) row.classList.add('is-holiday');
-
+            const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
+            const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
             let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
 
             items.forEach((item, index) => {
                 const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
                 vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
-                
-                // JUMP-IN STYLE INPUTS (clean-input class)
-                thuisHtml += `<div style="${border}">
-                    <textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? 'VAKANTIE' : item.thuisDoen}</textarea>
-                </div>`;
-                
-                bijlesHtml += `<div style="${border}">
-                    <textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''} placeholder="-">${isHoliday ? '-' : item.bijlesDoen}</textarea>
-                </div>`;
-                
-                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
-                    <input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:18px; height:18px; margin:0;">
-                    ${isEditable ? `<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3;">&times;</span>` : ''}
-                </div>`;
+                thuisHtml += `<div style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
+                bijlesHtml += `<div style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;"><input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px;">${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3;">&times;</span>`:''}</div>`;
             });
 
             row.innerHTML = `
-                <td style="border-right: 1px solid var(--border); vertical-align:top;">
-                    <div style="font-weight:700;">W${first.weekNummer}</div>
-                    <label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);">
-                        <input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:auto;"> Vakantie
-                    </label>
-                </td>
-                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>
-            `;
+                <td style="border-right:1px solid var(--border); vertical-align:top;"><div style="font-weight:700;">W${first.weekNummer}</div><label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable?'disabled':''} style="width:auto;"> Vakantie</label></td>
+                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
             container.appendChild(row);
         }
 
-        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
-        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
-        function deleteItem(docId) { if (userRole !== 'read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function updateField(id, f, v) { if(userRole!=='read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
+        function toggleHoliday(ids, val) { if(userRole!=='read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
 
-        /* --- EXPORT --- */
-        function exportToICS() { alert("Kopieer data: " + globalContext); }
-
-        /* --- CIJFERS & NOTES --- */
-        function addGrade() { 
-            const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value); 
-            if(s&&g) {
-                db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
-                .then(() => { showToast("Cijfer toegevoegd!"); document.getElementById('gradeValue').value=''; });
-            }
-        }
-        function loadGrades() { 
-            db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => { 
-                const l = document.getElementById('grades-list'); l.innerHTML = ''; 
-                snap.forEach(d => {
-                    const val = d.data().grade;
-                    const color = val >= 5.5 ? '#16a34a' : '#dc2626';
-                    l.innerHTML += `<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;">
-                        <span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${color};">${val}</span>
-                    </div>`; 
-                }); 
-            }); 
+        /* --- NOTES (GOOGLE DOCS STYLE) --- */
+        function createNewNote() {
+            const s = document.getElementById('newNoteSubject').value;
+            if(!s) return showToast("Onderwerp?");
+            db.collection('users').doc(viewUserId).collection('subject_notes').add({
+                subject: s, content: "", createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { showToast("Aangemaakt!"); document.getElementById('newNoteSubject').value=''; });
         }
 
-        function addNote() { 
-            const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; 
-            if(s) {
-                db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
-                .then(() => { showToast("Notitie opgeslagen!"); document.getElementById('noteContent').value=''; });
-            }
-        }
         function loadNotes() { 
             db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
                 const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
-                snap.forEach(d => l.innerHTML += `
-                    <div class="card" style="margin-bottom:0;">
-                        <div style="font-weight:700; color:var(--primary); margin-bottom:5px;">${d.data().subject}</div>
-                        <div style="white-space: pre-wrap;">${d.data().content}</div>
-                    </div>`); 
-            }); 
-        }
-
-        /* --- TIMER --- */
-        function updateTimerDisplay() { 
-            const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
-            const s = (timeLeft%60).toString().padStart(2,'0'); 
-            document.getElementById('timer-display').innerText = `${m}:${s}`; 
-            document.title = `${m}:${s} - Focus`;
-        }
-        function startTimer() { 
-            if(!timerInterval) {
-                document.getElementById('btn-start').innerText = "Bezig...";
-                timerInterval = setInterval(() => { 
-                    if(timeLeft>0){timeLeft--;updateTimerDisplay()} else {stopTimer(); showToast("Klaar!"); new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} 
-                }, 1000); 
-            }
-        }
-        function stopTimer() { 
-            clearInterval(timerInterval); timerInterval = null; 
-            document.getElementById('btn-start').innerText = "Start";
-        }
-        function resetTimer() {
-            stopTimer();
-            const val = document.getElementById('timerInput').value;
-            timeLeft = (val ? val : 25) * 60;
-            updateTimerDisplay();
-        }
-
-        function saveSettings() { 
-            const n=document.getElementById('settings-name').value; 
-            if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{ showToast("Opgeslagen!"); }); 
-        }
-    </script>
-</body>
-</html>
+                snap.forEach(d => {
+                    // We gebruiken textarea's en inputs met onblur events voor "live" editing gevoel
+                    l.innerHTML += `
+                    <div class="card note-card">
+                        <input type="text
