@@ -139,4 +139,737 @@
         
         #note-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 900px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
-        .modal-header { padding: 10px 20px
+        .modal-header { padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .editor-toolbar { padding: 8px 20px; border-bottom: 1px solid var(--border); background: white; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .tool-btn { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); width: auto; padding: 4px 10px; font-size: 0.9em; border-radius: 4px; }
+        .modal-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; background: #fdfdfd; }
+        #modal-note-title { font-size: 1.8em; font-weight: 800; border: none; background: transparent; width: 100%; outline: none; margin-bottom: 15px; color: var(--text-main); }
+        #modal-note-content { flex: 1; outline: none; font-size: 1.1em; line-height: 1.6; color: #334155; min-height: 300px; white-space: pre-wrap; }
+        .pdf-section { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
+
+        /* --- AGENDA --- */
+        .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+        .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .studie-tabel td { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .clean-input { width: 100%; background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 4px; resize: none; min-height: 32px; font-family: inherit; color: var(--text-main); margin: 0; }
+        .clean-input:hover { background: #f8fafc; }
+        .clean-input:focus { background: white; border-color: var(--primary); }
+
+        .week-dates { font-size: 0.75em; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .holiday-btn { display: block; font-size: 0.7em; padding: 4px; border-radius: 4px; cursor: pointer; background: #e2e8f0; color: #64748b; text-align: center; border: 1px solid transparent; width: 100%; transition: 0.2s; }
+        .holiday-btn:hover { background: #cbd5e1; }
+        .holiday-btn.active { background: #fcd34d; color: #78350f; border-color: #fbbf24; font-weight: 700; }
+        .is-holiday td { background-color: var(--holiday-bg); }
+        .is-holiday .clean-input { color: var(--holiday-text); font-weight: 600; }
+        .row-done .clean-input { text-decoration: line-through; color: var(--success-text); opacity: 0.7; }
+        .row-done td { background-color: #fafafa; }
+        .item-done { background-color: var(--success-bg); border-radius: 4px; }
+        .test-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
+
+        .page-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; gap: 20px; }
+        .page-section.active { display: flex; flex-direction: column; animation: fade 0.2s; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        #page-planning.active { flex-direction: row; }
+        #planner-column { flex: 1; }
+        #tools-column { width: 300px; flex-shrink: 0; }
+        #timer-display { font-size: 5em; font-weight: 700; color: var(--primary); margin: 15px 0; font-variant-numeric: tabular-nums; }
+        #toast { visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 2500; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em; opacity: 0; transition: 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        @media print {
+            body, html { height: auto; overflow: visible; background: white; }
+            #app-sidebar, header, #tools-column, .toggle-btn, #toast, #page-home { display: none !important; }
+            /* Print overrides here... */
+            body.print-mode-note #main-content { display: none; }
+            body.print-mode-note #note-modal { position: static; display: block; background: white; width: 100%; height: auto; }
+            body.print-mode-note .modal-content { box-shadow: none; border: none; width: 100%; max-width: 100%; height: auto; border-radius: 0; }
+            body.print-mode-note .modal-header, body.print-mode-note .editor-toolbar, body.print-mode-note .pdf-section, body.print-mode-note .modal-footer-btns { display: none !important; }
+            body.print-mode-note .modal-body { padding: 0; overflow: visible; }
+
+            body.print-mode-agenda #page-planning { display: block; padding: 0; margin: 0; }
+            body.print-mode-agenda #planner-column { width: 100%; flex: none; display: block; }
+            body.print-mode-agenda .table-container { border: none; border-radius: 0; box-shadow: none; }
+            body.print-mode-agenda h2 { font-size: 1.5em; text-align: center; margin-bottom: 20px; }
+            body.print-mode-agenda button, body.print-mode-agenda .holiday-btn { display: none; }
+            body.print-mode-agenda .clean-input { border: none; padding: 0; resize: none; }
+        }
+
+        @media (max-width: 1000px) {
+            #page-planning.active { flex-direction: column; }
+            #tools-column { width: 100%; order: -1; }
+            #app-sidebar { position: fixed; height: 100%; top: 0; left: 0; margin-left: -250px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+            #app-sidebar.open { margin-left: 0; }
+            #app-sidebar.closed { margin-left: -250px; }
+            .home-grid { grid-template-columns: 1fr; } 
+            #page-home { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Melding</div>
+
+    <div id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span style="font-weight:600; color:var(--text-muted);">Notitie Bewerken</span>
+                <div class="modal-footer-btns" style="display:flex; gap:10px; align-items:center;">
+                    <button onclick="deleteCurrentNote()" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; width:auto; padding: 6px 10px; font-size:0.8em;">🗑️ Wis</button>
+                    <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
+                    <button onclick="saveModalNote()" style="width:auto; padding: 6px 15px;">Opslaan</button>
+                    <button onclick="closeNoteModal()" class="secondary" style="width:auto; padding: 6px 15px;">Sluiten</button>
+                </div>
+            </div>
+            <div class="editor-toolbar">
+                <button class="tool-btn" onclick="execCmd('bold')" title="Dikgedrukt"><b>B</b></button>
+                <button class="tool-btn" onclick="execCmd('italic')" title="Schuingedrukt"><i>I</i></button>
+                <button class="tool-btn" onclick="execCmd('underline')" title="Onderstreept"><u>U</u></button>
+                <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
+                <select onchange="execCmd('fontSize', this.value)" style="width:auto; margin:0; padding:4px;">
+                    <option value="3">Normaal</option>
+                    <option value="5">Groot</option>
+                    <option value="7">Enorm</option>
+                </select>
+                <div style="flex:1;"></div>
+                <button class="tool-btn" onclick="printNote()">🖨️ Print / PDF</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="modal-note-title" placeholder="Titel...">
+                <div id="modal-note-content" contenteditable="true" placeholder="Typ hier..."></div>
+                <div class="pdf-section">
+                    <h3 style="margin-bottom:10px;">📎 Bijlage (PDF)</h3>
+                    <input type="file" id="pdf-upload-input" accept="application/pdf">
+                    <div id="current-pdf-link" style="margin-top:10px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-page" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--bg-body); flex-direction: column; justify-content: center; align-items: center;">
+        <div class="card" style="width: 100%; max-width: 350px; text-align: center; padding: 40px;">
+            <h1 style="color: var(--text-main); margin-bottom: 5px;">Study-Start Pro</h1>
+            <button onclick="signInWithGoogle()" style="width: 100%; background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google Login
+            </button>
+        </div>
+    </div>
+
+    <nav id="app-sidebar">
+        <div class="sidebar-header" onclick="navigate('home')"><span>⚡ Study-Start</span></div>
+        <div class="nav-item active" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
+        <div class="nav-item" onclick="navigate('cijfers', this)"><span>📊</span> Cijfers</div>
+        <div class="nav-item" onclick="navigate('notities', this)"><span>📝</span> Notities</div>
+        <div class="nav-item" onclick="navigate('oefenen', this)"><span>🎓</span> Oefenen</div>
+        <div class="nav-item" onclick="navigate('timer', this)"><span>⏱️</span> Timer</div>
+        <div style="flex-grow: 1;"></div>
+        <div class="nav-item" onclick="navigate('instellingen', this)"><span>⚙️</span> Instellingen</div>
+    </nav>
+
+    <main id="main-content" style="display: none;">
+        <header>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="toggle-btn" id="sidebar-btn" onclick="toggleSidebar()">☰</button>
+                <div id="page-title" style="font-weight: 700; color: var(--text-main);">Home</div>
+                <div id="shared-badge" style="display: none; background: #fffbeb; color: #b45309; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; border: 1px solid #fcd34d;">👁️ Meekijker</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-display-name" style="font-weight: 600; font-size: 0.9em;">Gast</span>
+                <button onclick="signOutUser()" class="secondary" style="width: auto; padding: 6px 12px; font-size: 0.85em;">Uitloggen</button>
+            </div>
+        </header>
+
+        <div id="page-home" class="page-section active" style="display: flex;">
+            <div class="home-container">
+                <h1 class="home-title">Study-Start Pro</h1>
+                <div class="home-grid">
+                    <button class="home-btn" onclick="navigate('planning')">Agenda</button>
+                    <button class="home-btn" onclick="navigate('cijfers')">Cijfers</button>
+                    <button class="home-btn" onclick="navigate('notities')">Notities</button>
+                    <button class="home-btn" onclick="navigate('oefenen')">Oefenen</button>
+                    <button class="home-btn" onclick="navigate('timer')">Focus Timer</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-planning" class="page-section">
+            <div id="planner-column">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin:0;">Agenda</h2>
+                    <button onclick="printAgenda()" class="secondary" style="width: auto;">🖨️ Print / PDF</button>
+                </div>
+                <div id="loading-indicator" style="color: var(--text-muted); text-align: center; padding: 40px;">Laden...</div>
+                <div class="table-container">
+                    <table class="studie-tabel">
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">Week</th>
+                                <th style="width: 15%;">Vak</th>
+                                <th style="width: 33%;">Thuis Doen</th>
+                                <th style="width: 25%;">Bijles / Extra</th>
+                                <th style="width: 60px; text-align:center;">Gedaan?</th>
+                            </tr>
+                        </thead>
+                        <tbody id="planner-table-body"></tbody>
+                    </table>
+                </div>
+                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">Leeg. Plan iets in 👉</div>
+            </div>
+
+            <div id="tools-column">
+                <div class="card" id="auto-planner-card" style="background: var(--primary-bg); border-color: #bfdbfe;">
+                    <h3 style="color: var(--primary);">+ Handmatig Toevoegen</h3>
+                    <input type="text" list="vakken-list" id="manualVak" placeholder="Vak (bv. Wiskunde)">
+                    <datalist id="vakken-list"><option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis"></datalist>
+                    <input type="text" id="manualTask" placeholder="Voeg hier toe wat je moet doen" style="margin-bottom:10px;">
+                    <label style="font-size:0.8em; font-weight:600; color:var(--text-muted);">Datum:</label>
+                    <input type="date" id="manualDate">
+                    <button onclick="addManualItem()">Toevoegen</button>
+                </div>
+                <div class="card" id="tests-card">
+                    <h3>📌 Mijn Toetsen</h3>
+                    <div id="tests-list-container">Laden...</div>
+                </div>
+                <div class="card" id="share-card">
+                    <h3>🤝 Delen</h3>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="email" id="collabEmail" placeholder="docent@email.com" style="margin-bottom:0;">
+                        <button onclick="addCollaborator()" style="width: auto;">+</button>
+                    </div>
+                    <div id="collaborators-list"></div>
+                    <input type="text" id="shareLinkInput" readonly style="font-size: 0.8em; color: var(--text-muted); cursor: copy; background: #f1f5f9; border: 1px solid var(--border); margin-top: 10px;" onclick="copyLink()">
+                </div>
+            </div>
+        </div>
+
+        <div id="page-oefenen" class="page-section">
+            <div style="max-width: 800px; margin: 0 auto; width: 100%;">
+                <h2>Oefentoets: Inklemmen</h2>
+                
+                <div id="quiz-start-screen">
+                    <div class="card" style="border-left: 4px solid var(--primary);">
+                        <h3>Uitleg: Wat is Inklemmen?</h3>
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            Inklemmen is een methode om een vergelijking op te lossen door te "gokken en verbeteren". 
+                            Je zoekt de waarde die het dichtst bij het antwoord ligt.<br><br>
+                            <b>Stappenplan:</b><br>
+                            1. Maak een schatting.<br>
+                            2. Vul je schatting in de formule in.<br>
+                            3. Zit je te laag? Probeer hoger. Zit je te hoog? Probeer lager.<br>
+                            4. Kies de waarde die het <b>dichtst</b> bij de uitkomst ligt.
+                        </p>
+                        <button onclick="startQuiz()" style="margin-top: 10px;">Start Oefentoets (20 Vragen)</button>
+                    </div>
+                </div>
+
+                <div id="quiz-container" style="display: none;">
+                    <div id="quiz-questions-list"></div>
+                    <button onclick="submitQuiz()" style="margin-top: 20px;">Toets Inleveren</button>
+                </div>
+
+                <div id="quiz-results" style="display: none;">
+                    <div class="card" style="text-align: center;">
+                        <h3>Je Resultaat</h3>
+                        <div class="score-display" id="quiz-score">?</div>
+                        <p id="quiz-message"></p>
+                        <button onclick="startQuiz()">Nog een keer oefenen</button>
+                    </div>
+                    <h3>Antwoorden & Uitleg</h3>
+                    <div id="quiz-review-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-cijfers" class="page-section">
+            <div style="max-width: 700px; margin: 0 auto; width: 100%;">
+                <h2>Cijfers</h2>
+                <div class="card">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="gradeSubject" placeholder="Vak" style="flex: 2; margin:0;">
+                        <input type="number" id="gradeValue" placeholder="Cijfer" step="0.1" style="flex: 1; margin:0;">
+                        <button onclick="addGrade()" style="flex: 1;">Opslaan</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="grades-list" style="display: grid; gap: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-notities" class="page-section">
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div class="card" style="width: 280px; flex-shrink: 0; position: sticky; top: 80px;">
+                    <h3>+ Nieuwe Notitie</h3>
+                    <button onclick="createNewNote()">Lege Notitie Aanmaken</button>
+                </div>
+                <div style="flex: 1;">
+                    <h2>Notities</h2>
+                    <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-timer" class="page-section" style="justify-content: center; align-items: center; min-height: 80vh;">
+            <div class="card" style="text-align: center; max-width: 400px; width: 100%; padding: 40px;">
+                <h2 style="margin-bottom: 5px;">Focus Timer</h2>
+                <div id="timer-display">25:00</div>
+                <input type="number" id="timerInput" value="25" min="1" style="text-align: center; font-size: 1.2em; width: 80px; margin: 0 auto 20px;">
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="startTimer()" id="btn-start" style="width: 100px;">Start</button>
+                    <button onclick="stopTimer()" class="secondary">Pauze</button>
+                    <button onclick="resetTimer()" class="secondary" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-instellingen" class="page-section">
+            <div style="max-width: 500px; margin: 0 auto; width: 100%;">
+                <h2>Instellingen</h2>
+                <div class="card">
+                    <h3>Profielnaam</h3>
+                    <input type="text" id="settings-name" placeholder="Naam">
+                    <button onclick="saveSettings()">Opslaan</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
+          authDomain: "study-start-c510c.firebaseapp.com",
+          projectId: "study-start-c510c",
+          storageBucket: "study-start-c510c.firebasestorage.app",
+          messagingSenderId: "960911379164",
+          appId: "1:960911379164:web:ad8648cfa2fe65f8620219"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserId = null, viewUserId = null, userRole = 'owner'; 
+        let timerInterval = null, timeLeft = 25 * 60;
+        let globalContext = ""; 
+        let currentOpenNoteId = null;
+        let currentNotePdfData = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUserId = user.uid;
+                document.getElementById('user-display-name').innerText = user.displayName || user.email.split('@')[0];
+                document.getElementById('settings-name').value = user.displayName || "";
+                
+                const params = new URLSearchParams(window.location.search);
+                const targetUid = params.get('uid');
+
+                if (targetUid && targetUid !== currentUserId) {
+                    viewUserId = targetUid; checkAccess(targetUid, user.email);
+                } else {
+                    viewUserId = currentUserId; userRole = 'owner'; initApp();
+                }
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+                document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
+            } else {
+                document.getElementById('login-page').style.display = 'flex';
+            }
+        });
+
+        function toggleSidebar() {
+            const sb = document.getElementById('app-sidebar');
+            const btn = document.getElementById('sidebar-btn');
+            const isDesktop = window.innerWidth > 1000;
+            if(isDesktop) {
+                sb.classList.toggle('closed');
+                btn.innerHTML = sb.classList.contains('closed') ? "☰" : "←";
+            } else {
+                sb.classList.toggle('open');
+                btn.innerHTML = sb.classList.contains('open') ? "←" : "☰";
+            }
+        }
+
+        function navigate(id, element) {
+            document.querySelectorAll('.page-section').forEach(el => {
+                el.classList.remove('active');
+                if(el.id === 'page-home') el.style.display = 'none';
+            });
+            const target = document.getElementById(`page-${id}`);
+            target.classList.add('active');
+            if(id === 'home') target.style.display = 'flex';
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            const titles = {home:'Home', planning:'Agenda', cijfers:'Cijfers', notities:'Notities', oefenen:'Oefenen', timer:'Timer', instellingen:'Instellingen'};
+            document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
+            
+            if(window.innerWidth <= 1000) {
+                document.getElementById('app-sidebar').classList.remove('open');
+                document.getElementById('sidebar-btn').innerHTML = "☰";
+            }
+        }
+
+        function showToast(message) {
+            const x = document.getElementById("toast");
+            x.innerText = message; x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        function checkAccess(targetUid, email) {
+            db.collection('users').doc(targetUid).collection('collaborators').doc(email.toLowerCase()).get().then(doc => {
+                if (doc.exists) { userRole = 'edit'; initApp(); } 
+                else { alert("Geen toegang."); window.location.href = window.location.pathname; }
+            });
+        }
+        function initApp() {
+            if (userRole !== 'owner') {
+                document.getElementById('shared-badge').style.display = 'inline-block';
+                document.getElementById('share-card').style.display = 'none';
+                document.getElementById('manual-planner-card').style.display = 'none'; 
+                document.getElementById('tests-card').style.display = 'none';
+                document.getElementById('settings-name').disabled = true;
+            } else {
+                loadCollaborators();
+                loadTests(); 
+            }
+            initPlanner();
+            loadNotes(); 
+            loadGrades(); 
+            
+            document.getElementById('timerInput').addEventListener('input', function() {
+                stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
+            });
+            if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
+            
+            navigate('home');
+        }
+
+        function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function signOutUser() { auth.signOut().then(() => location.reload()); }
+
+        /* --- QUIZ SYSTEM --- */
+        const questionBank = [
+            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29 (6,76 is dichterbij)"}, {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25 (12,25 ligt 0,25 van 12)"},
+            {q:"x² = 20", a:4.5, h:"4,5²=20,25"}, {q:"x² = 32", a:5.7, h:"5,6²=31,36, 5,7²=32,49"}, {q:"x² = 45", a:6.7, h:"6,7²=44,89 (verschil 0,11)"},
+            {q:"x² = 60", a:7.7, h:"7,7²=59,29"}, {q:"x² = 75", a:8.7, h:"8,7²=75,69"}, {q:"x² = 95", a:9.7, h:"9,7²=94,09"},
+            {q:"x² = 110", a:10.5, h:"10,5²=110,25"}, {q:"x² = 130", a:11.4, h:"11,4²=129,96"},
+            {q:"2x² = 15", a:2.7, h:"x²=7,5. 2,7²=7,29"}, {q:"3x² = 50", a:4.1, h:"x²=16,67. 4,1²=16,81"}, {q:"0,5x² = 8", a:4.0, h:"x²=16. Wortel is 4"},
+            {q:"4x² = 90", a:4.7, h:"x²=22,5. 4,7²=22,09"}, {q:"5x² = 120", a:4.9, h:"x²=24. 4,9²=24,01"}, {q:"0,2x² = 10", a:7.1, h:"x²=50. 7,1²=50,41"},
+            {q:"1,5x² = 30", a:4.5, h:"x²=20. 4,5²=20,25"}, {q:"2,5x² = 45", a:4.2, h:"x²=18. 4,2²=17,64"}, {q:"6x² = 200", a:5.8, h:"x²=33,3. 5,8²=33,64"},
+            {q:"10x² = 350", a:5.9, h:"x²=35. 5,9²=34,81"}, {q:"x² + 5 = 28", a:4.8, h:"x²=23. 4,8²=23,04"}, {q:"x² - 4 = 15", a:4.4, h:"x²=19. 4,4²=19,36"},
+            {q:"2x² + 3 = 30", a:3.7, h:"2x²=27 -> x²=13,5. 3,7²=13,69"}, {q:"3x² - 10 = 55", a:4.7, h:"3x²=65 -> x²=21,7"}, {q:"0,5x² + 12 = 34", a:6.6, h:"0,5x²=22 -> x²=44"},
+            {q:"x² + 2x = 15", a:3.0, h:"3²+2*3 = 9+6=15"}, {q:"x² + 3x = 25", a:3.7, h:"3,7²+3*3,7 = 24,79"}, {q:"x² - x = 20", a:5.0, h:"5²-5=20"},
+            {q:"2x² + x = 40", a:4.2, h:"2*4,2² + 4,2 = 39,48"}, {q:"5x² - 2x = 10", a:1.6, h:"5*1,6² - 3,2 = 12,8 - 3,2 = 9,6"},
+            {q:"x³ = 30", a:3.1, h:"3,1³=29,79"}, {q:"x³ = 70", a:4.1, h:"4,1³=68,9"}, {q:"x³ = 100", a:4.6, h:"4,6³=97,3"}, {q:"x³ = 200", a:5.8, h:"5,8³=195,1"},
+            {q:"2x³ = 50", a:2.9, h:"x³=25. 2,9³=24,4"}, {q:"x³ + 5 = 40", a:3.3, h:"x³=35. 3,3³=35,9"}, {q:"√x = 5,2", a:27.0, h:"5,2²=27,04"},
+            {q:"√x + 3 = 8,5", a:30.3, h:"√x=5,5 -> 5,5²=30,25"}, {q:"3√x = 20", a:44.4, h:"√x=6,67 -> 6,67²=44,48"}, {q:"x³ - x = 50", a:3.8, h:"3,8³-3,8=51,0"},
+            {q:"h = 3t² (h=50)", a:4.1, h:"3t²=50 -> t²=16,7"}, {q:"A = x² + 4x (A=60)", a:6.0, h:"36+24=60"}, {q:"W = 0,5n³ (W=100)", a:5.8, h:"0,5n³=100 -> n³=200"},
+            {q:"x² = 2x + 8", a:4.0, h:"16 = 8+8"}, {q:"3x² = 50 - x", a:3.9, h:"3*3,9²=45,6. 50-3,9=46,1"}, {q:"R = 0,8v² (R=45)", a:7.5, h:"0,8v²=45 -> v²=56,25"},
+            {q:"V = z³ (V=85)", a:4.4, h:"4,4³=85,1"}, {q:"y = 2x² - 5 (y=30)", a:4.2, h:"2x²=35 -> x²=17,5"}, {q:"y = x² + 10x (y=55)", a:4.0, h:"16+40=56 (Dichterbij dan 3,9)"},
+            {q:"y = 0,1x³ + 5 (y=20)", a:5.3, h:"0,1x³=15 -> x³=150"}
+        ];
+
+        let currentQuizQuestions = [];
+
+        function startQuiz() {
+            document.getElementById('quiz-start-screen').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            
+            // Pick 20 random
+            currentQuizQuestions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 20);
+            
+            const list = document.getElementById('quiz-questions-list');
+            list.innerHTML = '';
+            
+            currentQuizQuestions.forEach((item, index) => {
+                list.innerHTML += `
+                <div class="quiz-question-card" id="q-card-${index}">
+                    <div style="font-weight:600; margin-bottom:10px;">Vraag ${index+1}: Los op voor x (1 decimaal)</div>
+                    <div style="font-size:1.2em; margin-bottom:10px; font-family:monospace;">${item.q}</div>
+                    <input type="number" step="0.1" class="quiz-input" id="q-input-${index}" placeholder="Jouw antwoord...">
+                    <div class="quiz-feedback" id="q-feedback-${index}"></div>
+                </div>`;
+            });
+            window.scrollTo(0,0);
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            currentQuizQuestions.forEach((item, index) => {
+                const input = document.getElementById(`q-input-${index}`);
+                const card = document.getElementById(`q-card-${index}`);
+                const feedback = document.getElementById(`q-feedback-${index}`);
+                
+                // Handle decimal comma/dot
+                let val = input.value.replace(',', '.');
+                let numVal = parseFloat(val);
+                
+                // Check answer (allow small margin for float errors, though exact match is requested)
+                if (Math.abs(numVal - item.a) < 0.05) {
+                    score++;
+                    card.classList.add('correct');
+                    feedback.innerHTML = `✅ Correct! ${item.h}`;
+                } else {
+                    card.classList.add('wrong');
+                    feedback.innerHTML = `❌ Fout. Het goede antwoord is <b>${item.a.toString().replace('.',',')}</b>.<br>Uitleg: ${item.h}`;
+                }
+                card.classList.add('show-feedback');
+                input.disabled = true;
+            });
+
+            // Calculate grade (1-10)
+            const grade = (score / 20 * 9) + 1;
+            const roundedGrade = Math.round(grade * 10) / 10;
+            
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            document.getElementById('quiz-score').innerText = roundedGrade;
+            document.getElementById('quiz-message').innerText = `Je had ${score} van de 20 goed.`;
+            
+            // Copy review list
+            document.getElementById('quiz-review-list').innerHTML = document.getElementById('quiz-questions-list').innerHTML;
+
+            // Save to DB
+            if(currentUserId) {
+                db.collection('users').doc(currentUserId).collection('quiz_results').add({
+                    score: score, grade: roundedGrade, date: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+            window.scrollTo(0,0);
+        }
+
+        /* --- MANUAL PLANNER --- */
+        function addManualItem() {
+            const vak = document.getElementById('manualVak').value;
+            const taak = document.getElementById('manualTask').value;
+            const dateVal = document.getElementById('manualDate').value;
+
+            if(!vak || !taak || !dateVal) return showToast("Vul alle velden in.");
+
+            const targetDate = new Date(dateVal);
+            const weekStart = new Date(targetDate); 
+            const day = weekStart.getDay() || 7; 
+            if(day !== 1) weekStart.setHours(0,0,0,0);
+            weekStart.setDate(weekStart.getDate() - day + 1);
+            
+            const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
+            const id = `${vak}-${targetDate.getTime()}`;
+
+            db.collection('users').doc(viewUserId).collection('planner_items').doc(id).set({
+                weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
+                weekEnd: firebase.firestore.Timestamp.fromDate(end),
+                weekNummer: getWeekNumber(weekStart),
+                vak: vak,
+                thuisDoen: taak,
+                bijlesDoen: ``,
+                isAfgerond: false, isVakantie: false, 
+                groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
+                relatedTestId: null 
+            }).then(() => {
+                showToast("Toegevoegd! 📅");
+                document.getElementById('manualVak').value = '';
+                document.getElementById('manualTask').value = '';
+            });
+        }
+
+        /* --- TOETSEN --- */
+        function loadTests() {
+            db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
+                const con = document.getElementById('tests-list-container'); con.innerHTML = '';
+                if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
+                let tests = [];
+                snap.forEach(doc => tests.push({id: doc.id, ...doc.data()}));
+                tests.sort((a,b) => (a.date && b.date) ? a.date.seconds - b.date.seconds : 0);
+                tests.forEach(d => {
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : 'Datum onbekend';
+                    con.innerHTML += `<div class="test-item"><div><div style="font-weight:600; color:var(--primary);">${d.subject||'Geen vak'}</div><div style="font-size:0.85em; color:var(--text-muted);">${d.chapter||''} • ${dateStr}</div></div><button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;">❌</button></div>`;
+                });
+            });
+        }
+
+        function deleteTest(testId) {
+            if(!confirm("Toets verwijderen uit lijst?")) return;
+            db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => showToast("Verwijderd."));
+        }
+
+        function initPlanner() {
+            db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
+                if(snapshot.empty) { document.getElementById('empty-planner').style.display = 'block'; document.querySelector('.studie-tabel').style.display = 'none'; return; } 
+                else { document.getElementById('empty-planner').style.display = 'none'; document.querySelector('.studie-tabel').style.display = 'table'; }
+
+                const grouped = {}; globalContext = ""; 
+                snapshot.forEach(doc => {
+                    const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
+                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
+                    if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
+                    globalContext += `W${data.weekNummer}: ${data.vak}. `;
+                });
+                Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate).forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
+            });
+        }
+
+        function renderGroupedRow(container, items, isEditable) {
+            const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
+            const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
+            const allDone = items.every(i => i.isAfgerond);
+            if(allDone) row.classList.add('row-done');
+
+            const sDate = first.weekStart.toDate();
+            const eDate = first.weekEnd.toDate();
+            const dateStr = `${sDate.getDate()} ${sDate.toLocaleString('nl-NL',{month:'short'})} - ${eDate.getDate()} ${eDate.toLocaleString('nl-NL',{month:'short'})}`;
+
+            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
+
+            items.forEach((item, index) => {
+                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
+                const doneClass = item.isAfgerond ? 'item-done' : '';
+                
+                vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
+                thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
+                bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
+                    <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
+                    ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}
+                </div>`;
+            });
+
+            row.innerHTML = `
+                <td style="border-right:1px solid var(--border); vertical-align:top;">
+                    <div style="font-weight:700;">W${first.weekNummer}</div>
+                    <span class="week-dates">${dateStr}</span>
+                    <div class="holiday-btn ${isHoliday ? 'active' : ''}" onclick="toggleHoliday('${items.map(i=>i.id).join(',')}', ${!isHoliday})">${isHoliday ? 'VAKANTIE!' : 'Zet op Vakantie'}</div>
+                </td>
+                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
+            container.appendChild(row);
+        }
+
+        function updateField(id, f, v) { if(userRole!=='read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
+        function toggleHoliday(ids, val) { if(userRole!=='read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+
+        function printAgenda() {
+            document.body.classList.add('print-mode-agenda');
+            window.print();
+            document.body.classList.remove('print-mode-agenda');
+        }
+
+        /* --- NOTITIES --- */
+        function createNewNote() {
+            db.collection('users').doc(viewUserId).collection('subject_notes').add({
+                subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((doc) => { 
+                showToast("Aangemaakt!"); 
+                openNoteModal(doc.id, "Nieuwe Notitie", "", null); 
+            });
+        }
+
+        function loadNotes() { 
+            db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
+                snap.forEach(d => {
+                    const data = d.data();
+                    const div = document.createElement("div"); div.innerHTML = data.content || "";
+                    const textPreview = div.textContent || div.innerText || "";
+                    const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : '';
+                    
+                    l.innerHTML += `
+                    <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'>
+                        <div class="note-preview-title">${data.subject}</div>
+                        <div class="note-preview-body">${textPreview}</div>
+                        ${pdfBadge}
+                    </div>`;
+                }); 
+            }); 
+        }
+
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('modal-note-content').focus();
+        }
+
+        function printNote() {
+            document.body.classList.add('print-mode-note');
+            window.print();
+            document.body.classList.remove('print-mode-note');
+        }
+
+        function openNoteModal(id, title, content, hasPdf) {
+            currentOpenNoteId = id;
+            document.getElementById('modal-note-title').value = title;
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
+                if(doc.exists) {
+                    document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
+                    if(doc.data().pdfData) {
+                        currentNotePdfData = doc.data().pdfData;
+                        document.getElementById('current-pdf-link').innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
+                    } else {
+                        document.getElementById('current-pdf-link').innerHTML = "";
+                    }
+                }
+            });
+            document.getElementById('note-modal').style.display = 'flex';
+            document.getElementById('pdf-upload-input').value = ""; 
+        }
+
+        function closeNoteModal() {
+            document.getElementById('note-modal').style.display = 'none';
+            currentOpenNoteId = null;
+        }
+
+        function saveModalNote() {
+            if(!currentOpenNoteId) return;
+            const title = document.getElementById('modal-note-title').value;
+            const content = document.getElementById('modal-note-content').innerHTML; 
+            const fileInput = document.getElementById('pdf-upload-input');
+            const updateData = { subject: title, content: content };
+
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 400000) { alert("PDF is te groot! Maximaal 400KB."); return; }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    updateData.pdfData = e.target.result; 
+                    pushUpdate(updateData);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                pushUpdate(updateData);
+            }
+        }
+
+        function pushUpdate(data) {
+            db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).update(data)
+            .then(() => { showToast("Opgeslagen! ✅"); closeNoteModal(); });
+        }
+
+        function deleteCurrentNote() {
+            if(confirm("Notitie verwijderen?")) {
+                db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).delete()
+                .then(() => { closeNoteModal(); showToast("Verwijderd."); });
+            }
+        }
+
+        /* --- OVERIG --- */
+        function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
+        function loadCollaborators() { db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(s=>{ const l=document.getElementById('collaborators-list'); l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.id}</span><span onclick="removeCollab('${d.id}')" style="cursor:pointer; color:red;">&times;</span></div>`); }); }
+        function removeCollab(id) { if(confirm('Wissen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(id).delete(); }
+        function copyLink() { const t=document.getElementById("shareLinkInput"); t.select(); document.execCommand("copy"); showToast("Gekopieerd!"); }
+
+        function addGrade() { const s=document.getElementById('gradeSubject').value,g=parseFloat(document.getElementById('gradeValue').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s,grade:g,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{showToast("Cijfer opgeslagen");document.getElementById('gradeValue').value='';}); }
+        function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt','desc').onSnapshot(s=>{ const l=document.getElementById('grades-list');l.innerHTML=''; s.forEach(d=>{ const c=d.data().grade>=5.5?'#16a34a':'#dc2626'; l.innerHTML+=`<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${c};">${d.data().grade}</span></div>`; }); }); }
+        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{showToast("Opgeslagen!");}); }
+
+        /* --- TIMER --- */
+        function updateTimerDisplay() { const m=Math.floor(timeLeft/60).toString().padStart(2,'0'), s=(timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText=`${m}:${s}`; document.title=`${m}:${s} - Focus`; }
+        function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
+        function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
+        function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
+    </script>
+</body>
+</html>
