@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -32,8 +32,6 @@
             --success-text: #166534;
             --holiday-bg: #fffbeb;
             --holiday-text: #b45309;
-            --holiday-btn-bg: #fef3c7;
-            --holiday-btn-text: #92400e;
         }
 
         * { box-sizing: border-box; }
@@ -80,63 +78,65 @@
         }
         .toggle-btn:hover { background: var(--border); color: var(--primary); }
 
-        /* --- HOME SCREEN (Clean & 4 Knoppen) --- */
+        /* --- HOME SCREEN --- */
         #page-home {
             background-image: url('achtergrondfront1.png');
             background-size: cover;
             background-position: center;
-            justify-content: center;
+            /* Zorgt dat content onderaan komt */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; 
             align-items: center;
             padding: 40px;
         }
         
         .home-container {
-            /* Optioneel: Achtergrondje achter knoppen voor leesbaarheid */
-            /* background: rgba(255,255,255,0.9); */
-            /* backdrop-filter: blur(10px); */
-            /* padding: 40px; border-radius: 24px; */
-            text-align: center;
             width: 100%;
-            max-width: 900px;
+            max-width: 1100px;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
         .home-title {
-            font-size: 3em;
+            /* Titel zweeft iets boven de knoppen */
+            font-size: 4em;
             font-weight: 800;
-            color: var(--text-main); /* Of wit als je achtergrond donker is */
+            color: var(--primary); 
             margin-bottom: 40px;
-            text-shadow: 0 2px 10px rgba(255,255,255,0.5); /* Voor leesbaarheid */
+            text-shadow: 0 10px 20px rgba(255,255,255,0.8);
         }
 
         .home-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 knoppen naast elkaar */
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr); /* 4 naast elkaar */
+            gap: 15px;
         }
 
         .home-btn {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border: 1px solid var(--border);
-            padding: 30px 20px;
-            border-radius: 16px;
-            font-size: 1.1em;
+            padding: 15px 20px; /* Dunner */
+            border-radius: 50px; /* Pilvorm */
+            font-size: 1em;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            /* Centrerend */
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 140px; /* Vaste hoogte */
+            height: auto; /* Geen vaste hoogte meer, past zich aan padding aan */
         }
 
         .home-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border-color: var(--primary);
             color: var(--primary);
+            background: white;
         }
 
         /* --- UI ELEMENTS --- */
@@ -172,7 +172,7 @@
         .note-preview-body { font-size: 0.9em; color: var(--text-muted); white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
         .pdf-badge { font-size: 0.7em; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
 
-        /* Modal Overlay */
+        /* Modal */
         #note-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000;
@@ -200,7 +200,7 @@
         #modal-note-content { flex: 1; outline: none; font-size: 1.1em; line-height: 1.6; color: #334155; min-height: 300px; white-space: pre-wrap; }
         .pdf-section { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
 
-        /* --- AGENDA & TABLES --- */
+        /* --- AGENDA --- */
         .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
         .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
@@ -210,9 +210,7 @@
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); }
 
-        /* VAKANTIE & DATUM STYLING */
         .week-dates { font-size: 0.75em; color: var(--text-muted); display: block; margin-bottom: 5px; }
-        
         .holiday-btn {
             display: block; font-size: 0.7em; padding: 4px; border-radius: 4px;
             cursor: pointer; background: #e2e8f0; color: #64748b; text-align: center;
@@ -224,7 +222,6 @@
         .is-holiday td { background-color: var(--holiday-bg); }
         .is-holiday .clean-input { color: var(--holiday-text); font-weight: 600; }
 
-        /* DONE STATUS STYLING */
         .row-done .clean-input { text-decoration: line-through; color: var(--success-text); opacity: 0.7; }
         .row-done td { background-color: #fafafa; }
         .item-done .clean-input { text-decoration: line-through; color: var(--success-text); }
@@ -269,8 +266,7 @@
             #app-sidebar { position: fixed; height: 100%; top: 0; left: 0; margin-left: -250px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
             #app-sidebar.open { margin-left: 0; }
             #app-sidebar.closed { margin-left: -250px; }
-            
-            .home-grid { grid-template-columns: 1fr; } /* Op mobiel onder elkaar */
+            .home-grid { grid-template-columns: 1fr; } /* Home knoppen onder elkaar op mobiel */
             #page-home { padding: 20px; }
         }
     </style>
@@ -387,33 +383,25 @@
                         <tbody id="planner-table-body"></tbody>
                     </table>
                 </div>
-                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">Leeg. Plan een toets in hiernaast 👉</div>
+                <div id="empty-planner" style="display:none; text-align: center; padding: 40px; color: var(--text-muted);">Leeg. Plan iets in 👉</div>
             </div>
 
             <div id="tools-column">
-                <div class="card" id="auto-planner-card" style="background: var(--primary-bg); border-color: #bfdbfe;">
-                    <h3 style="color: var(--primary);">⚡ Snel Inplannen</h3>
-                    <input type="text" list="vakken-list" id="autoVakInput" placeholder="Vak (bv. Wiskunde)">
+                <div class="card" id="manual-planner-card" style="background: var(--primary-bg); border-color: #bfdbfe;">
+                    <h3 style="color: var(--primary);">+ Handmatig Toevoegen</h3>
+                    <input type="text" list="vakken-list" id="manualVak" placeholder="Vak (bv. Wiskunde)">
                     <datalist id="vakken-list"><option value="Wiskunde"><option value="Nederlands"><option value="Engels"><option value="Geschiedenis"></datalist>
-                    <select id="autoHoofdstukInput" style="margin-bottom:10px;">
-                        <option value="" disabled selected>Kies Hoofdstuk...</option>
-                        <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option><option value="H4">H4</option>
-                    </select>
                     
-                    <input type="number" id="autoParagraphs" placeholder="Aantal paragrafen (bijv. 6)" style="margin-bottom:10px;">
-
-                    <label style="font-size:0.8em; font-weight:600; color:var(--text-muted);">Startdatum:</label>
-                    <input type="date" id="autoStartDate">
+                    <input type="text" id="manualTask" placeholder="Voeg hier toe wat je moet doen" style="margin-bottom:10px;">
                     
-                    <label style="font-size:0.8em; font-weight:600; color:var(--text-muted);">Toetsdatum:</label>
-                    <input type="date" id="autoDatumInput">
+                    <label style="font-size:0.8em; font-weight:600; color:var(--text-muted);">Datum:</label>
+                    <input type="date" id="manualDate">
                     
-                    <button onclick="generateAutoPlanning()">Inplannen</button>
+                    <button onclick="addManualItem()">Toevoegen</button>
                 </div>
 
                 <div class="card" id="tests-card">
                     <h3>📌 Mijn Toetsen</h3>
-                    <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 10px;">Klik op ❌ om toets + planning te wissen.</p>
                     <div id="tests-list-container">Laden...</div>
                 </div>
 
@@ -453,7 +441,6 @@
                 </div>
                 <div style="flex: 1;">
                     <h2>Notities</h2>
-                    <p style="color:var(--text-muted); font-size:0.9em; margin-bottom:15px;">Klik op een kaart om het bewerkscherm te openen.</p>
                     <div id="notes-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
@@ -541,26 +528,20 @@
         }
 
         function navigate(id, element) {
-            // Hide all pages
             document.querySelectorAll('.page-section').forEach(el => {
                 el.classList.remove('active');
                 if(el.id === 'page-home') el.style.display = 'none';
             });
-            
-            // Show target page
             const target = document.getElementById(`page-${id}`);
             target.classList.add('active');
-            if(id === 'home') target.style.display = 'flex'; // Home is flex layout
+            if(id === 'home') target.style.display = 'flex'; // Home uses flexbox
             
-            // Sidebar active state
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             
-            // Header title
             const titles = {home:'Home', planning:'Agenda', cijfers:'Cijfers', notities:'Notities', timer:'Timer', instellingen:'Instellingen'};
             document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
             
-            // Close mobile menu
             if(window.innerWidth <= 1000) {
                 document.getElementById('app-sidebar').classList.remove('open');
                 document.getElementById('sidebar-btn').innerHTML = "☰";
@@ -584,7 +565,7 @@
             if (userRole !== 'owner') {
                 document.getElementById('shared-badge').style.display = 'inline-block';
                 document.getElementById('share-card').style.display = 'none';
-                document.getElementById('auto-planner-card').style.display = 'none';
+                document.getElementById('manual-planner-card').style.display = 'none'; // Verberg voor meekijker
                 document.getElementById('tests-card').style.display = 'none';
                 document.getElementById('settings-name').disabled = true;
             } else {
@@ -599,86 +580,48 @@
             });
             if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
             
-            // START OP HOME
             navigate('home');
         }
 
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        /* --- PLANNING & TOETSEN --- */
-        function generateAutoPlanning() {
-            const vak = document.getElementById('autoVakInput').value;
-            const hst = document.getElementById('autoHoofdstukInput').value;
-            const startVal = document.getElementById('autoStartDate').value;
-            const endVal = document.getElementById('autoDatumInput').value;
-            const totalPars = parseInt(document.getElementById('autoParagraphs').value) || 0;
-            
-            if(!vak || !endVal) return showToast("Vul vak en toetsdatum in");
-            
-            const startDate = startVal ? new Date(startVal) : new Date();
-            const toetsDate = new Date(endVal);
-            
-            if(startDate > toetsDate) return showToast("Startdatum moet voor toetsdatum liggen!");
+        /* --- PLANNING (HANDMATIG) --- */
+        function addManualItem() {
+            const vak = document.getElementById('manualVak').value;
+            const taak = document.getElementById('manualTask').value;
+            const dateVal = document.getElementById('manualDate').value;
 
-            let curr = new Date(startDate); 
-            const day = curr.getDay() || 7; 
-            if (day !== 1) curr.setHours(0,0,0,0);
-            
-            // Bereken aantal weken
-            let tempDate = new Date(curr);
-            let weeksCount = 0;
-            while(tempDate <= toetsDate) { weeksCount++; tempDate.setDate(tempDate.getDate()+7); }
-            
-            let parsPerWeek = totalPars > 0 ? totalPars / weeksCount : 0;
-            let currentPar = 1;
+            if(!vak || !taak || !dateVal) return showToast("Vul alle velden in.");
 
-            db.collection('users').doc(viewUserId).collection('tests').add({
-                subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
-                chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(docRef => {
-                const testId = docRef.id;
-                const batch = db.batch();
-                
-                while(curr <= toetsDate) {
-                     const weekStart = new Date(curr); 
-                     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
-                     const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
-                     const id = `${vak}-${weekStart.getTime()}`;
-                     
-                     // Bepaal huiswerk tekst
-                     let homeworkText = `Oefenen ${vak} ${hst}`;
-                     if(totalPars > 0) {
-                         let parStart = Math.floor(currentPar);
-                         let parEnd = Math.floor(currentPar + parsPerWeek - 0.1); 
-                         if (parEnd > totalPars) parEnd = totalPars;
-                         if (parStart > totalPars) parStart = totalPars;
-                         
-                         if(parStart <= parEnd) {
-                             homeworkText = `Leren ${vak} ${hst} §${parStart} t/m §${parEnd}`;
-                         } else {
-                             homeworkText = `Herhalen ${vak} ${hst}`;
-                         }
-                         currentPar += parsPerWeek;
-                     }
+            const targetDate = new Date(dateVal);
+            const weekStart = new Date(targetDate); 
+            // Zorg voor maandag van die week
+            const day = weekStart.getDay() || 7; 
+            if(day !== 1) weekStart.setHours(0,0,0,0);
+            weekStart.setDate(weekStart.getDate() - day + 1);
+            
+            const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
+            const id = `${vak}-${targetDate.getTime()}`; // Unique ID op tijdstip
 
-                     batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
-                         weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
-                         weekEnd: firebase.firestore.Timestamp.fromDate(end),
-                         weekNummer: getWeekNumber(weekStart),
-                         vak: vak,
-                         thuisDoen: homeworkText,
-                         bijlesDoen: ``,
-                         isAfgerond: false, isVakantie: false, 
-                         groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
-                         relatedTestId: testId 
-                     });
-                     curr.setDate(curr.getDate() + 7);
-                }
-                batch.commit().then(() => { showToast("Ingepland! 📅"); document.getElementById('autoVakInput').value=''; });
+            db.collection('users').doc(viewUserId).collection('planner_items').doc(id).set({
+                weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
+                weekEnd: firebase.firestore.Timestamp.fromDate(end),
+                weekNummer: getWeekNumber(weekStart),
+                vak: vak,
+                thuisDoen: taak,
+                bijlesDoen: ``,
+                isAfgerond: false, isVakantie: false, 
+                groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
+                relatedTestId: null // Handmatig, dus geen gekoppelde toets
+            }).then(() => {
+                showToast("Toegevoegd! 📅");
+                document.getElementById('manualVak').value = '';
+                document.getElementById('manualTask').value = '';
             });
         }
 
+        /* --- TOETSEN --- */
         function loadTests() {
             db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
                 const con = document.getElementById('tests-list-container'); con.innerHTML = '';
@@ -696,21 +639,16 @@
                             <div style="font-weight:600; color:var(--primary);">${d.subject || 'Geen vak'}</div>
                             <div style="font-size:0.85em; color:var(--text-muted);">${d.chapter || ''} • ${dateStr}</div>
                         </div>
-                        <button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;" title="Verwijder toets en planning">❌</button>
+                        <button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;" title="Verwijder toets">❌</button>
                     </div>`;
                 });
             });
         }
 
         function deleteTest(testId) {
-            if(!confirm("Weet je zeker? Planning wordt ook gewist.")) return;
-            db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => {
-                db.collection('users').doc(viewUserId).collection('planner_items').where('relatedTestId', '==', testId).get().then(snap => {
-                    const batch = db.batch();
-                    snap.forEach(doc => batch.delete(doc.ref));
-                    batch.commit().then(() => showToast("Verwijderd."));
-                });
-            });
+            // Bij handmatige items zijn er geen gekoppelde items, dus alleen de toets uit lijst halen
+            if(!confirm("Toets verwijderen uit lijst?")) return;
+            db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => showToast("Verwijderd."));
         }
 
         function initPlanner() {
@@ -738,7 +676,6 @@
             const allDone = items.every(i => i.isAfgerond);
             if(allDone) row.classList.add('row-done');
 
-            // Datum berekening
             const sDate = first.weekStart.toDate();
             const eDate = first.weekEnd.toDate();
             const dateStr = `${sDate.getDate()} ${sDate.toLocaleString('nl-NL',{month:'short'})} - ${eDate.getDate()} ${eDate.toLocaleString('nl-NL',{month:'short'})}`;
@@ -752,7 +689,7 @@
                 vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
                 thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
                 bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
-                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;" title="${item.isAfgerond ? 'Gedaan' : 'Nog doen'}">
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
                     <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
                     ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}
                 </div>`;
