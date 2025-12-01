@@ -30,6 +30,8 @@
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             --success-bg: #f0fdf4;
             --success-text: #166534;
+            --holiday-bg: #fffbeb;
+            --holiday-text: #b45309;
         }
 
         * { box-sizing: border-box; }
@@ -141,11 +143,23 @@
         .table-container { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
         .studie-tabel { width: 100%; border-collapse: collapse; min-width: 800px; }
         .studie-tabel th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 10px 15px; text-align: left; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        .studie-tabel td { padding: 8px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .studie-tabel td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
         
         .clean-input { width: 100%; background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 4px; resize: none; min-height: 32px; font-family: inherit; color: var(--text-main); margin: 0; }
         .clean-input:hover { background: #f8fafc; }
         .clean-input:focus { background: white; border-color: var(--primary); }
+
+        /* VAKANTIE KNOP & STYLING */
+        .holiday-btn {
+            display: inline-block; font-size: 0.75em; padding: 4px 8px; border-radius: 12px;
+            cursor: pointer; background: #e2e8f0; color: #64748b; font-weight: 600; margin-top: 8px;
+            transition: 0.2s; text-align: center; border: 1px solid transparent;
+        }
+        .holiday-btn:hover { background: #cbd5e1; }
+        .holiday-btn.active { background: #fcd34d; color: #78350f; border-color: #fbbf24; }
+
+        .is-holiday td { background-color: var(--holiday-bg); }
+        .is-holiday .clean-input { color: var(--holiday-text); font-weight: 600; }
 
         /* DONE STATUS STYLING */
         .row-done .clean-input { text-decoration: line-through; color: var(--success-text); opacity: 0.7; }
@@ -172,17 +186,12 @@
             body, html { height: auto; overflow: visible; background: white; }
             #app-sidebar, header, #tools-column, .toggle-btn, #toast { display: none !important; }
             
-            /* PRINT NOTITIE MODUS */
             body.print-mode-note #main-content { display: none; }
             body.print-mode-note #note-modal { position: static; display: block; background: white; width: 100%; height: auto; }
             body.print-mode-note .modal-content { box-shadow: none; border: none; width: 100%; max-width: 100%; height: auto; border-radius: 0; }
-            body.print-mode-note .modal-header, 
-            body.print-mode-note .editor-toolbar, 
-            body.print-mode-note .pdf-section,
-            body.print-mode-note .modal-footer-btns { display: none !important; }
+            body.print-mode-note .modal-header, body.print-mode-note .editor-toolbar, body.print-mode-note .pdf-section, body.print-mode-note .modal-footer-btns { display: none !important; }
             body.print-mode-note .modal-body { padding: 0; overflow: visible; }
 
-            /* PRINT AGENDA MODUS */
             body.print-mode-agenda #page-planning { display: block; padding: 0; margin: 0; }
             body.print-mode-agenda #planner-column { width: 100%; flex: none; display: block; }
             body.print-mode-agenda .table-container { border: none; border-radius: 0; box-shadow: none; }
@@ -229,11 +238,9 @@
                 <div style="flex:1;"></div>
                 <button class="tool-btn" onclick="printNote()" title="Gebruik bestemmingskeuze 'Opslaan als PDF'">🖨️ Print / PDF</button>
             </div>
-
             <div class="modal-body">
                 <input type="text" id="modal-note-title" placeholder="Titel...">
                 <div id="modal-note-content" contenteditable="true" placeholder="Typ hier..."></div>
-                
                 <div class="pdf-section">
                     <h3 style="margin-bottom:10px;">📎 Bijlage (PDF)</h3>
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -290,11 +297,11 @@
                     <table class="studie-tabel">
                         <thead>
                             <tr>
-                                <th style="width: 8%;">Week</th>
+                                <th style="width: 10%;">Week</th>
                                 <th style="width: 15%;">Vak</th>
-                                <th style="width: 40%;">Thuis Doen</th>
+                                <th style="width: 35%;">Thuis Doen</th>
                                 <th style="width: 25%;">Bijles / Extra</th>
-                                <th style="width: 60px; text-align:center;">Status</th>
+                                <th style="width: 60px; text-align:center;">Gedaan?</th>
                             </tr>
                         </thead>
                         <tbody id="planner-table-body"></tbody>
@@ -313,6 +320,8 @@
                         <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option><option value="H4">H4</option>
                     </select>
                     
+                    <input type="number" id="autoParagraphs" placeholder="Aantal paragrafen (bijv. 6)" style="margin-bottom:10px;">
+
                     <label style="font-size:0.8em; font-weight:600; color:var(--text-muted);">Startdatum:</label>
                     <input type="date" id="autoStartDate">
                     
@@ -505,6 +514,7 @@
             const hst = document.getElementById('autoHoofdstukInput').value;
             const startVal = document.getElementById('autoStartDate').value;
             const endVal = document.getElementById('autoDatumInput').value;
+            const totalPars = parseInt(document.getElementById('autoParagraphs').value) || 0;
             
             if(!vak || !endVal) return showToast("Vul vak en toetsdatum in");
             
@@ -514,10 +524,17 @@
             if(startDate > toetsDate) return showToast("Startdatum moet voor toetsdatum liggen!");
 
             let curr = new Date(startDate); 
-            // Zorg dat we altijd op maandag van de startweek beginnen voor de planner structuur
             const day = curr.getDay() || 7; 
             if (day !== 1) curr.setHours(0,0,0,0);
             
+            // Bereken aantal weken
+            let tempDate = new Date(curr);
+            let weeksCount = 0;
+            while(tempDate <= toetsDate) { weeksCount++; tempDate.setDate(tempDate.getDate()+7); }
+            
+            let parsPerWeek = totalPars > 0 ? totalPars / weeksCount : 0;
+            let currentPar = 1;
+
             db.collection('users').doc(viewUserId).collection('tests').add({
                 subject: vak, date: firebase.firestore.Timestamp.fromDate(toetsDate), 
                 chapter: hst, createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -525,27 +542,39 @@
                 const testId = docRef.id;
                 const batch = db.batch();
                 
-                // Loop door weken tot aan toets
                 while(curr <= toetsDate) {
                      const weekStart = new Date(curr); 
-                     // Als start midden in week is, pak toch de maandag voor de groupering
                      weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
-                     
                      const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
                      const id = `${vak}-${weekStart.getTime()}`;
                      
+                     // Bepaal huiswerk tekst
+                     let homeworkText = `Oefenen ${vak} ${hst}`;
+                     if(totalPars > 0) {
+                         let parStart = Math.floor(currentPar);
+                         let parEnd = Math.floor(currentPar + parsPerWeek - 0.1); 
+                         if (parEnd > totalPars) parEnd = totalPars;
+                         if (parStart > totalPars) parStart = totalPars;
+                         
+                         if(parStart <= parEnd) {
+                             homeworkText = `Leren ${vak} ${hst} §${parStart} t/m §${parEnd}`;
+                         } else {
+                             homeworkText = `Herhalen ${vak} ${hst}`;
+                         }
+                         currentPar += parsPerWeek;
+                     }
+
                      batch.set(db.collection('users').doc(viewUserId).collection('planner_items').doc(id), {
                          weekStart: firebase.firestore.Timestamp.fromDate(weekStart),
                          weekEnd: firebase.firestore.Timestamp.fromDate(end),
                          weekNummer: getWeekNumber(weekStart),
                          vak: vak,
-                         thuisDoen: `Leren ${vak} ${hst}`,
+                         thuisDoen: homeworkText,
                          bijlesDoen: ``,
                          isAfgerond: false, isVakantie: false, 
                          groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`,
                          relatedTestId: testId 
                      });
-                     // Volgende week
                      curr.setDate(curr.getDate() + 7);
                 }
                 batch.commit().then(() => { showToast("Ingepland! 📅"); document.getElementById('autoVakInput').value=''; });
@@ -608,7 +637,6 @@
             const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
             const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
             
-            // Check of alles in deze rij afgerond is voor styling
             const allDone = items.every(i => i.isAfgerond);
             if(allDone) row.classList.add('row-done');
 
@@ -616,21 +644,22 @@
 
             items.forEach((item, index) => {
                 const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
-                
-                // Add item-done class if specific item is done
                 const doneClass = item.isAfgerond ? 'item-done' : '';
                 
                 vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
                 thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
                 bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
-                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;" title="${item.isAfgerond ? 'Gedaan' : 'Nog doen'}">
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
                     <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
                     ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}
                 </div>`;
             });
 
             row.innerHTML = `
-                <td style="border-right:1px solid var(--border); vertical-align:top;"><div style="font-weight:700;">W${first.weekNummer}</div><label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);"><input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable?'disabled':''} style="width:auto;"> Vakantie</label></td>
+                <td style="border-right:1px solid var(--border); vertical-align:top;">
+                    <div style="font-weight:700;">W${first.weekNummer}</div>
+                    <div class="holiday-btn ${isHoliday ? 'active' : ''}" onclick="toggleHoliday('${items.map(i=>i.id).join(',')}', ${!isHoliday})">${isHoliday ? 'VAKANTIE!' : 'Zet op Vakantie'}</div>
+                </td>
                 <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
             container.appendChild(row);
         }
@@ -669,99 +698,3 @@
                     <div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'>
                         <div class="note-preview-title">${data.subject}</div>
                         <div class="note-preview-body">${textPreview}</div>
-                        ${pdfBadge}
-                    </div>`;
-                }); 
-            }); 
-        }
-
-        function execCmd(command, value = null) {
-            document.execCommand(command, false, value);
-            document.getElementById('modal-note-content').focus();
-        }
-
-        function printNote() {
-            document.body.classList.add('print-mode-note');
-            window.print();
-            document.body.classList.remove('print-mode-note');
-        }
-
-        function openNoteModal(id, title, content, hasPdf) {
-            currentOpenNoteId = id;
-            document.getElementById('modal-note-title').value = title;
-            
-            db.collection('users').doc(viewUserId).collection('subject_notes').doc(id).get().then(doc => {
-                if(doc.exists) {
-                    document.getElementById('modal-note-content').innerHTML = doc.data().content || "";
-                    if(doc.data().pdfData) {
-                        currentNotePdfData = doc.data().pdfData;
-                        document.getElementById('current-pdf-link').innerHTML = `<a href="${currentNotePdfData}" target="_blank" style="color:var(--primary); font-weight:600;">📄 Open Huidige PDF</a>`;
-                    } else {
-                        document.getElementById('current-pdf-link').innerHTML = "";
-                    }
-                }
-            });
-            document.getElementById('note-modal').style.display = 'flex';
-            document.getElementById('pdf-upload-input').value = ""; 
-        }
-
-        function closeNoteModal() {
-            document.getElementById('note-modal').style.display = 'none';
-            currentOpenNoteId = null;
-        }
-
-        function saveModalNote() {
-            if(!currentOpenNoteId) return;
-            const title = document.getElementById('modal-note-title').value;
-            const content = document.getElementById('modal-note-content').innerHTML; 
-            const fileInput = document.getElementById('pdf-upload-input');
-            
-            const updateData = { subject: title, content: content };
-
-            if(fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if(file.size > 400000) { 
-                    alert("PDF is te groot! Maximaal 400KB."); return; 
-                }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    updateData.pdfData = e.target.result; 
-                    pushUpdate(updateData);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                pushUpdate(updateData);
-            }
-        }
-
-        function pushUpdate(data) {
-            db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).update(data)
-            .then(() => { showToast("Opgeslagen! ✅"); closeNoteModal(); });
-        }
-
-        function deleteCurrentNote() {
-            if(confirm("Notitie verwijderen?")) {
-                db.collection('users').doc(viewUserId).collection('subject_notes').doc(currentOpenNoteId).delete()
-                .then(() => { closeNoteModal(); showToast("Verwijderd."); });
-            }
-        }
-
-        /* --- OVERIG --- */
-        function addCollaborator() { const e=document.getElementById('collabEmail').value; if(e) db.collection('users').doc(currentUserId).collection('collaborators').doc(e.toLowerCase()).set({added:new Date()}).then(()=>{showToast('Toegevoegd!');document.getElementById('collabEmail').value='';}); }
-        function loadCollaborators() { db.collection('users').doc(currentUserId).collection('collaborators').onSnapshot(s=>{ const l=document.getElementById('collaborators-list'); l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.id}</span><span onclick="removeCollab('${d.id}')" style="cursor:pointer; color:red;">&times;</span></div>`); }); }
-        function removeCollab(id) { if(confirm('Wissen?')) db.collection('users').doc(currentUserId).collection('collaborators').doc(id).delete(); }
-        function copyLink() { const t=document.getElementById("shareLinkInput"); t.select(); document.execCommand("copy"); showToast("Gekopieerd!"); }
-        function exportToICS() { alert("Kopieer data: " + globalContext); }
-
-        function addGrade() { const s=document.getElementById('gradeSubject').value,g=parseFloat(document.getElementById('gradeValue').value); if(s&&g) db.collection('users').doc(viewUserId).collection('grades').add({subject:s,grade:g,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{showToast("Cijfer opgeslagen");document.getElementById('gradeValue').value='';}); }
-        function loadGrades() { db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt','desc').onSnapshot(s=>{ const l=document.getElementById('grades-list');l.innerHTML=''; s.forEach(d=>{ const c=d.data().grade>=5.5?'#16a34a':'#dc2626'; l.innerHTML+=`<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${c};">${d.data().grade}</span></div>`; }); }); }
-        function saveSettings() { const n=document.getElementById('settings-name').value; if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{showToast("Opgeslagen!");}); }
-
-        /* --- TIMER --- */
-        function updateTimerDisplay() { const m=Math.floor(timeLeft/60).toString().padStart(2,'0'), s=(timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText=`${m}:${s}`; document.title=`${m}:${s} - Focus`; }
-        function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
-        function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
-        function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
-    </script>
-</body>
-</html>
