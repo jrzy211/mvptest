@@ -566,4 +566,118 @@
             const first = items[0];
             const isHoliday = items.some(i => i.isVakantie);
             const row = document.createElement('tr');
-            if (isHoliday
+            if (isHoliday) row.classList.add('is-holiday');
+
+            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
+
+            items.forEach((item, index) => {
+                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
+                vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
+                
+                // JUMP-IN STYLE INPUTS (clean-input class)
+                thuisHtml += `<div style="${border}">
+                    <textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''}>${isHoliday ? 'VAKANTIE' : item.thuisDoen}</textarea>
+                </div>`;
+                
+                bijlesHtml += `<div style="${border}">
+                    <textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable || isHoliday ? 'disabled' : ''} placeholder="-">${isHoliday ? '-' : item.bijlesDoen}</textarea>
+                </div>`;
+                
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
+                    <input type="checkbox" ${item.isAfgerond ? 'checked' : ''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:18px; height:18px; margin:0;">
+                    ${isEditable ? `<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3;">&times;</span>` : ''}
+                </div>`;
+            });
+
+            row.innerHTML = `
+                <td style="border-right: 1px solid var(--border); vertical-align:top;">
+                    <div style="font-weight:700;">W${first.weekNummer}</div>
+                    <label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);">
+                        <input type="checkbox" ${isHoliday?'checked':''} onchange="toggleHoliday('${items.map(i=>i.id).join(',')}', this.checked)" ${!isEditable ? 'disabled' : ''} style="width:auto;"> Vakantie
+                    </label>
+                </td>
+                <td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>
+            `;
+            container.appendChild(row);
+        }
+
+        function updateField(id, f, v) { if(userRole !== 'read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]: v}); }
+        function toggleHoliday(ids, val) { if(userRole !== 'read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole !== 'read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+
+        /* --- EXPORT --- */
+        function exportToICS() { alert("Kopieer data: " + globalContext); }
+
+        /* --- CIJFERS & NOTES --- */
+        function addGrade() { 
+            const s=document.getElementById('gradeSubject').value, g=parseFloat(document.getElementById('gradeValue').value); 
+            if(s&&g) {
+                db.collection('users').doc(viewUserId).collection('grades').add({subject:s, grade:g, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
+                .then(() => { showToast("Cijfer toegevoegd!"); document.getElementById('gradeValue').value=''; });
+            }
+        }
+        function loadGrades() { 
+            db.collection('users').doc(viewUserId).collection('grades').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                const l = document.getElementById('grades-list'); l.innerHTML = ''; 
+                snap.forEach(d => {
+                    const val = d.data().grade;
+                    const color = val >= 5.5 ? '#16a34a' : '#dc2626';
+                    l.innerHTML += `<div style="background:white; padding:10px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between;">
+                        <span style="font-weight:600;">${d.data().subject}</span> <span style="font-weight:700; color:${color};">${val}</span>
+                    </div>`; 
+                }); 
+            }); 
+        }
+
+        function addNote() { 
+            const s=document.getElementById('noteSubject').value, c=document.getElementById('noteContent').value; 
+            if(s) {
+                db.collection('users').doc(viewUserId).collection('subject_notes').add({subject:s, content:c, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
+                .then(() => { showToast("Notitie opgeslagen!"); document.getElementById('noteContent').value=''; });
+            }
+        }
+        function loadNotes() { 
+            db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                const l = document.getElementById('notes-list-container'); l.innerHTML = ''; 
+                snap.forEach(d => l.innerHTML += `
+                    <div class="card" style="margin-bottom:0;">
+                        <div style="font-weight:700; color:var(--primary); margin-bottom:5px;">${d.data().subject}</div>
+                        <div style="white-space: pre-wrap;">${d.data().content}</div>
+                    </div>`); 
+            }); 
+        }
+
+        /* --- TIMER --- */
+        function updateTimerDisplay() { 
+            const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+            const s = (timeLeft%60).toString().padStart(2,'0'); 
+            document.getElementById('timer-display').innerText = `${m}:${s}`; 
+            document.title = `${m}:${s} - Focus`;
+        }
+        function startTimer() { 
+            if(!timerInterval) {
+                document.getElementById('btn-start').innerText = "Bezig...";
+                timerInterval = setInterval(() => { 
+                    if(timeLeft>0){timeLeft--;updateTimerDisplay()} else {stopTimer(); showToast("Klaar!"); new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} 
+                }, 1000); 
+            }
+        }
+        function stopTimer() { 
+            clearInterval(timerInterval); timerInterval = null; 
+            document.getElementById('btn-start').innerText = "Start";
+        }
+        function resetTimer() {
+            stopTimer();
+            const val = document.getElementById('timerInput').value;
+            timeLeft = (val ? val : 25) * 60;
+            updateTimerDisplay();
+        }
+
+        function saveSettings() { 
+            const n=document.getElementById('settings-name').value; 
+            if(n) auth.currentUser.updateProfile({displayName:n}).then(()=>{ showToast("Opgeslagen!"); }); 
+        }
+    </script>
+</body>
+</html>
