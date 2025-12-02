@@ -167,7 +167,7 @@
         .show-feedback .quiz-feedback { display: block; }
         .score-display { font-size: 3em; font-weight: 800; color: var(--primary); text-align: center; margin: 20px 0; }
 
-        /* --- NOTITIES, AGENDA, ETC (EXISTING) --- */
+        /* --- NOTE, AGENDA, ETC (EXISTING) --- */
         .note-card { border-left: 4px solid var(--primary); cursor: pointer; transition: transform 0.2s; position: relative; overflow: hidden; height: 160px; }
         .note-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .note-preview-title { font-weight: 700; margin-bottom: 5px; color: var(--text-main); }
@@ -421,7 +421,7 @@
                             <p style="color: var(--text-muted); line-height: 1.6;" id="quiz-intro-text">
                                 Klaar om te oefenen?
                             </p>
-                            <button onclick="startQuiz()" style="margin-top: 10px;">Start Oefentoets (20 Vragen)</button>
+                            <button onclick="startQuiz()" style="margin-top: 10px;">Start Oefentoets (10 Vragen)</button>
                         </div>
                     </div>
                     <div id="quiz-container" style="display: none;">
@@ -539,15 +539,14 @@
         let currentOpenNoteId = null;
         let currentNotePdfData = null;
 
-        // --- CONTENT DATABASE (MOCKUP) ---
-        // Hier bepalen we welke content beschikbaar is per jaar/niveau
+        // --- CONTENT DATABASE ---
+        // Hier definiëren we de inhoud.
         const contentDatabase = {
             "Wiskunde": {
-                // Leerjaar 1 - Alle niveaus hebben toegang voor nu, kun je later splitsen
                 "topics": [
                     {
                         title: "Vergelijkingen & Grafieken",
-                        skills: ["Inklemmen", "Balansmethode", "Lineaire Formules"]
+                        skills: ["Inklemmen", "Balansmethode"]
                     },
                     {
                         title: "Meten & Meetkunde",
@@ -555,7 +554,6 @@
                     }
                 ]
             },
-            // Lege objecten voor andere vakken zodat de knoppen wel zichtbaar zijn, maar disabled of leeg
             "Nederlands": { topics: [] },
             "Engels": { topics: [] },
             "Geschiedenis": { topics: [] },
@@ -566,9 +564,28 @@
             "Economie": { topics: [] }
         };
 
+        // --- QUESTION BANK ---
+        // Vragen gekoppeld aan skills via 'tags'
+        const questionBank = [
+            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29", tags:['Inklemmen']},
+            {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25", tags:['Inklemmen']},
+            {q:"2x² = 15", a:2.7, h:"x²=7,5", tags:['Inklemmen']},
+            {q:"3x + 5 = 20", a:5.0, h:"3x=15 -> x=5", tags:['Balansmethode']},
+            {q:"5x - 10 = 15", a:5.0, h:"5x=25 -> x=5", tags:['Balansmethode']},
+            {q:"2x + 4 = x + 10", a:6.0, h:"x=6", tags:['Balansmethode']},
+            {q:"Oppervlakte rechthoek 4x5", a:20.0, h:"4x5=20", tags:['Oppervlakte']},
+            {q:"Oppervlakte driehoek basis 4, hoogte 3", a:6.0, h:"0.5*4*3=6", tags:['Oppervlakte']},
+            {q:"Inhoud kubus zijde 3", a:27.0, h:"3*3*3=27", tags:['Inhoud']},
+            // Algemene vragen als fallback
+            {q:"12 + 15", a:27.0, h:"", tags:['Algemeen']},
+            {q:"50 / 2", a:25.0, h:"", tags:['Algemeen']},
+            {q:"10 * 10", a:100.0, h:"", tags:['Algemeen']}
+        ];
+
         let activeSubject = null;
         let activeSkill = null;
         let userQuizResults = [];
+        let currentQuizQuestions = [];
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -608,7 +625,7 @@
             const target = document.getElementById(`page-${id}`);
             target.classList.add('active');
             if(id === 'home') target.style.display = 'flex';
-            if(id === 'oefenen') initPractice(); // Start de oefen logica
+            if(id === 'oefenen') initPractice(); 
             if(id === 'admin') loadAdminStats();
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -656,7 +673,7 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        // --- PLANNER LOGIC (Original) ---
+        // --- PLANNER LOGIC ---
         function addManualItem() {
             const vak = document.getElementById('manualVak').value;
             const taak = document.getElementById('manualTask').value;
@@ -727,14 +744,12 @@
         function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
         function printAgenda() { document.body.classList.add('print-mode-agenda'); window.print(); document.body.classList.remove('print-mode-agenda'); }
 
-        /* --- OEFENEN LOGIC (UPDATED) --- */
+        /* --- OEFENEN LOGIC --- */
         
         function initPractice() {
-            // Load saved settings
             const savedYear = localStorage.getItem('studyYear');
             const savedLevel = localStorage.getItem('studyLevel');
 
-            // Load results for progression
             db.collection('users').doc(viewUserId).collection('quiz_results').get().then(snap => {
                 userQuizResults = [];
                 snap.forEach(doc => userQuizResults.push(doc.data()));
@@ -778,8 +793,6 @@
             document.getElementById('practice-setup').style.display = 'none';
             activeSubject = null;
             updateBreadcrumbs([]);
-            
-            // Re-check if setup is needed
             if(!localStorage.getItem('studyYear')) showPracticeSetup();
         }
 
@@ -788,7 +801,6 @@
             container.innerHTML = '';
             container.style.display = 'grid';
             
-            // Map common subjects to icons
             const icons = { "Wiskunde": "📐", "Nederlands": "🇳🇱", "Engels": "🇬🇧", "Geschiedenis": "🏛️", "Aardrijkskunde": "🌍", "Biologie": "🧬", "Natuurkunde": "⚡", "Scheikunde": "🧪", "Economie": "📈" };
 
             Object.keys(contentDatabase).forEach(subject => {
@@ -823,20 +835,14 @@
             if(!data || !data.topics) { container.innerHTML = "Geen onderwerpen."; return; }
 
             data.topics.forEach((topic, index) => {
-                // Calculate Main Topic Progress
-                let totalScore = 0;
-                let skillCount = 0;
-                
+                let totalScore = 0; let skillCount = 0;
                 topic.skills.forEach(skill => {
                     const best = getBestResult(skill);
-                    totalScore += best;
-                    skillCount++;
+                    totalScore += best; skillCount++;
                 });
-                
                 const avgScore = skillCount > 0 ? (totalScore / skillCount).toFixed(1) : 0;
                 const percentage = (avgScore / 10) * 100;
 
-                // Create Card
                 const card = document.createElement('div');
                 card.className = "main-topic-card";
                 
@@ -844,6 +850,7 @@
                 topic.skills.forEach(skill => {
                    const best = getBestResult(skill);
                    let badgeClass = best >= 7.5 ? 'high' : (best >= 5.5 ? 'med' : '');
+                   // BELANGRIJK: Hier zat mogelijk de fout in vorige versies
                    skillsHtml += `
                     <div class="sub-topic-item" onclick="startSkillQuiz('${skill}')">
                         <span>${skill}</span>
@@ -862,9 +869,7 @@
                         </div>
                         <div style="font-size:1.5em; color:var(--text-muted); margin-left:15px;">▾</div>
                     </div>
-                    <div class="sub-topics-list">
-                        ${skillsHtml}
-                    </div>
+                    <div class="sub-topics-list">${skillsHtml}</div>
                 `;
                 container.appendChild(card);
             });
@@ -873,7 +878,6 @@
         function getBestResult(skillName) {
             const relevant = userQuizResults.filter(r => r.skill === skillName);
             if(relevant.length === 0) return 0;
-            // Return highest grade
             return Math.max(...relevant.map(r => r.grade));
         }
 
@@ -881,11 +885,10 @@
             activeSkill = skill;
             document.getElementById('practice-dashboard').style.display = 'none';
             document.getElementById('practice-interface').style.display = 'block';
-            
-            updateBreadcrumbs([activeSubject, skill]); // Breadcrumb logic simplified
+            updateBreadcrumbs([activeSubject, skill]);
             
             document.getElementById('quiz-intro-title').innerText = `Oefenen: ${skill}`;
-            document.getElementById('quiz-intro-text').innerHTML = `Je gaat nu 20 vragen maken over <b>${skill}</b>.<br>Zet 'm op!`;
+            document.getElementById('quiz-intro-text').innerHTML = `Je gaat nu vragen maken over <b>${skill}</b>.<br>Zet 'm op!`;
             
             document.getElementById('quiz-start-screen').style.display = 'block';
             document.getElementById('quiz-container').style.display = 'none';
@@ -896,37 +899,37 @@
             const bc = document.getElementById('practice-breadcrumbs');
             let html = `<span onclick="resetPracticeNav()">Oefenen</span>`;
             path.forEach((step, i) => {
-                // If it's the last item (skill), no onclick
-                if (i === path.length -1 && path.length > 1) {
-                     html += ` > <span class="active">${step}</span>`;
-                } else if (i === 0) {
-                     // Clicking subject goes back to dashboard
-                     html += ` > <span onclick="selectSubject('${step}')">${step}</span>`;
-                }
+                if (i === path.length -1 && path.length > 1) { html += ` > <span class="active">${step}</span>`; } 
+                else if (i === 0) { html += ` > <span onclick="selectSubject('${step}')">${step}</span>`; }
             });
             bc.innerHTML = html;
         }
 
-        /* --- QUIZ ENGINE (Existing + Updated for Skill tracking) --- */
-        // Simplified Question Bank for Demo - In real app, filter by 'activeSkill'
-        const questionBank = [
-            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29 (6,76 is dichterbij)"}, {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25 (12,25 ligt 0,25 van 12)"},
-            {q:"2x² = 15", a:2.7, h:"x²=7,5. 2,7²=7,29"}, {q:"3x² = 50", a:4.1, h:"x²=16,67. 4,1²=16,81"}, {q:"0,5x² = 8", a:4.0, h:"x²=16. Wortel is 4"},
-            {q:"x² + 5 = 28", a:4.8, h:"x²=23. 4,8²=23,04"}, {q:"x² - 4 = 15", a:4.4, h:"x²=19. 4,4²=19,36"},
-            {q:"h = 3t² (h=50)", a:4.1, h:"3t²=50 -> t²=16,7"}, {q:"A = x² + 4x (A=60)", a:6.0, h:"36+24=60"}, {q:"W = 0,5n³ (W=100)", a:5.8, h:"0,5n³=100 -> n³=200"}
-        ];
-        let currentQuizQuestions = [];
-
+        /* --- QUIZ ENGINE --- */
         function startQuiz() {
             document.getElementById('quiz-start-screen').style.display = 'none';
             document.getElementById('quiz-results').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'block';
             
-            // In a real scenario, filter questionBank by activeSkill here
-            // For now, we use random 10 questions
-            currentQuizQuestions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 10); 
+            // Filter vragen op basis van activeSkill
+            let matchedQuestions = questionBank.filter(q => q.tags && q.tags.includes(activeSkill));
+            
+            // Als er geen vragen zijn voor deze skill, pak random vragen zodat het werkt
+            if (matchedQuestions.length === 0) {
+                console.log("Geen specifieke vragen gevonden, fallback naar random.");
+                matchedQuestions = questionBank;
+            }
+
+            // Pak 10 willekeurige vragen uit de gefilterde lijst
+            currentQuizQuestions = matchedQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
             
             const list = document.getElementById('quiz-questions-list'); list.innerHTML = '';
+            
+            if(currentQuizQuestions.length === 0) {
+                list.innerHTML = "Er zijn nog geen vragen beschikbaar voor dit onderwerp.";
+                return;
+            }
+
             currentQuizQuestions.forEach((item, index) => {
                 list.innerHTML += `
                 <div class="quiz-question-card" id="q-card-${index}">
@@ -940,17 +943,25 @@
         }
 
         function submitQuiz() {
+            if(currentQuizQuestions.length === 0) return;
+
             let score = 0;
             currentQuizQuestions.forEach((item, index) => {
                 const input = document.getElementById(`q-input-${index}`);
                 const card = document.getElementById(`q-card-${index}`);
                 const feedback = document.getElementById(`q-feedback-${index}`);
                 let val = input.value.replace(',', '.'); let numVal = parseFloat(val);
-                if (Math.abs(numVal - item.a) < 0.05) { score++; card.classList.add('correct'); feedback.innerHTML = `✅ Correct! ${item.h}`; } 
-                else { card.classList.add('wrong'); feedback.innerHTML = `❌ Fout. Antwoord: <b>${item.a.toString().replace('.',',')}</b>.<br>${item.h}`; }
+                
+                if (!isNaN(numVal) && Math.abs(numVal - item.a) < 0.05) { 
+                    score++; card.classList.add('correct'); 
+                    feedback.innerHTML = `✅ Correct! ${item.h}`; 
+                } else { 
+                    card.classList.add('wrong'); 
+                    feedback.innerHTML = `❌ Fout. Antwoord: <b>${item.a.toString().replace('.',',')}</b>.<br>${item.h}`; 
+                }
                 card.classList.add('show-feedback'); input.disabled = true;
             });
-            // Calculate grade (1-10 based on 10 questions)
+
             const grade = score > 0 ? (score / currentQuizQuestions.length * 9) + 1 : 1;
             const roundedGrade = Math.round(grade * 10) / 10;
             
@@ -965,7 +976,6 @@
                     score: score, grade: roundedGrade, skill: activeSkill, subject: activeSubject,
                     date: firebase.firestore.FieldValue.serverTimestamp()
                 }).then(() => {
-                    // Refresh local results to update dashboard next time
                     db.collection('users').doc(currentUserId).collection('quiz_results').get().then(snap => {
                         userQuizResults = []; snap.forEach(doc => userQuizResults.push(doc.data()));
                     });
@@ -974,7 +984,7 @@
             window.scrollTo(0,0);
         }
 
-        /* --- NOTITIES, ADMIN, ETC (Existing Logic) --- */
+        /* --- OVERIGE FUNCTIES --- */
         function createNewNote() { db.collection('users').doc(viewUserId).collection('subject_notes').add({ subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then((doc) => { showToast("Aangemaakt!"); openNoteModal(doc.id, "Nieuwe Notitie", "", null); }); }
         function loadNotes() { db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('notes-list-container'); l.innerHTML = ''; snap.forEach(d => { const data = d.data(); const div = document.createElement("div"); div.innerHTML = data.content || ""; const textPreview = div.textContent || div.innerText || ""; const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : ''; l.innerHTML += `<div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'><div class="note-preview-title">${data.subject}</div><div class="note-preview-body">${textPreview}</div>${pdfBadge}</div>`; }); }); }
         function execCmd(c, v = null) { document.execCommand(c, false, v); document.getElementById('modal-note-content').focus(); }
@@ -995,8 +1005,6 @@
         function startTimer() { if(!timerInterval) { document.getElementById('btn-start').innerText="Bezig..."; timerInterval=setInterval(()=>{ if(timeLeft>0){timeLeft--;updateTimerDisplay()}else{stopTimer();showToast("Klaar!");new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();} },1000); } }
         function stopTimer() { clearInterval(timerInterval); timerInterval=null; document.getElementById('btn-start').innerText="Start"; }
         function resetTimer() { stopTimer(); const v=document.getElementById('timerInput').value; timeLeft=(v?v:25)*60; updateTimerDisplay(); }
-
-        /* Admin */
         function loadAdminStats() {
             db.collection('users').get().then(snap => { document.getElementById('admin-total-users').innerText = snap.size; let active = 0; const now = new Date(); const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()); snap.forEach(doc => { const data = doc.data(); if(data.lastLogin && data.lastLogin.toDate() > startOfDay) { active++; } }); document.getElementById('admin-active-today').innerText = active; });
             db.collectionGroup('quiz_results').get().then(snap => { let total = 0; let count = 0; snap.forEach(doc => { total += doc.data().grade; count++; }); const avg = count > 0 ? (total / count).toFixed(1) : '-'; document.getElementById('admin-avg-grade').innerText = avg; document.getElementById('admin-activity-log').innerText = `${count} toetspogingen geregistreerd.`; }).catch(err => { console.log("Index needed:", err); document.getElementById('admin-activity-log').innerText = "Data laden..."; });
