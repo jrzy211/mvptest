@@ -138,9 +138,11 @@
         
         .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden; position: relative; }
         .progress-fill { height: 100%; width: 0%; transition: width 0.6s ease, background-color 0.3s; }
-        .progress-fill.low { background-color: #ef4444; } 
-        .progress-fill.med { background-color: #f59e0b; } 
-        .progress-fill.high { background-color: #10b981; }
+        
+        /* Progress Colors */
+        .progress-fill.low { background-color: #ef4444; } /* Red < 5.5 */
+        .progress-fill.med { background-color: #f59e0b; } /* Orange 5.5 - 7.5 */
+        .progress-fill.high { background-color: #10b981; } /* Green > 7.5 */
 
         .main-topic-stats { font-size: 0.85em; color: var(--text-muted); margin-top: 5px; display: flex; gap: 15px; }
         
@@ -172,8 +174,6 @@
         .quiz-feedback { font-size: 0.9em; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1); color: var(--text-muted); display: none; }
         .show-feedback .quiz-feedback { display: block; }
         .score-display { font-size: 3em; font-weight: 800; color: var(--primary); text-align: center; margin: 20px 0; }
-        .check-btn { margin-top: 10px; width: auto; padding: 6px 15px; font-size: 0.9em; background: var(--text-main); }
-        .check-btn:hover { background: black; }
 
         /* --- NAVIGATION --- */
         .breadcrumb { font-size: 0.9em; color: var(--text-muted); margin-bottom: 20px; display: flex; gap: 5px; align-items: center; }
@@ -192,7 +192,7 @@
         .stat-number { font-size: 2.5em; font-weight: 800; color: var(--primary); margin: 10px 0; }
         .stat-label { color: var(--text-muted); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- EXISTING STYLES (Notes, etc) --- */
+        /* --- OTHER EXISTING STYLES --- */
         #note-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 900px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
         .modal-header { padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
@@ -433,15 +433,17 @@
                     </div>
                     <div id="quiz-container" style="display: none;">
                         <div id="quiz-questions-list"></div>
-                        <button onclick="finishQuiz()" style="margin-top: 20px; font-weight:700;">Oefening Afronden & Score Opslaan</button>
+                        <button onclick="submitQuiz()" style="margin-top: 20px;">Toets Inleveren</button>
                     </div>
                     <div id="quiz-results" style="display: none;">
                         <div class="card" style="text-align: center;">
                             <h3>Je Resultaat</h3>
                             <div class="score-display" id="quiz-score">?</div>
                             <p id="quiz-message"></p>
-                            <button onclick="resetPracticeNav()">Terug naar Overzicht</button>
+                            <button onclick="startQuiz()">Nog een keer oefenen</button>
                         </div>
+                        <h3>Antwoorden & Uitleg</h3>
+                        <div id="quiz-review-list"></div>
                     </div>
                 </div>
             </div>
@@ -545,6 +547,7 @@
         let currentNotePdfData = null;
 
         // --- CONTENT DATABASE ---
+        // Hier definiëren we de inhoud per vak en hoofdonderwerp
         const contentDatabase = {
             "Wiskunde": {
                 "topics": [
@@ -568,63 +571,21 @@
             "Economie": { topics: [] }
         };
 
-        // --- UITGEBREIDE QUESTION BANK (50 items) ---
+        // --- QUESTION BANK ---
         const questionBank = [
-            // INKLEMMEN & KWADRATEN (20x)
-            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29. Welke ligt dichterbij?", tags:['Inklemmen']},
-            {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25. 12,25 ligt 0,25 van 12 af.", tags:['Inklemmen']},
-            {q:"x² = 20", a:4.5, h:"4,5²=20,25. Bijna precies.", tags:['Inklemmen']},
-            {q:"x² = 32", a:5.7, h:"5,6²=31,36 en 5,7²=32,49.", tags:['Inklemmen']},
-            {q:"x² = 45", a:6.7, h:"6,7²=44,89. Scheelt maar 0,11.", tags:['Inklemmen']},
-            {q:"x² = 60", a:7.7, h:"7,7²=59,29.", tags:['Inklemmen']},
-            {q:"x² = 95", a:9.7, h:"9,7²=94,09. Dichtbij.", tags:['Inklemmen']},
-            {q:"x² = 110", a:10.5, h:"10,5²=110,25.", tags:['Inklemmen']},
-            {q:"2x² = 15", a:2.7, h:"Eerst delen door 2: x²=7,5.", tags:['Inklemmen']},
-            {q:"3x² = 50", a:4.1, h:"Eerst delen door 3: x²=16,67. Wortel van 16,67.", tags:['Inklemmen']},
-            {q:"0,5x² = 8", a:4.0, h:"Delen door 0,5 is keer 2: x²=16.", tags:['Inklemmen']},
-            {q:"4x² = 90", a:4.7, h:"x²=22,5. Zoek wortel van 22,5.", tags:['Inklemmen']},
-            {q:"5x² = 120", a:4.9, h:"x²=24. Wortel van 24.", tags:['Inklemmen']},
-            {q:"x² + 5 = 28", a:4.8, h:"x²=23. Zoek wortel 23.", tags:['Inklemmen']},
-            {q:"x² - 4 = 15", a:4.4, h:"x²=19. Zoek wortel 19.", tags:['Inklemmen']},
-            {q:"2x² + 3 = 30", a:3.7, h:"2x²=27 -> x²=13,5.", tags:['Inklemmen']},
-            {q:"x² + 2x = 15", a:3.0, h:"Probeer ronde getallen. 3²+2*3 = 9+6.", tags:['Inklemmen']},
-            {q:"x² - x = 20", a:5.0, h:"5²-5 = 25-5.", tags:['Inklemmen']},
-            {q:"y = x² + 4x (y=60)", a:6.0, h:"6²+24=36+24=60.", tags:['Inklemmen']},
-            {q:"y = 2x² - 5 (y=30)", a:4.2, h:"2x²=35 -> x²=17,5.", tags:['Inklemmen']},
-
-            // MACHTEN & WORTELS (15x)
-            {q:"x³ = 30", a:3.1, h:"3³=27, 3,1³=29,79.", tags:['Inklemmen']},
-            {q:"x³ = 70", a:4.1, h:"4³=64, 4,1³=68,9.", tags:['Inklemmen']},
-            {q:"x³ = 100", a:4.6, h:"4,6³=97,3.", tags:['Inklemmen']},
-            {q:"2x³ = 50", a:2.9, h:"x³=25.", tags:['Inklemmen']},
-            {q:"W = 0,5n³ (W=100)", a:5.8, h:"n³=200.", tags:['Inklemmen']},
-            {q:"√x = 5,2", a:27.0, h:"Doe 5,2 in het kwadraat.", tags:['Inklemmen']},
-            {q:"√x + 3 = 8,5", a:30.3, h:"√x=5,5 -> 5,5²=30,25.", tags:['Inklemmen']},
-            {q:"3√x = 20", a:44.4, h:"√x=6,67 -> 6,67².", tags:['Inklemmen']},
-            {q:"x³ - x = 50", a:3.8, h:"3,8³-3,8=51,0.", tags:['Inklemmen']},
-            {q:"V = z³ (V=85)", a:4.4, h:"4,4³=85,1.", tags:['Inklemmen']},
-            {q:"y = 0,1x³ + 5 (y=20)", a:5.3, h:"0,1x³=15 -> x³=150.", tags:['Inklemmen']},
-            {q:"x⁴ = 100", a:3.2, h:"3,2*3,2*3,2*3,2 = 104.", tags:['Inklemmen']},
-            {q:"x³ + 10 = 37", a:3.0, h:"x³=27. Wat keer wat keer wat is 27?", tags:['Inklemmen']},
-            {q:"√x = 9", a:81.0, h:"9x9", tags:['Inklemmen']},
-            {q:"√(2x) = 6", a:18.0, h:"2x=36.", tags:['Inklemmen']},
-
-            // BALANSMETHODE (15x)
-            {q:"3x + 5 = 20", a:5.0, h:"3x=15", tags:['Balansmethode']},
-            {q:"5x - 10 = 15", a:5.0, h:"5x=25", tags:['Balansmethode']},
+            {q:"x² = 7", a:2.6, h:"2,6²=6,76 en 2,7²=7,29", tags:['Inklemmen']},
+            {q:"x² = 12", a:3.5, h:"3,4²=11,56, 3,5²=12,25", tags:['Inklemmen']},
+            {q:"2x² = 15", a:2.7, h:"x²=7,5", tags:['Inklemmen']},
+            {q:"3x + 5 = 20", a:5.0, h:"3x=15 -> x=5", tags:['Balansmethode']},
+            {q:"5x - 10 = 15", a:5.0, h:"5x=25 -> x=5", tags:['Balansmethode']},
             {q:"2x + 4 = x + 10", a:6.0, h:"x=6", tags:['Balansmethode']},
-            {q:"4x = 2x + 12", a:6.0, h:"2x=12", tags:['Balansmethode']},
-            {q:"6x + 2 = 20", a:3.0, h:"6x=18", tags:['Balansmethode']},
-            {q:"10x - 5 = 45", a:5.0, h:"10x=50", tags:['Balansmethode']},
-            {q:"3x + 7 = x + 15", a:4.0, h:"2x=8", tags:['Balansmethode']},
-            {q:"8x = 3x + 25", a:5.0, h:"5x=25", tags:['Balansmethode']},
-            {q:"2(x+1) = 10", a:4.0, h:"2x+2=10 -> 2x=8", tags:['Balansmethode']},
-            {q:"3(x-2) = 9", a:5.0, h:"3x-6=9 -> 3x=15", tags:['Balansmethode']},
-            {q:"5x + 3 = 2x + 18", a:5.0, h:"3x=15", tags:['Balansmethode']},
-            {q:"x + 10 = 3x - 4", a:7.0, h:"14=2x", tags:['Balansmethode']},
-            {q:"4x - 2 = 10", a:3.0, h:"4x=12", tags:['Balansmethode']},
-            {q:"7x = 21", a:3.0, h:"Deel door 7", tags:['Balansmethode']},
-            {q:"0,5x = 4", a:8.0, h:"x=8", tags:['Balansmethode']}
+            {q:"Oppervlakte rechthoek 4x5", a:20.0, h:"4x5=20", tags:['Oppervlakte']},
+            {q:"Oppervlakte driehoek basis 4, hoogte 3", a:6.0, h:"0.5*4*3=6", tags:['Oppervlakte']},
+            {q:"Inhoud kubus zijde 3", a:27.0, h:"3*3*3=27", tags:['Inhoud']},
+            // Algemene fallback vragen
+            {q:"12 + 15", a:27.0, h:"", tags:['Algemeen']},
+            {q:"50 / 2", a:25.0, h:"", tags:['Algemeen']},
+            {q:"10 * 10", a:100.0, h:"", tags:['Algemeen']}
         ];
 
         let activeSubject = null;
@@ -632,21 +593,24 @@
         let activeSkill = null;
         let userQuizResults = [];
         let currentQuizQuestions = [];
-        let currentQuizScore = 0; // Tracks live score
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
                 document.getElementById('user-display-name').innerText = user.displayName || user.email.split('@')[0];
                 document.getElementById('settings-name').value = user.displayName || "";
+                
                 db.collection('users').doc(user.uid).set({ email: user.email, lastLogin: new Date() }, { merge: true });
                 if(user.email === OWNER_EMAIL) document.getElementById('nav-admin').style.display = 'flex';
-                
+
                 const params = new URLSearchParams(window.location.search);
                 const targetUid = params.get('uid');
-                if (targetUid && targetUid !== currentUserId) { viewUserId = targetUid; checkAccess(targetUid, user.email); } 
-                else { viewUserId = currentUserId; userRole = 'owner'; initApp(); }
-                
+
+                if (targetUid && targetUid !== currentUserId) {
+                    viewUserId = targetUid; checkAccess(targetUid, user.email);
+                } else {
+                    viewUserId = currentUserId; userRole = 'owner'; initApp();
+                }
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-content').style.display = 'flex';
                 document.getElementById('shareLinkInput').value = `${window.location.origin}${window.location.pathname}?uid=${currentUserId}`;
@@ -670,8 +634,10 @@
             if(id === 'home') target.style.display = 'flex';
             if(id === 'oefenen') initPractice(); 
             if(id === 'admin') loadAdminStats();
+            
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
+            
             const titles = {home:'Home', planning:'Agenda', cijfers:'Cijfers', notities:'Notities', oefenen:'Oefenen', timer:'Timer', instellingen:'Instellingen', admin:'Admin'};
             document.getElementById('page-title').innerText = titles[id] || 'Overzicht';
             if(window.innerWidth <= 1000) { document.getElementById('app-sidebar').classList.remove('open'); document.getElementById('sidebar-btn').innerHTML = "☰"; }
@@ -696,9 +662,17 @@
                 document.getElementById('auto-planner-card').style.display = 'none'; 
                 document.getElementById('tests-card').style.display = 'none';
                 document.getElementById('settings-name').disabled = true;
-            } else { loadCollaborators(); loadTests(); }
-            initPlanner(); loadNotes(); loadGrades(); 
-            document.getElementById('timerInput').addEventListener('input', function() { stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay(); });
+            } else {
+                loadCollaborators();
+                loadTests(); 
+            }
+            initPlanner();
+            loadNotes(); 
+            loadGrades(); 
+            
+            document.getElementById('timerInput').addEventListener('input', function() {
+                stopTimer(); let val = parseInt(this.value)||1; timeLeft = val * 60; updateTimerDisplay();
+            });
             if(window.innerWidth > 1000) document.getElementById('sidebar-btn').innerHTML = "←";
             navigate('home');
         }
@@ -706,14 +680,90 @@
         function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOutUser() { auth.signOut().then(() => location.reload()); }
 
-        // --- PRACTICE CORE ---
+        // --- PLANNER LOGIC ---
+        function addManualItem() {
+            const vak = document.getElementById('manualVak').value;
+            const taak = document.getElementById('manualTask').value;
+            const dateVal = document.getElementById('manualDate').value;
+            if(!vak || !taak || !dateVal) return showToast("Vul alle velden in.");
+            const targetDate = new Date(dateVal);
+            const weekStart = new Date(targetDate); weekStart.setHours(0,0,0,0);
+            const day = weekStart.getDay() || 7; weekStart.setDate(weekStart.getDate() - day + 1);
+            const end = new Date(weekStart); end.setDate(weekStart.getDate()+6);
+            const id = `${vak}-${targetDate.getTime()}`;
+            db.collection('users').doc(viewUserId).collection('planner_items').doc(id).set({
+                weekStart: firebase.firestore.Timestamp.fromDate(weekStart), weekEnd: firebase.firestore.Timestamp.fromDate(end),
+                weekNummer: getWeekNumber(weekStart), vak: vak, thuisDoen: taak, bijlesDoen: ``, isAfgerond: false, isVakantie: false, 
+                groupKey: `${weekStart.getFullYear()}-${getWeekNumber(weekStart)}`
+            }).then(() => { showToast("Toegevoegd! 📅"); document.getElementById('manualVak').value = ''; document.getElementById('manualTask').value = ''; });
+        }
+        function loadTests() {
+            db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap => {
+                const con = document.getElementById('tests-list-container'); con.innerHTML = '';
+                if(snap.empty) con.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>';
+                let tests = []; snap.forEach(doc => tests.push({id: doc.id, ...doc.data()}));
+                tests.sort((a,b) => (a.date && b.date) ? a.date.seconds - b.date.seconds : 0);
+                tests.forEach(d => {
+                    const dateStr = d.date ? d.date.toDate().toLocaleDateString('nl-NL') : 'Datum onbekend';
+                    con.innerHTML += `<div class="test-item"><div><div style="font-weight:600; color:var(--primary);">${d.subject||'Geen vak'}</div><div style="font-size:0.85em; color:var(--text-muted);">${d.chapter||''} • ${dateStr}</div></div><button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;">❌</button></div>`;
+                });
+            });
+        }
+        function deleteTest(testId) { if(confirm("Toets verwijderen?")) db.collection('users').doc(viewUserId).collection('tests').doc(testId).delete().then(() => showToast("Verwijderd.")); }
+        function initPlanner() {
+            db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart', 'asc').onSnapshot(snapshot => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                const tbody = document.getElementById('planner-table-body'); tbody.innerHTML = '';
+                if(snapshot.empty) { document.getElementById('empty-planner').style.display = 'block'; document.querySelector('.studie-tabel').style.display = 'none'; return; } 
+                else { document.getElementById('empty-planner').style.display = 'none'; document.querySelector('.studie-tabel').style.display = 'table'; }
+                const grouped = {}; 
+                snapshot.forEach(doc => {
+                    const data = doc.data(); data.id = doc.id; data.jsDate = data.weekStart.toDate();
+                    const key = data.groupKey || `${data.jsDate.getFullYear()}-${data.weekNummer}`;
+                    if(!grouped[key]) grouped[key] = []; grouped[key].push(data);
+                });
+                Object.keys(grouped).sort((a,b) => grouped[a][0].jsDate - grouped[b][0].jsDate).forEach(key => renderGroupedRow(tbody, grouped[key], userRole !== 'read'));
+            });
+        }
+        function renderGroupedRow(container, items, isEditable) {
+            const first = items[0]; const isHoliday = items.some(i => i.isVakantie);
+            const row = document.createElement('tr'); if (isHoliday) row.classList.add('is-holiday');
+            const allDone = items.every(i => i.isAfgerond); if(allDone) row.classList.add('row-done');
+            const sDate = first.weekStart.toDate(); const eDate = first.weekEnd.toDate();
+            const dateStr = `${sDate.getDate()} ${sDate.toLocaleString('nl-NL',{month:'short'})} - ${eDate.getDate()} ${eDate.toLocaleString('nl-NL',{month:'short'})}`;
+            let vakHtml='', thuisHtml='', bijlesHtml='', statusHtml='';
+            items.forEach((item, index) => {
+                const border = index < items.length - 1 ? 'border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px;' : '';
+                const doneClass = item.isAfgerond ? 'item-done' : '';
+                vakHtml += `<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`;
+                thuisHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'thuisDoen', this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`;
+                bijlesHtml += `<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}', 'bijlesDoen', this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`;
+                statusHtml += `<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;">
+                    <input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}', 'isAfgerond', this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;">
+                    ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}</div>`;
+            });
+            row.innerHTML = `<td style="border-right:1px solid var(--border); vertical-align:top;"><div style="font-weight:700;">W${first.weekNummer}</div><span class="week-dates">${dateStr}</span><div class="holiday-btn ${isHoliday ? 'active' : ''}" onclick="toggleHoliday('${items.map(i=>i.id).join(',')}', ${!isHoliday})">${isHoliday ? 'VAKANTIE!' : 'Zet op Vakantie'}</div></td><td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`;
+            container.appendChild(row);
+        }
+        function updateField(id, f, v) { if(userRole!=='read') db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
+        function toggleHoliday(ids, val) { if(userRole!=='read') { const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
+        function deleteItem(docId) { if (userRole!=='read' && confirm("Wissen?")) db.collection('users').doc(viewUserId).collection('planner_items').doc(docId).delete(); }
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+        function printAgenda() { document.body.classList.add('print-mode-agenda'); window.print(); document.body.classList.remove('print-mode-agenda'); }
+
+        /* --- OEFENEN LOGIC --- */
+        
         function initPractice() {
             const savedYear = localStorage.getItem('studyYear');
             const savedLevel = localStorage.getItem('studyLevel');
+
             db.collection('users').doc(viewUserId).collection('quiz_results').get().then(snap => {
-                userQuizResults = []; snap.forEach(doc => userQuizResults.push(doc.data()));
-                if (!savedYear || !savedLevel) { showPracticeSetup(); } 
-                else {
+                userQuizResults = [];
+                snap.forEach(doc => userQuizResults.push(doc.data()));
+
+                if (!savedYear || !savedLevel) {
+                    showPracticeSetup();
+                } else {
                     document.getElementById('practice-setup').style.display = 'none';
                     document.getElementById('btn-change-level').style.display = 'block';
                     document.getElementById('btn-change-level').innerText = `${savedYear}e Klas - ${savedLevel}`;
@@ -722,148 +772,240 @@
             });
         }
 
-        function showPracticeSetup() { resetPracticeNav(); document.getElementById('practice-setup').style.display = 'block'; document.getElementById('practice-subjects').style.display = 'none'; document.getElementById('btn-change-level').style.display = 'none'; }
-        function savePracticeConfig() { const y = document.getElementById('setup-year').value; const l = document.getElementById('setup-level').value; localStorage.setItem('studyYear', y); localStorage.setItem('studyLevel', l); initPractice(); }
-        function clearPracticeSettings() { localStorage.removeItem('studyYear'); localStorage.removeItem('studyLevel'); initPractice(); }
-        function resetPracticeNav() { document.getElementById('practice-subjects').style.display = 'grid'; document.getElementById('practice-dashboard').style.display = 'none'; document.getElementById('practice-interface').style.display = 'none'; document.getElementById('practice-setup').style.display = 'none'; activeSubject = null; updateBreadcrumbs([]); if(!localStorage.getItem('studyYear')) showPracticeSetup(); }
+        function showPracticeSetup() {
+            resetPracticeNav();
+            document.getElementById('practice-setup').style.display = 'block';
+            document.getElementById('practice-subjects').style.display = 'none';
+            document.getElementById('btn-change-level').style.display = 'none';
+        }
+
+        function savePracticeConfig() {
+            const y = document.getElementById('setup-year').value;
+            const l = document.getElementById('setup-level').value;
+            localStorage.setItem('studyYear', y);
+            localStorage.setItem('studyLevel', l);
+            initPractice();
+        }
+
+        function clearPracticeSettings() {
+            localStorage.removeItem('studyYear');
+            localStorage.removeItem('studyLevel');
+            initPractice();
+        }
+
+        function resetPracticeNav() {
+            document.getElementById('practice-subjects').style.display = 'grid';
+            document.getElementById('practice-dashboard').style.display = 'none';
+            document.getElementById('practice-interface').style.display = 'none';
+            document.getElementById('practice-setup').style.display = 'none';
+            activeSubject = null;
+            updateBreadcrumbs([]);
+            if(!localStorage.getItem('studyYear')) showPracticeSetup();
+        }
 
         function showSubjectsGrid() {
-            const container = document.getElementById('practice-subjects'); container.innerHTML = ''; container.style.display = 'grid';
+            const container = document.getElementById('practice-subjects');
+            container.innerHTML = '';
+            container.style.display = 'grid';
+            
             const icons = { "Wiskunde": "📐", "Nederlands": "🇳🇱", "Engels": "🇬🇧", "Geschiedenis": "🏛️", "Aardrijkskunde": "🌍", "Biologie": "🧬", "Natuurkunde": "⚡", "Scheikunde": "🧪", "Economie": "📈" };
+
             Object.keys(contentDatabase).forEach(subject => {
                 const hasContent = contentDatabase[subject].topics && contentDatabase[subject].topics.length > 0;
                 const isDisabled = !hasContent;
-                const card = document.createElement('div'); card.className = `nav-card ${isDisabled ? 'disabled' : ''}`;
+                
+                const card = document.createElement('div');
+                card.className = `nav-card ${isDisabled ? 'disabled' : ''}`;
                 card.onclick = () => { if(!isDisabled) selectSubject(subject); };
-                card.innerHTML = `<div class="nav-card-icon">${icons[subject] || '📚'}</div><div class="nav-card-title">${subject} ${isDisabled ? '<span style="font-weight:400; font-size:0.8em; color:var(--text-muted);">(Geen inhoud)</span>' : ''}</div>`;
+                card.innerHTML = `
+                    <div class="nav-card-icon">${icons[subject] || '📚'}</div>
+                    <div class="nav-card-title">${subject} ${isDisabled ? '<span style="font-weight:400; font-size:0.8em; color:var(--text-muted);">(Geen inhoud)</span>' : ''}</div>
+                `;
                 container.appendChild(card);
             });
             updateBreadcrumbs([]);
         }
 
-        function selectSubject(subject) { activeSubject = subject; document.getElementById('practice-subjects').style.display = 'none'; document.getElementById('practice-dashboard').style.display = 'block'; renderTopicDashboard(subject); updateBreadcrumbs([subject]); }
+        function selectSubject(subject) {
+            activeSubject = subject;
+            document.getElementById('practice-subjects').style.display = 'none';
+            document.getElementById('practice-dashboard').style.display = 'block';
+            renderTopicDashboard(subject);
+            updateBreadcrumbs([subject]);
+        }
 
+        // --- DASHBOARD RENDER LOGIC ---
         function renderTopicDashboard(subject) {
-            const container = document.getElementById('practice-dashboard'); container.innerHTML = '';
+            const container = document.getElementById('practice-dashboard');
+            container.innerHTML = '';
+            
             const data = contentDatabase[subject];
             if(!data || !data.topics) { container.innerHTML = "Geen onderwerpen."; return; }
-            data.topics.forEach((topic) => {
-                let totalScore = 0; let skillCount = 0;
-                topic.skills.forEach(skill => { const best = getBestResult(skill); totalScore += best; skillCount++; });
+
+            data.topics.forEach((topic, index) => {
+                // Calculate Topic Progress based on sub-skills
+                let totalScore = 0; 
+                let skillCount = 0;
+                
+                topic.skills.forEach(skill => {
+                    const best = getBestResult(skill);
+                    totalScore += best; 
+                    skillCount++;
+                });
+                
+                // Calculate average (if skills exist)
                 const avgScore = skillCount > 0 ? (totalScore / skillCount).toFixed(1) : 0;
                 const percentage = (avgScore / 10) * 100;
-                let progressClass = 'low'; if(avgScore >= 5.5) progressClass = 'med'; if(avgScore >= 7.5) progressClass = 'high';
+                
+                // Determine color class
+                let progressClass = 'low';
+                if(avgScore >= 5.5) progressClass = 'med';
+                if(avgScore >= 7.5) progressClass = 'high';
 
-                const card = document.createElement('div'); card.className = "main-topic-card";
+                const card = document.createElement('div');
+                card.className = "main-topic-card";
+                
                 let skillsHtml = '';
                 topic.skills.forEach(skill => {
                    const best = getBestResult(skill);
-                   let badgeClass = best >= 7.5 ? 'done-high' : (best >= 5.5 ? 'done-med' : (best > 1 ? 'done-low' : ''));
-                   skillsHtml += `<div class="sub-topic-item" onclick="startSkillQuiz('${skill}', '${topic.title}')"><span style="font-weight:500;">${skill}</span><span class="skill-badge ${badgeClass}">${best > 0 ? 'Cijfer: ' + best : 'Nog niet gemaakt'}</span></div>`;
+                   let badgeClass = '';
+                   if(best >= 7.5) badgeClass = 'done-high';
+                   else if(best >= 5.5) badgeClass = 'done-med';
+                   else if(best > 1) badgeClass = 'done-low';
+
+                   skillsHtml += `
+                    <div class="sub-topic-item" onclick="startSkillQuiz('${skill}', '${topic.title}')">
+                        <span style="font-weight:500;">${skill}</span>
+                        <span class="skill-badge ${badgeClass}">${best > 0 ? 'Cijfer: ' + best : 'Nog niet gemaakt'}</span>
+                    </div>`;
                 });
-                card.innerHTML = `<div class="main-topic-header" onclick="this.parentElement.classList.toggle('open')"><div style="flex:1;"><div class="main-topic-title">${topic.title}</div><div class="progress-container"><div class="progress-fill ${progressClass}" style="width: ${percentage}%"></div></div><div class="main-topic-stats"><span>${skillCount} onderdelen</span><span>Gemiddeld: <b>${avgScore}</b></span></div></div><div style="font-size:1.5em; color:var(--text-muted); margin-left:15px;">▾</div></div><div class="sub-topics-list">${skillsHtml}</div>`;
+
+                card.innerHTML = `
+                    <div class="main-topic-header" onclick="this.parentElement.classList.toggle('open')">
+                        <div style="flex:1;">
+                            <div class="main-topic-title">${topic.title}</div>
+                            <div class="progress-container">
+                                <div class="progress-fill ${progressClass}" style="width: ${percentage}%"></div>
+                            </div>
+                            <div class="main-topic-stats">
+                                <span>${skillCount} onderdelen</span>
+                                <span>Gemiddeld: <b>${avgScore}</b></span>
+                            </div>
+                        </div>
+                        <div style="font-size:1.5em; color:var(--text-muted); margin-left:15px;">▾</div>
+                    </div>
+                    <div class="sub-topics-list">${skillsHtml}</div>
+                `;
                 container.appendChild(card);
             });
         }
 
         function getBestResult(skillName) {
+            // Filter results for current subject AND current skill
             const relevant = userQuizResults.filter(r => r.subject === activeSubject && r.skill === skillName);
             if(relevant.length === 0) return 0;
             return Math.max(...relevant.map(r => r.grade));
         }
 
         function startSkillQuiz(skill, topicTitle) {
-            activeSkill = skill; activeTopic = topicTitle; currentQuizScore = 0;
+            activeSkill = skill;
+            activeTopic = topicTitle; // Store the parent topic
+            
             document.getElementById('practice-dashboard').style.display = 'none';
             document.getElementById('practice-interface').style.display = 'block';
             updateBreadcrumbs([activeSubject, skill]);
+            
             document.getElementById('quiz-intro-title').innerText = `Oefenen: ${skill}`;
-            document.getElementById('quiz-intro-text').innerHTML = `Onderdeel van: <b>${activeTopic}</b>.<br>Je krijgt 10 willekeurige vragen om dit onderdeel te oefenen.`;
+            document.getElementById('quiz-intro-text').innerHTML = `Onderdeel van: <b>${activeTopic}</b>.<br>Je krijgt 10 vragen om dit onderdeel te oefenen.`;
+            
             document.getElementById('quiz-start-screen').style.display = 'block';
             document.getElementById('quiz-container').style.display = 'none';
             document.getElementById('quiz-results').style.display = 'none';
         }
 
         function updateBreadcrumbs(path) {
-            const bc = document.getElementById('practice-breadcrumbs'); let html = `<span onclick="resetPracticeNav()">Oefenen</span>`;
-            path.forEach((step, i) => { if (i === path.length -1 && path.length > 1) { html += ` > <span class="active">${step}</span>`; } else if (i === 0) { html += ` > <span onclick="selectSubject('${step}')">${step}</span>`; } });
+            const bc = document.getElementById('practice-breadcrumbs');
+            let html = `<span onclick="resetPracticeNav()">Oefenen</span>`;
+            path.forEach((step, i) => {
+                if (i === path.length -1 && path.length > 1) { html += ` > <span class="active">${step}</span>`; } 
+                else if (i === 0) { html += ` > <span onclick="selectSubject('${step}')">${step}</span>`; }
+            });
             bc.innerHTML = html;
         }
 
-        // --- QUIZ LOGIC (UPDATED WITH DIRECT FEEDBACK) ---
+        /* --- QUIZ ENGINE --- */
         function startQuiz() {
             document.getElementById('quiz-start-screen').style.display = 'none';
             document.getElementById('quiz-results').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'block';
             
-            // 1. Filter questions by Tag
             let matchedQuestions = questionBank.filter(q => q.tags && q.tags.includes(activeSkill));
-            if (matchedQuestions.length === 0) { matchedQuestions = questionBank; } // Fallback
+            
+            if (matchedQuestions.length === 0) {
+                console.log("Fallback naar algemene vragen");
+                matchedQuestions = questionBank;
+            }
 
-            // 2. Randomize and pick 10
             currentQuizQuestions = matchedQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
-            currentQuizScore = 0;
-
+            
             const list = document.getElementById('quiz-questions-list'); list.innerHTML = '';
-            if(currentQuizQuestions.length === 0) { list.innerHTML = "Geen vragen beschikbaar."; return; }
+            
+            if(currentQuizQuestions.length === 0) {
+                list.innerHTML = "Geen vragen beschikbaar.";
+                return;
+            }
 
             currentQuizQuestions.forEach((item, index) => {
                 list.innerHTML += `
                 <div class="quiz-question-card" id="q-card-${index}">
                     <div style="font-weight:600; margin-bottom:10px;">Vraag ${index+1}</div>
                     <div style="font-size:1.2em; margin-bottom:10px; font-family:monospace;">${item.q}</div>
-                    <input type="number" step="0.1" class="quiz-input" id="q-input-${index}" placeholder="Jouw antwoord...">
-                    <button class="check-btn" id="q-btn-${index}" onclick="checkQuestion(${index})">Controleer</button>
+                    <input type="number" step="0.1" class="quiz-input" id="q-input-${index}" placeholder="Antwoord...">
                     <div class="quiz-feedback" id="q-feedback-${index}"></div>
                 </div>`;
             });
             window.scrollTo(0,0);
         }
 
-        function checkQuestion(index) {
-            const item = currentQuizQuestions[index];
-            const input = document.getElementById(`q-input-${index}`);
-            const btn = document.getElementById(`q-btn-${index}`);
-            const card = document.getElementById(`q-card-${index}`);
-            const feedback = document.getElementById(`q-feedback-${index}`);
-            
-            let val = input.value.replace(',', '.');
-            let numVal = parseFloat(val);
+        function submitQuiz() {
+            if(currentQuizQuestions.length === 0) return;
 
-            if (isNaN(numVal)) { alert("Vul een getal in."); return; }
+            let score = 0;
+            currentQuizQuestions.forEach((item, index) => {
+                const input = document.getElementById(`q-input-${index}`);
+                const card = document.getElementById(`q-card-${index}`);
+                const feedback = document.getElementById(`q-feedback-${index}`);
+                let val = input.value.replace(',', '.'); let numVal = parseFloat(val);
+                
+                if (!isNaN(numVal) && Math.abs(numVal - item.a) < 0.05) { 
+                    score++; card.classList.add('correct'); 
+                    feedback.innerHTML = `✅ Correct! ${item.h}`; 
+                } else { 
+                    card.classList.add('wrong'); 
+                    feedback.innerHTML = `❌ Fout. Antwoord: <b>${item.a.toString().replace('.',',')}</b>.<br>${item.h}`; 
+                }
+                card.classList.add('show-feedback'); input.disabled = true;
+            });
 
-            // Logic check
-            if (Math.abs(numVal - item.a) < 0.05) {
-                currentQuizScore++;
-                card.classList.add('correct');
-                feedback.innerHTML = `✅ Goed gedaan! ${item.h}`;
-            } else {
-                card.classList.add('wrong');
-                feedback.innerHTML = `❌ Helaas. Het antwoord is <b>${item.a.toString().replace('.',',')}</b>.<br>Uitleg: ${item.h}`;
-            }
-            
-            card.classList.add('show-feedback');
-            input.disabled = true;
-            btn.style.display = 'none'; // Hide button after checking
-        }
-
-        function finishQuiz() {
-            // Calculate final grade
-            const grade = currentQuizScore > 0 ? (currentQuizScore / currentQuizQuestions.length * 9) + 1 : 1;
+            const grade = score > 0 ? (score / currentQuizQuestions.length * 9) + 1 : 1;
             const roundedGrade = Math.round(grade * 10) / 10;
             
             document.getElementById('quiz-container').style.display = 'none';
             document.getElementById('quiz-results').style.display = 'block';
             document.getElementById('quiz-score').innerText = roundedGrade;
-            document.getElementById('quiz-message').innerText = `Je had ${currentQuizScore} van de ${currentQuizQuestions.length} vragen goed.`;
+            document.getElementById('quiz-message').innerText = `Je had ${score} van de ${currentQuizQuestions.length} goed.`;
+            document.getElementById('quiz-review-list').innerHTML = document.getElementById('quiz-questions-list').innerHTML;
             
-            // Save logic
             if(currentUserId && activeSkill) {
+                // Save including the Parent Topic
                 db.collection('users').doc(currentUserId).collection('quiz_results').add({
-                    score: currentQuizScore, grade: roundedGrade, skill: activeSkill, topic: activeTopic, subject: activeSubject,
+                    score: score, 
+                    grade: roundedGrade, 
+                    skill: activeSkill, 
+                    topic: activeTopic, // Save parent topic for better organization later
+                    subject: activeSubject,
                     date: firebase.firestore.FieldValue.serverTimestamp()
                 }).then(() => {
-                    // Update local cache
                     db.collection('users').doc(currentUserId).collection('quiz_results').get().then(snap => {
                         userQuizResults = []; snap.forEach(doc => userQuizResults.push(doc.data()));
                     });
@@ -872,7 +1014,7 @@
             window.scrollTo(0,0);
         }
 
-        /* --- OTHER UTILS --- */
+        /* --- OVERIGE FUNCTIES --- */
         function createNewNote() { db.collection('users').doc(viewUserId).collection('subject_notes').add({ subject: "Nieuwe Notitie", content: "", pdfData: null, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then((doc) => { showToast("Aangemaakt!"); openNoteModal(doc.id, "Nieuwe Notitie", "", null); }); }
         function loadNotes() { db.collection('users').doc(viewUserId).collection('subject_notes').orderBy('createdAt', 'desc').onSnapshot(snap => { const l = document.getElementById('notes-list-container'); l.innerHTML = ''; snap.forEach(d => { const data = d.data(); const div = document.createElement("div"); div.innerHTML = data.content || ""; const textPreview = div.textContent || div.innerText || ""; const pdfBadge = data.pdfData ? '<span class="pdf-badge">📎 PDF</span>' : ''; l.innerHTML += `<div class="card note-card" onclick='openNoteModal("${d.id}", "${data.subject.replace(/"/g, '&quot;')}", "", ${data.pdfData ? '"yes"' : 'null'})'><div class="note-preview-title">${data.subject}</div><div class="note-preview-body">${textPreview}</div>${pdfBadge}</div>`; }); }); }
         function execCmd(c, v = null) { document.execCommand(c, false, v); document.getElementById('modal-note-content').focus(); }
@@ -897,18 +1039,6 @@
             db.collection('users').get().then(snap => { document.getElementById('admin-total-users').innerText = snap.size; let active = 0; const now = new Date(); const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()); snap.forEach(doc => { const data = doc.data(); if(data.lastLogin && data.lastLogin.toDate() > startOfDay) { active++; } }); document.getElementById('admin-active-today').innerText = active; });
             db.collectionGroup('quiz_results').get().then(snap => { let total = 0; let count = 0; snap.forEach(doc => { total += doc.data().grade; count++; }); const avg = count > 0 ? (total / count).toFixed(1) : '-'; document.getElementById('admin-avg-grade').innerText = avg; document.getElementById('admin-activity-log').innerText = `${count} toetspogingen geregistreerd.`; }).catch(err => { console.log("Index needed:", err); document.getElementById('admin-activity-log').innerText = "Data laden..."; });
         }
-        
-        // --- MANUAL PLANNER (ORIGINAL) ---
-        function addManualItem() { const vak=document.getElementById('manualVak').value; const taak=document.getElementById('manualTask').value; const dateVal=document.getElementById('manualDate').value; if(!vak||!taak||!dateVal) return showToast("Vul alle velden in."); const targetDate=new Date(dateVal); const weekStart=new Date(targetDate); weekStart.setHours(0,0,0,0); const day=weekStart.getDay()||7; weekStart.setDate(weekStart.getDate()-day+1); const end=new Date(weekStart); end.setDate(weekStart.getDate()+6); const id=`${vak}-${targetDate.getTime()}`; db.collection('users').doc(viewUserId).collection('planner_items').doc(id).set({ weekStart:firebase.firestore.Timestamp.fromDate(weekStart), weekEnd:firebase.firestore.Timestamp.fromDate(end), weekNummer:getWeekNumber(weekStart), vak:vak, thuisDoen:taak, bijlesDoen:``, isAfgerond:false, isVakantie:false, groupKey:`${weekStart.getFullYear()}-${getWeekNumber(weekStart)}` }).then(()=>{ showToast("Toegevoegd!"); document.getElementById('manualVak').value=''; document.getElementById('manualTask').value=''; }); }
-        function loadTests(){ db.collection('users').doc(viewUserId).collection('tests').onSnapshot(snap=>{ const con=document.getElementById('tests-list-container'); con.innerHTML=''; if(snap.empty)con.innerHTML='<span style="color:var(--text-muted); font-size:0.8em;">Geen toetsen.</span>'; let tests=[]; snap.forEach(doc=>tests.push({id:doc.id,...doc.data()})); tests.sort((a,b)=>(a.date&&b.date)?a.date.seconds-b.date.seconds:0); tests.forEach(d=>{ const dateStr=d.date?d.date.toDate().toLocaleDateString('nl-NL'):'Datum onbekend'; con.innerHTML+=`<div class="test-item"><div><div style="font-weight:600; color:var(--primary);">${d.subject||'Geen vak'}</div><div style="font-size:0.85em; color:var(--text-muted);">${d.chapter||''} • ${dateStr}</div></div><button onclick="deleteTest('${d.id}')" style="background:transparent; color:#ef4444; width:auto; border:none; font-size:1.2em; cursor:pointer;">❌</button></div>`; }); }); }
-        function deleteTest(id){ if(confirm("Toets verwijderen?")) db.collection('users').doc(viewUserId).collection('tests').doc(id).delete().then(()=>showToast("Verwijderd.")); }
-        function initPlanner(){ db.collection('users').doc(viewUserId).collection('planner_items').orderBy('weekStart','asc').onSnapshot(snapshot=>{ document.getElementById('loading-indicator').style.display='none'; const tbody=document.getElementById('planner-table-body'); tbody.innerHTML=''; if(snapshot.empty){ document.getElementById('empty-planner').style.display='block'; document.querySelector('.studie-tabel').style.display='none'; return; } else { document.getElementById('empty-planner').style.display='none'; document.querySelector('.studie-tabel').style.display='table'; } const grouped={}; snapshot.forEach(doc=>{ const data=doc.data(); data.id=doc.id; data.jsDate=data.weekStart.toDate(); const key=data.groupKey||`${data.jsDate.getFullYear()}-${data.weekNummer}`; if(!grouped[key])grouped[key]=[]; grouped[key].push(data); }); Object.keys(grouped).sort((a,b)=>grouped[a][0].jsDate-grouped[b][0].jsDate).forEach(key=>renderGroupedRow(tbody,grouped[key],userRole!=='read')); }); }
-        function renderGroupedRow(container,items,isEditable){ const first=items[0]; const isHoliday=items.some(i=>i.isVakantie); const row=document.createElement('tr'); if(isHoliday)row.classList.add('is-holiday'); const allDone=items.every(i=>i.isAfgerond); if(allDone)row.classList.add('row-done'); const sDate=first.weekStart.toDate(); const eDate=first.weekEnd.toDate(); const dateStr=`${sDate.getDate()} ${sDate.toLocaleString('nl-NL',{month:'short'})} - ${eDate.getDate()} ${eDate.toLocaleString('nl-NL',{month:'short'})}`; let vakHtml='',thuisHtml='',bijlesHtml='',statusHtml=''; items.forEach((item,index)=>{ const border=index<items.length-1?'border-bottom:1px dashed var(--border); padding-bottom:8px; margin-bottom:8px;':''; const doneClass=item.isAfgerond?'item-done':''; vakHtml+=`<div style="${border} font-weight:600; color:var(--primary); padding-top:6px;">${item.vak}</div>`; thuisHtml+=`<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}','thuisDoen',this.value)" ${!isEditable||isHoliday?'disabled':''}>${isHoliday?'VAKANTIE':item.thuisDoen}</textarea></div>`; bijlesHtml+=`<div class="${doneClass}" style="${border}"><textarea class="clean-input" onblur="updateField('${item.id}','bijlesDoen',this.value)" ${!isEditable||isHoliday?'disabled':''} placeholder="-">${isHoliday?'-':item.bijlesDoen}</textarea></div>`; statusHtml+=`<div style="${border}; display:flex; justify-content:center; align-items:center; height:35px;"><input type="checkbox" ${item.isAfgerond?'checked':''} onchange="updateField('${item.id}','isAfgerond',this.checked)" ${!isEditable?'disabled':''} style="width:18px; height:18px; cursor:pointer;"> ${isEditable?`<span onclick="deleteItem('${item.id}')" style="cursor:pointer; margin-left:8px; opacity:0.3; font-size:1.2em;">&times;</span>`:''}</div>`; }); row.innerHTML=`<td style="border-right:1px solid var(--border); vertical-align:top;"><div style="font-weight:700;">W${first.weekNummer}</div><span class="week-dates">${dateStr}</span><div class="holiday-btn ${isHoliday?'active':''}" onclick="toggleHoliday('${items.map(i=>i.id).join(',')}',${!isHoliday})">${isHoliday?'VAKANTIE!':'Zet op Vakantie'}</div></td><td>${vakHtml}</td><td>${thuisHtml}</td><td>${bijlesHtml}</td><td>${statusHtml}</td>`; container.appendChild(row); }
-        function updateField(id,f,v){ if(userRole!=='read')db.collection('users').doc(viewUserId).collection('planner_items').doc(id).update({[f]:v}); }
-        function toggleHoliday(ids,val){ if(userRole!=='read'){ const b=db.batch(); ids.split(',').forEach(id=>b.update(db.collection('users').doc(viewUserId).collection('planner_items').doc(id),{isVakantie:val})); b.commit(); } }
-        function deleteItem(id){ if(userRole!=='read'&&confirm("Wissen?"))db.collection('users').doc(viewUserId).collection('planner_items').doc(id).delete(); }
-        function getWeekNumber(d){ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7)); var yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-yearStart)/86400000)+1)/7); }
-        function printAgenda(){ document.body.classList.add('print-mode-agenda'); window.print(); document.body.classList.remove('print-mode-agenda'); }
     </script>
 </body>
 </html>
