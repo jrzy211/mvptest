@@ -3,439 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study-Start Pro</title>
-    <link rel="icon" href="mini lgo.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+    <title>VMBO 2 Oefentoets: Inklemmen</title>
     <style>
-        /* (Zelfde CSS als voorheen, geen wijzigingen nodig voor de functionaliteit, 
-            maar ik heb de navigatie cards iets mooier gemaakt voor de lijst) */
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-bg: #eff6ff;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --sidebar-width: 250px;
-            --radius: 8px;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
         }
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 13.5px; }
-        
-        /* Sidebar & Layout */
-        #app-sidebar { width: var(--sidebar-width); background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 15px; flex-shrink: 0; transition: margin-left 0.3s ease; z-index: 50; }
-        #app-sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); }
-        .sidebar-header { font-size: 1.1em; font-weight: 700; color: var(--primary); margin-bottom: 30px; padding: 0 10px; cursor: pointer; }
-        .nav-item { padding: 10px 12px; margin-bottom: 4px; border-radius: var(--radius); color: var(--text-muted); font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.15s; }
-        .nav-item:hover, .nav-item.active { background-color: var(--primary-bg); color: var(--primary); font-weight: 600; }
-        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        header { background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border); height: 55px; }
-        
-        /* UI Elements */
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-        button { background: var(--primary); color: white; border: none; padding: 9px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95em; width: 100%; transition: 0.2s; }
-        button:hover { background: var(--primary-hover); }
-        button.secondary { background: white; border: 1px solid var(--border); color: var(--text-muted); }
-        input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; }
-        
-        /* Oefenen Navigatie Styles */
-        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
-        .nav-card { 
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; 
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; 
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        .nav-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .nav-card-icon { font-size: 1.8em; background: var(--primary-bg); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-        .nav-card-title { font-weight: 700; color: var(--text-main); font-size: 1.05em; }
-        .nav-card-subtitle { font-size: 0.85em; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
-        
-        .breadcrumb { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; font-size: 0.9em; color: var(--text-muted); }
-        .breadcrumb span { cursor: pointer; }
-        .breadcrumb span:hover { text-decoration: underline; color: var(--primary); }
-        .breadcrumb .active { font-weight: 700; color: var(--text-main); cursor: default; text-decoration: none; }
-
-        /* Quiz Styles */
-        .quiz-question-card { background: white; padding: 20px; margin-bottom: 15px; border-radius: var(--radius); border: 1px solid var(--border); border-left: 4px solid var(--primary); }
-        .quiz-question-card.correct { border-left-color: #166534; background: #f0fdf4; }
-        .quiz-question-card.wrong { border-left-color: #991b1b; background: #fef2f2; }
-        
-        /* Other Pages (simplified for brevity in this view) */
-        .page-section { display: none; padding: 30px; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .page-section.active { display: block; animation: fade 0.2s; }
-        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        @media (max-width: 800px) { #app-sidebar { margin-left: -250px; position: fixed; height: 100%; } #app-sidebar.open { margin-left: 0; } }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .question-box {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+        }
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #34495e;
+            line-height: 1.5;
+        }
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option-button:hover {
+            background-color: #e8e8e8;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        .next-btn {
+            display: block;
+            width: 150px;
+            margin: 20px auto 0;
+            padding: 10px;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .next-btn:hover {
+            background-color: #2980b9;
+        }
+        .score-box {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            font-size: 1.2em;
+        }
+        .rationale {
+            font-size: 0.9em;
+            font-style: italic;
+            margin-top: 5px;
+            padding: 5px;
+            border-left: 3px solid #3498db;
+        }
     </style>
 </head>
 <body>
-
-    <div id="toast" style="visibility: hidden; min-width: 200px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 2500; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9em;">Melding</div>
-
-    <nav id="app-sidebar">
-        <div class="sidebar-header" onclick="navigate('home')">⚡ Study-Start</div>
-        <div class="nav-item" onclick="navigate('planning', this)"><span>📅</span> Planning</div>
-        <div class="nav-item" onclick="navigate('cijfers', this)"><span>📊</span> Cijfers</div>
-        <div class="nav-item" onclick="navigate('notities', this)"><span>📝</span> Notities</div>
-        <div class="nav-item active" onclick="navigate('oefenen', this)"><span>🎓</span> Oefenen</div>
-        <div class="nav-item" onclick="navigate('timer', this)"><span>⏱️</span> Timer</div>
-    </nav>
-
-    <main id="main-content">
-        <header>
-            <button onclick="document.getElementById('app-sidebar').classList.toggle('open')" style="width:auto; background:transparent; color:#333; font-size:1.5em; padding:0;">☰</button>
-            <div id="page-title">Oefenen</div>
-            <div id="user-display-name">Gast</div>
-        </header>
-
-        <div id="page-oefenen" class="page-section active">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div id="practice-breadcrumbs" class="breadcrumb">
-                    <span onclick="resetPracticeNav()">Oefenen</span>
-                </div>
+    <div class="quiz-container">
+        <h1>🔢 Oefentoets VMBO 2: Inklemmen 🔢</h1>
+        <div id="quiz-area">
             </div>
-
-            <div id="step-level" class="nav-grid">
-                </div>
-
-            <div id="step-subject" class="nav-grid" style="display: none;"></div>
-
-            <div id="step-chapter" class="nav-grid" style="display: none;"></div>
-
-            <div id="practice-interface" style="display: none;">
-                <div id="quiz-start-screen">
-                    <div class="card" style="border-left: 4px solid var(--primary); max-width: 600px; margin: 0 auto;">
-                        <h2 id="quiz-start-title">Start Toets</h2>
-                        <p id="quiz-start-desc" style="color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
-                            Je staat op het punt een oefentoets te starten.
-                        </p>
-                        <button onclick="startQuiz()">Start Toets (20 Vragen)</button>
-                    </div>
-                </div>
-                
-                <div id="quiz-container" style="display: none; max-width: 800px; margin: 0 auto;">
-                    <div id="quiz-questions-list"></div>
-                    <button onclick="submitQuiz()" style="margin-top: 20px;">Toets Inleveren</button>
-                </div>
-
-                <div id="quiz-results" style="display: none; max-width: 800px; margin: 0 auto;">
-                    <div class="card" style="text-align: center;">
-                        <h3>Je Resultaat</h3>
-                        <div style="font-size: 3em; font-weight: 800; color: var(--primary); margin: 20px 0;" id="quiz-score">?</div>
-                        <p id="quiz-message"></p>
-                        <button onclick="startQuiz()">Opnieuw Oefenen</button>
-                    </div>
-                    <h3>Antwoorden & Uitleg</h3>
-                    <div id="quiz-review-list"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-home" class="page-section"><h1>Home</h1></div>
-        <div id="page-planning" class="page-section"><h1>Planning</h1></div>
-        <div id="page-cijfers" class="page-section"><h1>Cijfers</h1></div>
-        <div id="page-notities" class="page-section"><h1>Notities</h1></div>
-        <div id="page-timer" class="page-section"><h1>Timer</h1></div>
-
-    </main>
+        <button class="next-btn" id="next-button" style="display: none;">Volgende Vraag</button>
+        <div id="results" class="score-box" style="display: none;"></div>
+    </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG (Jouw eigen keys blijven hier) ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyD_Kg4HjgBpG9QqpEuxfBklPL5-34G3RHI",
-          authDomain: "study-start-c510c.firebaseapp.com",
-          projectId: "study-start-c510c",
-          storageBucket: "study-start-c510c.firebasestorage.app",
-          messagingSenderId: "960911379164",
-          appId: "1:960911379164:web:ad8648cfa2fe65f8620219"
-        };
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // --- 2. DATA STRUCTUUR (De "Boom" van Jaren -> Vakken -> Hoofdstukken) ---
-        const practiceContent = {
-            "Brugklas (1 VMBO/HAVO)": {
-                "Wiskunde": ["H1: Getallen", "H2: Meetkunde", "H3: Formules"],
-                "Engels": ["Unit 1: Getting Started", "Unit 2: Family", "Grammar: To Be"],
-                "Nederlands": ["Spelling: Werkwoorden", "Begrijpend Lezen 1"]
+        const quizData = [
+            {
+                question: "1. Wat is het hoofddoel van de 'inklemmen' methode bij het oplossen van een vergelijking?",
+                options: [
+                    { text: "Om de exacte oplossing direct te berekenen.", isCorrect: false },
+                    { text: "Om de oplossing tussen twee steeds dichter bij elkaar liggende getallen in te vinden.", isCorrect: true },
+                    { text: "Om de vergelijking te vereenvoudigen voordat je gaat oplossen.", isCorrect: false },
+                    { text: "Om de oplossing altijd op een geheel getal af te ronden.", isCorrect: false }
+                ],
+                rationale: "De kern van de inklem-methode is de oplossing steeds nauwkeuriger 'vastklemmen' tussen een onder- en bovengrens."
             },
-            "Brugklas (1 HAVO/VWO)": {
-                "Wiskunde": ["H1: Vlakke Figuren", "H2: Rekenen", "H3: Formules & Grafieken"],
-                "Frans": ["Chapitre 1: Bonjour", "Chapitre 2: École"],
-                "Geschiedenis": ["Jagers en Boeren", "Grieken en Romeinen"]
+            {
+                question: "2. De vergelijking is $x^2 + 5 = 75$. Tussen welke twee hele getallen ligt de positieve oplossing van $x$?",
+                options: [
+                    { text: "$6$ en $7$", isCorrect: false },
+                    { text: "$7$ en $8$", isCorrect: false },
+                    { text: "$8$ en $9$", isCorrect: true },
+                    { text: "$9$ en $10$", isCorrect: false }
+                ],
+                rationale: "Met $x=8$ is de uitkomst $69$ (te laag) en met $x=9$ is de uitkomst $86$ (te hoog). De oplossing ligt tussen $8$ en $9$."
             },
-            "2 VMBO-T": {
-                "Wiskunde": ["H1: Procenten", "H2: Meetkunde"],
-                "Economie": ["Geldzaken", "Verzekeren"]
+            {
+                question: "3. Je weet dat de oplossing van $x^3 + 10 = 110$ tussen $4$ en $5$ ligt. Welke is de meest efficiënte eerste stap om de oplossing op één decimaal te vinden?",
+                options: [
+                    { text: "Probeer $x=4.1$ en $x=4.9$.", isCorrect: false },
+                    { text: "Probeer $x=4.5$.", isCorrect: true },
+                    { text: "Probeer $x=3$ en $x=6$.", isCorrect: false },
+                    { text: "Probeer $x=4.01$ en $x=4.02$.", isCorrect: false }
+                ],
+                rationale: "Door het midden ($4.5$) te testen, sluit je direct de helft van het interval uit."
             },
-            "2 HAVO": {
-                "Wiskunde": ["H1: Lineaire Formules", "H2: Vergelijkingen", "H3: Statistiek"],
-                "Natuurkunde": ["Licht en Beeld", "Elektriciteit"]
+            {
+                question: "4. Bij het oplossen van $x^3 = 53$ vind je dat $x=3.7$ te laag en $x=3.8$ te hoog is. Wat is de volgende logische stap in het inklemproces?",
+                options: [
+                    { text: "Bereken $3.75^3$.", isCorrect: true },
+                    { text: "Bereken $3.6^3$.", isCorrect: false },
+                    { text: "Bereken $3.81^3$.", isCorrect: false },
+                    { text: "Bereken $4^3$.", isCorrect: false }
+                ],
+                rationale: "Door het midden van het interval ($3.75$) te testen, bepaal je snel of de oplossing dichter bij $3.7$ of $3.8$ ligt."
             },
-            "2 VWO": {
-                "Wiskunde B": ["H1: Algebra", "H2: Meetkunde Bewijzen"],
-                "Latijn": ["Les 1-5 Grammatica", "Mythologie"]
+            {
+                question: "5. Je lost $x^2 - 10 = 15$ op. Je weet: oplossing ligt tussen $5$ en $6$. Je test $x=5.1$, wat een te lage uitkomst ($16.01$) geeft. Wat moet je nu proberen als je systematisch verdergaat?",
+                options: [
+                    { text: "$x=5.05$", isCorrect: false },
+                    { text: "$x=5.2$", isCorrect: true },
+                    { text: "$x=5.9$", isCorrect: false },
+                    { text: "$x=6.1$", isCorrect: false }
+                ],
+                rationale: "Omdat $x=5.1$ te laag was, is de volgende logische stap om stapsgewijs de waarde te verhogen totdat je 'te hoog' bent."
             },
-            "3 HAVO": {
-                "Wiskunde A": ["H1: Tabellen", "H2: Vergelijkingen"],
-                "Wiskunde B": ["H1: Functies", "H2: Goniometrie"],
-                "Scheikunde": ["Stoffen en Reacties", "Moleculen"]
+            {
+                question: "6. De oppervlakte is $A = \\pi r^2$. Voor $A=80$ $\\text{cm}^2$, tussen welke twee hele getallen ligt de straal ($r$)? (Gebruik $\\pi \\approx 3.14$)",
+                options: [
+                    { text: "$4$ en $5$", isCorrect: false },
+                    { text: "$5$ en $6$", isCorrect: true },
+                    { text: "$6$ en $7$", isCorrect: false },
+                    { text: "$7$ en $8$", isCorrect: false }
+                ],
+                rationale: "Met $r=5$ is $A \\approx 78.5$ (te laag) en met $r=6$ is $A \\approx 113.04$ (te hoog). De straal ligt tussen $5$ en $6$."
             },
-            "Eindexamenjaar (4 VMBO)": {
-                "Wiskunde": ["Examentraining: Algebra", "Examentraining: Meetkunde"],
-                "Engels": ["Leesvaardigheid", "Vocabulaire"]
+            {
+                question: "7. Voor $2x^2 = 100$ vind je: $x=7$ te laag, $x=7.1$ te hoog. Wat is de oplossing, afgerond op één decimaal? (Test $7.05$: uitkomst is $99.405$)",
+                options: [
+                    { text: "$7.0$", isCorrect: false },
+                    { text: "$7.1$", isCorrect: true },
+                    { text: "$7.05$", isCorrect: false },
+                    { text: "$7.5$", isCorrect: false }
+                ],
+                rationale: "Het testen van $x=7.05$ geeft $99.405$, wat te laag is ($< 100$). De oplossing is groter dan $7.05$ en moet dus naar $7.1$ worden afgerond."
             },
-            "Eindexamenjaar (5 HAVO)": {
-                "Wiskunde A": ["Kansberekening", "Statistiek"],
-                "Economie": ["Vraag en Aanbod", "Markten"]
+            {
+                question: "8. Voor $1.5^x = 15$ weet je: oplossing ligt tussen $6$ en $7$. Als je $x=6.5$ probeert en $1.5^{6.5} \\approx 13.5$ krijgt. Wat is de juiste conclusie?",
+                options: [
+                    { text: "De oplossing ligt nu tussen $6.5$ en $7$.", isCorrect: true },
+                    { text: "De oplossing ligt nu tussen $6$ en $6.5$.", isCorrect: false },
+                    { text: "Je moet nu $x=6.4$ proberen.", isCorrect: false },
+                    { text: "De oplossing is $6.5$.", isCorrect: false }
+                ],
+                rationale: "Omdat $13.5$ te laag is en $17.09$ (bij $x=7$) te hoog, ligt de oplossing van $15$ in het nieuwe interval tussen $6.5$ en $7$."
+            },
+            {
+                question: "9. De vergelijking is $3x^2 - 5 = 100$. Je wilt de oplossing op één decimaal afronden. Welk getal moet je testen om te bepalen of je naar $6$ of $7$ moet afronden?",
+                options: [
+                    { text: "$6.1$", isCorrect: false },
+                    { text: "$6.9$", isCorrect: false },
+                    { text: "$6.5$", isCorrect: true },
+                    { text: "$6.0$", isCorrect: false }
+                ],
+                rationale: "Het getal $6.5$ is precies de afrondingsgrens voor afronden op één decimaal. Het testen hiervan bepaalt of je naar $6$ of $7$ afrondt."
+            },
+            {
+                question: "10. De oplossing ligt tussen $5.67$ en $5.68$. Je test $x=5.675$ en krijgt een uitkomst die **te hoog** is. Wat is de oplossing, afgerond op twee decimalen?",
+                options: [
+                    { text: "$5.67$", isCorrect: true },
+                    { text: "$5.68$", isCorrect: false },
+                    { text: "$5.70$", isCorrect: false },
+                    { text: "$5.65$", isCorrect: false }
+                ],
+                rationale: "Als de grens $5.675$ al te hoog is, moet de werkelijke oplossing kleiner zijn dan $5.675$ en wordt deze afgerond naar $5.67$."
             }
-        };
-
-        // State variabelen
-        let currentLevel = null;
-        let currentSubject = null;
-        let currentChapter = null;
-
-        // --- 3. NAVIGATIE LOGICA ---
-
-        // Start de app (wordt aangeroepen bij laden)
-        function initApp() {
-            resetPracticeNav();
-            navigate('oefenen');
-        }
-
-        // Navigatie tussen pagina's (Home, Planning, etc.)
-        function navigate(pageId, el) {
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-' + pageId).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(el) el.classList.add('active');
-            
-            document.getElementById('page-title').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
-        }
-
-        // Functie om terug te gaan naar het begin van oefenen
-        function resetPracticeNav() {
-            currentLevel = null; currentSubject = null; currentChapter = null;
-            document.getElementById('step-level').style.display = 'grid';
-            document.getElementById('step-subject').style.display = 'none';
-            document.getElementById('step-chapter').style.display = 'none';
-            document.getElementById('practice-interface').style.display = 'none';
-            
-            renderLevels();
-            updateBreadcrumbs([]);
-        }
-
-        // Stap 1: Toon alle Jaren/Niveaus
-        function renderLevels() {
-            const container = document.getElementById('step-level');
-            container.innerHTML = '';
-            
-            Object.keys(practiceContent).forEach(level => {
-                container.innerHTML += `
-                <div class="nav-card" onclick="selectLevel('${level}')">
-                    <div class="nav-card-icon">📚</div>
-                    <div>
-                        <div class="nav-card-title">${level}</div>
-                        <div class="nav-card-subtitle">${Object.keys(practiceContent[level]).length} Vakken</div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function selectLevel(level) {
-            currentLevel = level;
-            document.getElementById('step-level').style.display = 'none';
-            document.getElementById('step-subject').style.display = 'grid';
-            renderSubjects(level);
-            updateBreadcrumbs([level]);
-        }
-
-        // Stap 2: Toon Vakken van gekozen niveau
-        function renderSubjects(level) {
-            const container = document.getElementById('step-subject');
-            container.innerHTML = '';
-            const subjects = practiceContent[level];
-            
-            Object.keys(subjects).forEach(subject => {
-                // Icoontjes op basis van vaknaam
-                let icon = '📖';
-                if(subject.includes('Wiskunde')) icon = '📐';
-                if(subject.includes('Engels') || subject.includes('Frans')) icon = '🗣️';
-                if(subject.includes('Geschiedenis')) icon = '🏛️';
-                if(subject.includes('Natuur') || subject.includes('Schei')) icon = '🧪';
-                if(subject.includes('Economie')) icon = '💰';
-
-                container.innerHTML += `
-                <div class="nav-card" onclick="selectSubject('${subject}')">
-                    <div class="nav-card-icon">${icon}</div>
-                    <div>
-                        <div class="nav-card-title">${subject}</div>
-                        <div class="nav-card-subtitle">${subjects[subject].length} Onderwerpen</div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function selectSubject(subject) {
-            currentSubject = subject;
-            document.getElementById('step-subject').style.display = 'none';
-            document.getElementById('step-chapter').style.display = 'grid';
-            renderChapters(currentLevel, subject);
-            updateBreadcrumbs([currentLevel, subject]);
-        }
-
-        // Stap 3: Toon Hoofdstukken
-        function renderChapters(level, subject) {
-            const container = document.getElementById('step-chapter');
-            container.innerHTML = '';
-            const chapters = practiceContent[level][subject];
-            
-            chapters.forEach(chapter => {
-                container.innerHTML += `
-                <div class="nav-card" onclick="selectChapter('${chapter}')">
-                    <div class="nav-card-icon">📝</div>
-                    <div>
-                        <div class="nav-card-title">${chapter}</div>
-                        <div class="nav-card-subtitle">Klik om te starten</div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function selectChapter(chapter) {
-            currentChapter = chapter;
-            document.getElementById('step-chapter').style.display = 'none';
-            document.getElementById('practice-interface').style.display = 'block';
-            updateBreadcrumbs([currentLevel, currentSubject, currentChapter]);
-            
-            // UI Update
-            document.getElementById('quiz-start-title').innerText = `${currentSubject}: ${chapter}`;
-            document.getElementById('quiz-start-screen').style.display = 'block';
-            document.getElementById('quiz-container').style.display = 'none';
-            document.getElementById('quiz-results').style.display = 'none';
-        }
-
-        // Update de tekst bovenin (Broodkruimelpad)
-        function updateBreadcrumbs(path) {
-            const bc = document.getElementById('practice-breadcrumbs');
-            let html = `<span onclick="resetPracticeNav()">Alle Jaren</span>`;
-            
-            if(path.length > 0) html += ` > <span onclick="selectLevel('${path[0]}')">${path[0]}</span>`;
-            if(path.length > 1) html += ` > <span onclick="selectSubject('${path[1]}')">${path[1]}</span>`;
-            if(path.length > 2) html += ` > <span class="active">${path[2]}</span>`;
-            
-            bc.innerHTML = html;
-        }
-
-        // --- 4. OEFENTOETS SYSTEEM (Gesimuleerd) ---
-        let currentQuizQuestions = [];
-        
-        // Simpele Wiskunde generator (zodat de toetsen ook echt werken voor de demo)
-        const mathQuestionsBank = [
-            {q:"Los op: 2x = 10", a:5, h:"Deel 10 door 2."},
-            {q:"Los op: x + 5 = 12", a:7, h:"12 min 5 is 7."},
-            {q:"Bereken: 5²", a:25, h:"5 keer 5."},
-            {q:"Los op: 3x - 2 = 13", a:5, h:"3x = 15, dus x = 5."},
-            {q:"Wat is 10% van 200?", a:20, h:"Deel 200 door 10."}
         ];
 
-        function startQuiz() {
-            document.getElementById('quiz-start-screen').style.display = 'none';
-            document.getElementById('quiz-results').style.display = 'none';
-            document.getElementById('quiz-container').style.display = 'block';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
 
-            // Hier simuleren we het ophalen van vragen. 
-            // In de toekomst vervang je dit door een call naar Firebase op basis van 'currentChapter'.
-            const list = document.getElementById('quiz-questions-list');
-            list.innerHTML = '';
-            
-            // Genereer 5 random vragen voor de demo (of gebruik echte als het wiskunde is)
-            currentQuizQuestions = [];
-            
-            if(currentSubject.includes('Wiskunde')) {
-                // Pak wiskunde vragen
-                for(let i=0; i<5; i++) {
-                    // Random vraag uit de bank of genereer som
-                    const num1 = Math.floor(Math.random() * 10) + 1;
-                    const num2 = Math.floor(Math.random() * 10) + 1;
-                    currentQuizQuestions.push({
-                        q: `Bereken: ${num1} x ${num2}`,
-                        a: num1 * num2,
-                        h: "Tafel van vermenigvuldiging."
-                    });
-                }
-            } else {
-                // Placeholder vragen voor andere vakken
-                for(let i=1; i<=5; i++) {
-                    currentQuizQuestions.push({
-                        q: `Vraag ${i} over ${currentChapter}`,
-                        a: 10,
-                        h: "Dit is een demo vraag."
-                    });
-                }
+        const quizArea = document.getElementById('quiz-area');
+        const nextButton = document.getElementById('next-button');
+        const resultsDiv = document.getElementById('results');
+
+        function loadQuestion() {
+            answered = false;
+            nextButton.style.display = 'none';
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+                return;
             }
 
-            // Render Vragen
-            currentQuizQuestions.forEach((item, index) => {
-                list.innerHTML += `
-                <div class="quiz-question-card" id="q-card-${index}">
-                    <div style="font-weight:600; margin-bottom:10px;">Vraag ${index+1}</div>
-                    <div style="font-size:1.2em; margin-bottom:10px;">${item.q}</div>
-                    <input type="number" class="quiz-input" id="q-input-${index}" placeholder="Antwoord...">
-                    <div class="quiz-feedback" id="q-feedback-${index}" style="display:none; margin-top:10px; color:#64748b; border-top:1px dashed #eee; padding-top:5px;"></div>
-                </div>`;
-            });
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Gebruik MathJax voor LaTeX-weergave als de omgeving dit ondersteunt, anders de gewone tekst.
+            const questionHtml = `
+                <div class="question-box">
+                    <div class="question-text">${currentQuestion.question}</div>
+                    <div id="options-container-${currentQuestionIndex}">
+                        ${currentQuestion.options.map((option, index) => `
+                            <button class="option-button" data-index="${index}" onclick="checkAnswer(${index})">
+                                ${option.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="feedback-${currentQuestionIndex}" class="feedback"></div>
+                </div>
+            `;
+            quizArea.innerHTML = questionHtml;
         }
 
-        function submitQuiz() {
-            let score = 0;
-            currentQuizQuestions.forEach((item, index) => {
-                const input = document.getElementById(`q-input-${index}`);
-                const card = document.getElementById(`q-card-${index}`);
-                const feedback = document.getElementById(`q-feedback-${index}`);
-                const val = parseFloat(input.value);
-                
-                feedback.style.display = 'block';
-                input.disabled = true;
+        function checkAnswer(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            const optionsContainer = document.getElementById(`options-container-${currentQuestionIndex}`);
+            const feedbackDiv = document.getElementById(`feedback-${currentQuestionIndex}`);
+            const selectedButton = optionsContainer.children[selectedIndex];
 
-                if (val === item.a) {
-                    score++;
-                    card.classList.add('correct');
-                    feedback.innerHTML = `✅ Correct!`;
-                } else {
-                    card.classList.add('wrong');
-                    feedback.innerHTML = `❌ Fout. Antwoord: <b>${item.a}</b>. <br>Tip: ${item.h}`;
-                }
-            });
+            optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
 
-            // Score berekening
-            const grade = Math.round(((score / currentQuizQuestions.length) * 9 + 1) * 10) / 10;
-            
-            document.getElementById('quiz-container').style.display = 'none';
-            document.getElementById('quiz-results').style.display = 'block';
-            document.getElementById('quiz-score').innerText = grade;
-            document.getElementById('quiz-message').innerText = `Je had ${score} van de ${currentQuizQuestions.length} goed.`;
-            
-            // Kopieer vragen naar resultaat scherm om terug te kijken
-            document.getElementById('quiz-review-list').innerHTML = document.getElementById('quiz-questions-list').innerHTML;
-            
-            window.scrollTo(0,0);
+            if (currentQuestion.options[selectedIndex].isCorrect) {
+                score++;
+                selectedButton.classList.add('correct');
+                feedbackDiv.classList.add('correct');
+                feedbackDiv.innerHTML = '✅ **Correct!**';
+            } else {
+                selectedButton.classList.add('incorrect');
+                feedbackDiv.classList.add('incorrect');
+                feedbackDiv.innerHTML = `❌ **Fout.** De juiste optie is: ${currentQuestion.options.find(opt => opt.isCorrect).text}.<br><span class="rationale">Uitleg: ${currentQuestion.rationale}</span>`;
+            }
+            feedbackDiv.style.display = 'block';
+
+            nextButton.style.display = 'block';
         }
 
-        // Init App bij laden
-        window.onload = initApp;
+        function showResults() {
+            quizArea.style.display = 'none';
+            nextButton.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <h2>🎉 Toets Afgerond! 🎉</h2>
+                <p>Je hebt **${score}** van de **${quizData.length}** vragen goed beantwoord.</p>
+                <p>Jouw score: **${((score / quizData.length) * 10).toFixed(1)}**</p>
+                <p>Goed gedaan met de Inklem-methode!</p>
+            `;
+        }
 
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            loadQuestion();
+        });
+
+        // Start de quiz
+        loadQuestion();
     </script>
 </body>
 </html>
